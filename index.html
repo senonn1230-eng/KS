@@ -12,7 +12,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Admin Cloud Ver 4.2.5</title>
+<title>土雷門 経営管理 Manager Pro Admin Cloud Ver 4.2.6</title>
 <style>
 :root{
   --green-950:#052f24;--green-900:#083f30;--green-850:#0b4937;--green-800:#0f5a43;--green-700:#18684f;
@@ -484,8 +484,9 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
 
     <section id="page-settings" class="page">
       <div class="page-title"><div><span>SETTINGS</span><h1>目標設定・管理</h1><small>管理基準はいつでも変更できます</small></div></div>
-      <section class="settings-grid"><article class="panel"><h2>KPI目標</h2><div class="form-grid"><label>人件費率 目標（%）<input id="setLaborTarget" type="number" step="0.1"></label><label>適正下限（%）<input id="setLaborMin" type="number" step="0.1"></label><label>適正上限（%）<input id="setLaborMax" type="number" step="0.1"></label><label>原価率 目標（%）<input id="setCostTarget" type="number" step="0.1"></label><label>営業利益率 目標（%）<input id="setMarginTarget" type="number" step="0.1"></label><label>月間売上目標（円）<input id="setSalesTarget" type="number" step="10000"></label><label>平均客単価（円）<input id="setTicket" type="number" step="100"></label><label>平均時給（円）<input id="setWage" type="number" step="10"></label></div><button id="saveSettingsBtn" class="primary-btn">設定を保存して全画面に反映</button></article><article class="panel"><h2>表示・データ</h2><div class="toggle-list"><label><span>アラート表示</span><input id="toggleAlerts" type="checkbox" checked></label><label><span>自動診断コメント</span><input id="toggleAi" type="checkbox" checked></label><label><span>金額を税込表示</span><input id="toggleTax" type="checkbox"></label></div><button id="resetDataBtn" class="danger-btn">すべての読込データを初期化</button><div class="version-info">土雷門 経営管理<br><b>Manager Pro Ver 5.1 Recovery Cloud</b><small>管理者向け / PWA対応</small></div></article></section>
+      <section class="settings-grid"><article class="panel"><h2>KPI目標</h2><div class="form-grid"><label>人件費率 目標（%）<input id="setLaborTarget" type="number" step="0.1"></label><label>適正下限（%）<input id="setLaborMin" type="number" step="0.1"></label><label>適正上限（%）<input id="setLaborMax" type="number" step="0.1"></label><label>原価率 目標（%）<input id="setCostTarget" type="number" step="0.1"></label><label>営業利益率 目標（%）<input id="setMarginTarget" type="number" step="0.1"></label><label>月間売上目標（円）<input id="setSalesTarget" type="number" step="10000"></label><label>平均客単価（円）<input id="setTicket" type="number" step="100"></label><label>平均時給（円）<input id="setWage" type="number" step="10"></label></div><button id="saveSettingsBtn" class="primary-btn">設定を保存して全画面に反映</button></article><article class="panel"><h2>表示・データ</h2><div class="toggle-list"><label><span>アラート表示</span><input id="toggleAlerts" type="checkbox" checked></label><label><span>自動診断コメント</span><input id="toggleAi" type="checkbox" checked></label><label><span>金額を税込表示</span><input id="toggleTax" type="checkbox"></label></div><button id="resetDataBtn" class="danger-btn">すべての読込データを初期化</button><div class="version-info">土雷門 経営管理<br><b>Manager Pro Ver 5.2 Recovery Cloud</b><small>管理者向け / PWA対応</small></div></article></section>
       <section class="panel cloud-settings-panel"><div class="panel-head"><div><h2>クラウド同期・権限</h2><small>閲覧・日報入力はPIN不要 / 重要変更だけ管理者PIN</small></div><button id="cloudOpenSettings" class="pill-btn">クラウド状態を見る</button></div><div class="cloud-settings-copy"><p>同じManager Proを開いている端末は、売上・日報・PL・目標設定をSupabase経由で共有します。</p><p><b>保護対象：</b>月売上、PL Excel反映、KPI目標・設定。これらを変更するときだけ管理者PINを確認し、監査ログへ記録します。</p></div></section>
+      <section class="panel"><div class="panel-head"><div><h2>変更履歴・データ復元</h2><small>誤入力・削除・上書き前のデータへ戻せます</small></div><button id="openRecoverySettingsBtn" class="pill-btn">復元センター</button></div><div class="recovery-note"><b>安全設計：</b>復元前の現在データも自動保存します。数か月後に誤りへ気付いた場合でも、保存済みの世代から選んで復元できます。復元操作には管理者PINが必要です。</div><div id="recoverySettingsSummary" class="data-health"></div></section>
     </section>
   </main>
 
@@ -802,17 +803,137 @@ function renderAI(){const m=current(),p=prev(),a=getAssessment(m),r=a.r;$('#aiBi
 
 async function cloudLoadVersions(){if(!cloud.client)return[];const r=await cloud.client.from('data_versions').select('*').order('created_at',{ascending:false}).limit(300);if(r.error)throw r.error;state.restoreVersions=(r.data||[]).map(x=>({...x,createdLabel:cloudStamp(x.created_at)}));return state.restoreVersions}
 function recoveryEntityLabel(v){return v.entity_type==='monthly_data'?'月次PL':v.entity_type==='daily_reports'?'日報':v.entity_type==='app_settings'?'KPI設定':v.entity_type||'データ'}
-function renderRecoverySummary(){const el=$('#recoverySummary');if(!el)return;const vs=state.restoreVersions||[];const latest=vs[0];el.innerHTML=metricCards([['復元可能履歴',`${vs.length}件`,'クラウド保存'],['最新履歴',latest?.createdLabel||'未作成',latest?`${recoveryEntityLabel(latest)} / ${latest.entity_key}`:'変更後に自動作成'],['復元権限','管理者PIN','復元前も自動バックアップ'],['保存方式','世代管理','削除・上書き前を保存']]).replaceAll('<div>','<div class="health-card">')}
+function renderRecoverySummary(){const vs=state.restoreVersions||[];const latest=vs[0];const html=metricCards([['復元可能履歴',`${vs.length}件`,'クラウド保存'],['最新履歴',latest?.createdLabel||'未作成',latest?`${recoveryEntityLabel(latest)} / ${latest.entity_key}`:'変更後に自動作成'],['復元権限','管理者PIN','復元前も自動バックアップ'],['保存方式','世代管理','削除・上書き前を保存']]).replaceAll('<div>','<div class="health-card">');['#recoverySummary','#recoverySettingsSummary'].forEach(sel=>{const el=$(sel);if(el)el.innerHTML=html})}
 async function showRecoveryCenter(){if(!cloud.ready){openModal('<h2>復元センター</h2><p>クラウド接続時に利用できます。</p>');return}try{await cloudLoadVersions()}catch(e){toast('復元履歴を読み込めませんでした');return}const rows=(state.restoreVersions||[]).map(v=>`<div class="recovery-row"><time>${v.createdLabel||'-'}</time><div><b>${recoveryEntityLabel(v)} / ${v.entity_key}</b><small>${v.action==='DELETE'?'削除前':v.action==='UPDATE'?'変更前':v.action==='INSERT'?'新規登録前へ戻せる':'保存'}${v.actor?' ・ '+v.actor:''}</small></div><button class="mini-action gold" data-restore-version="${v.id}">この時点へ復元</button></div>`).join('');openModal(`<h2>変更履歴・データ復元</h2><p class="recovery-note">戻したい行の「この時点へ復元」を押してください。新規登録の履歴は、その登録自体を取り消して登録前へ戻せます。復元する直前の現在データも自動保存されるため、やり直しできます。</p><div class="recovery-list">${rows||'<div class="recovery-empty">まだ復元履歴がありません。今後の変更・削除から自動保存されます。</div>'}</div>`);$$('[data-restore-version]').forEach(b=>b.onclick=()=>restoreCloudVersion(b.dataset.restoreVersion))}
 async function restoreCloudVersion(id){const v=(state.restoreVersions||[]).find(x=>x.id===id);if(!v)return;const pin=await requestAdminPin(`${recoveryEntityLabel(v)} ${v.entity_key} を復元`);if(!pin)return;if(!confirm(`${recoveryEntityLabel(v)}「${v.entity_key}」を ${v.createdLabel||'選択時点'} の内容へ戻しますか？\n\n現在の内容も復元前に自動保存されます。`))return;try{const r=await cloud.client.rpc('admin_restore_version',{p_pin:pin,p_version_id:id,p_actor:cloudActor(),p_device:cloud.deviceId});if(r.error)throw r.error;closeModal();await cloudPullAll({quiet:true});renderAll();toast('選択した時点のデータへ復元しました')}catch(e){console.error(e);toast(e.message||'復元に失敗しました')}}
 function renderExcel(){renderHistory('#excelHistory',50);renderMonthDataTable();renderRecoverySummary();const last=state.history[0];$('#dataHealth').innerHTML=metricCards([['登録月数',`${state.months.length}か月`,'PLデータ'],['最新月',state.months[state.months.length-1]?.short||'-','最新データ'],['最終更新',last?last.date:'未更新',last?.file||'初期データ'],['保存先',cloud.ready?'クラウド同期':'この端末',cloud.ready?'Supabase Realtime':'LocalStorage']]).replaceAll('<div>','<div class="health-card">')}
 function monthSource(m){if(m.manualSales&&m.excelSource)return 'Excel＋手動';if(m.manualSales)return '手動';if(m.excelSource)return 'Excel';return '初期データ'}
 function renderMonthDataTable(){const el=$('#monthDataTable');if(!el)return;el.innerHTML=`<table class="data-table month-manage-table"><thead><tr><th>月</th><th>売上</th><th>データ元</th><th>状態</th><th>最終更新</th><th>操作</th></tr></thead><tbody>${state.months.map(m=>`<tr class="${m.key===state.selected?'selected-month-row':''}"><td><b>${m.label}</b></td><td>${yen(m.sales)}</td><td><span class="source-badge ${m.excelSource?'excel':'initial'}">${m.excelSource?'Excel':'初期'}</span></td><td>${m.manualSales?'<span class="source-badge manual">手動変更済み</span>':'<span class="source-badge clean">確定値</span>'}</td><td>${m.manualUpdatedAt||m.excelUpdatedAt||'-'}</td><td><div class="row-actions"><button class="mini-action" data-open-month="${m.key}">開く</button><button class="mini-action gold" data-edit-month="${m.key}">売上編集</button></div></td></tr>`).join('')}</tbody></table>`}
 function renderHistory(sel,limit){const h=state.history.slice(0,limit);$(sel).innerHTML=h.length?h.map(x=>`<div class="history-row"><span class="doc">${x.type==='manual'?'手':x.type==='restore'?'戻':'XL'}</span><div><b>${x.file}</b><small>${x.date}　${x.month||''}${x.actor?'　'+x.actor:''}${x.detail?'　'+x.detail:''}</small></div><span class="status-mini">${x.type==='manual'?'手動':x.type==='restore'?'復元':'反映済'}</span><span>⋮</span></div>`).join(''):`<div style="padding:20px;text-align:center;color:#7b7c76">まだ変更・読込履歴はありません</div>`}
-function renderSettings(){const s=state.settings;const map={setLaborTarget:s.laborTarget,setLaborMin:s.laborMin,setLaborMax:s.laborMax,setCostTarget:s.costTarget,setMarginTarget:s.marginTarget,setSalesTarget:s.salesTarget,setTicket:s.ticket,setWage:s.wage};Object.entries(map).forEach(([id,v])=>{if(document.activeElement!==$('#'+id))$('#'+id).value=v});$('#toggleAlerts').checked=s.alerts!==false;$('#toggleAi').checked=s.ai!==false;$('#toggleTax').checked=!!s.tax}
+function renderSettings(){const s=state.settings;const map={setLaborTarget:s.laborTarget,setLaborMin:s.laborMin,setLaborMax:s.laborMax,setCostTarget:s.costTarget,setMarginTarget:s.marginTarget,setSalesTarget:s.salesTarget,setTicket:s.ticket,setWage:s.wage};Object.entries(map).forEach(([id,v])=>{if(document.activeElement!==$('#'+id))$('#'+id).value=v});$('#toggleAlerts').checked=s.alerts!==false;$('#toggleAi').checked=s.ai!==false;$('#toggleTax').checked=!!s.tax;renderRecoverySummary()}
 function renderPage(page){({home:renderHome,pl:renderPL,labor:renderLabor,cost:renderCost,sales:renderSales,shift:renderShift,sim:renderSim,ai:renderAI,report:renderReport,excel:renderExcel,settings:renderSettings}[page]||(()=>{}))()}
+
+/* ===== v4.2.6 hotfix: Excel month import + reliable month navigation ===== */
+function normalizeMonthRecord(m){
+  const key=String(m.key||'');
+  const mm=key.match(/^(\d{4})-(\d{2})$/);
+  if(mm){
+    m.label=m.label||`${+mm[1]}年${+mm[2]}月`;
+    m.short=m.short||`${+mm[2]}月`;
+  }
+  ['sales','cogs','gross','labor','sgna','profit'].forEach(k=>m[k]=Number(m[k])||0);
+  return m;
+}
+function sortMonths(){
+  state.months=(state.months||[]).map(normalizeMonthRecord).sort((a,b)=>String(a.key).localeCompare(String(b.key)));
+}
+function upsertMonth(parsed,opts={}){
+  if(!parsed||!parsed.key)throw new Error('対象月を認識できません');
+  sortMonths();
+  const old=state.months.find(x=>x.key===parsed.key);
+  const incoming=normalizeMonthRecord({...parsed});
+  incoming.excelSource=opts.sourceFile||incoming.excelSource||old?.excelSource||'Excel';
+  incoming.excelUpdatedAt=stamp();
+  if(old && opts.preserveManualSales && old.manualSales){
+    const manualSales=old.sales;
+    const delta=manualSales-incoming.sales;
+    incoming.sales=manualSales;
+    incoming.gross+=delta;
+    incoming.profit+=delta;
+    incoming.manualSales=true;
+    incoming.manualSalesOriginal=old.manualSalesOriginal;
+    incoming.manualUpdatedAt=old.manualUpdatedAt;
+  }
+  if(old) Object.assign(old,incoming);
+  else state.months.push(incoming);
+  sortMonths();
+  state.selected=parsed.key;
+  return state.months.find(x=>x.key===parsed.key);
+}
+function parseWorkbook(wb,fileName=''){
+  const rows=[];
+  (wb.SheetNames||[]).forEach(name=>{
+    const ws=wb.Sheets[name];
+    if(!ws)return;
+    const a=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+    a.forEach(r=>rows.push(r));
+  });
+  const flat=rows.flat().map(v=>String(v??'').trim()).filter(Boolean);
+  const joined=flat.join(' ');
+
+  let year=null,month=null;
+  const ym=(String(fileName)+' '+joined).match(/(20\d{2})\s*[年\/_.-]\s*(1[0-2]|0?[1-9])\s*月?/);
+  if(ym){year=+ym[1];month=+ym[2];}
+  if(!year||!month){
+    const m=(String(fileName)+' '+joined).match(/(?:^|[^\d])(1[0-2]|0?[1-9])月/);
+    if(m){year=+(current()?.key?.slice(0,4)||new Date().getFullYear());month=+m[1];}
+  }
+  if(!year||!month)throw new Error('Excelから対象年月を認識できません');
+
+  const clean=s=>String(s??'').replace(/[\s　:：()（）％%]/g,'').toLowerCase();
+  const toNum=v=>{
+    if(typeof v==='number')return v;
+    const s=String(v??'').replace(/[¥￥,\s　円]/g,'').replace(/[▲△]/g,'-');
+    const n=Number(s.replace(/[^\d.+-]/g,''));
+    return Number.isFinite(n)?n:null;
+  };
+  const aliases={
+    sales:['売上高','売上','総売上','売上合計'],
+    cogs:['売上原価','原価','原価合計'],
+    gross:['売上総利益','粗利益','粗利','売上総利益額'],
+    labor:['人件費','人件費計','人件費合計'],
+    sgna:['販管費合計','販売費及び一般管理費','販売管理費','販管費'],
+    profit:['営業利益','営業利益額']
+  };
+  const found={};
+  for(const row of rows){
+    for(let i=0;i<row.length;i++){
+      const label=clean(row[i]);
+      if(!label)continue;
+      for(const [key,names] of Object.entries(aliases)){
+        if(found[key]!=null)continue;
+        if(names.some(n=>label===clean(n)||label.includes(clean(n)))){
+          for(let j=i+1;j<Math.min(row.length,i+6);j++){
+            const n=toNum(row[j]);
+            if(n!=null){found[key]=n;break;}
+          }
+        }
+      }
+    }
+  }
+  // Vertical layouts: label and amount can be on adjacent rows/columns.
+  for(let r=0;r<rows.length;r++){
+    for(let c=0;c<(rows[r]?.length||0);c++){
+      const label=clean(rows[r][c]);
+      for(const [key,names] of Object.entries(aliases)){
+        if(found[key]!=null || !names.some(n=>label===clean(n)||label.includes(clean(n))))continue;
+        for(let rr=r;rr<Math.min(rows.length,r+4);rr++){
+          for(let cc=Math.max(0,c-1);cc<Math.min((rows[rr]?.length||0),c+5);cc++){
+            if(rr===r&&cc===c)continue;
+            const n=toNum(rows[rr][cc]);
+            if(n!=null){found[key]=n;break;}
+          }
+          if(found[key]!=null)break;
+        }
+      }
+    }
+  }
+  if(found.sales==null)throw new Error('「売上高」を認識できません');
+  if(found.cogs==null && found.gross!=null)found.cogs=found.sales-found.gross;
+  if(found.gross==null && found.cogs!=null)found.gross=found.sales-found.cogs;
+  if(found.sgna==null && found.profit!=null && found.gross!=null)found.sgna=found.gross-found.profit;
+  if(found.profit==null && found.gross!=null && found.sgna!=null)found.profit=found.gross-found.sgna;
+  if(found.labor==null)found.labor=0;
+  if([found.cogs,found.gross,found.sgna,found.profit].some(v=>v==null))
+    throw new Error('PL項目（原価・粗利・販管費・営業利益）を十分に認識できません');
+
+  const key=`${year}-${String(month).padStart(2,'0')}`;
+  return {key,label:`${year}年${month}月`,short:`${month}月`,
+    sales:found.sales,cogs:found.cogs,gross:found.gross,labor:found.labor,sgna:found.sgna,profit:found.profit};
+}
+
 function askManualOverwrite(existing,parsed,fileName){return new Promise(resolve=>{openModal(`<h2>${existing.label}は手動変更済みです</h2><p>この月の売上は現在 <b>${yen(existing.sales)}</b> に手動変更されています。<br>読み込むExcel「${fileName}」の売上は <b>${yen(parsed.sales)}</b> です。</p><div class="manual-sales-note"><b>手動値を保持</b>すると、Excelの原価・人件費・販管費は更新しつつ、売上は手動値を残して利益を再計算します。</div><div class="overwrite-actions"><button id="keepManualBtn" class="primary-btn">手動売上を保持</button><button id="overwriteManualBtn" class="outline-gold">Excel売上で上書き</button></div><p class="print-hint">閉じた場合は安全のため手動売上を保持します。</p>`);const finish=v=>{closeModal();$('#modalClose').onclick=closeModal;$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};resolve(v)};$('#keepManualBtn').onclick=()=>finish('keep');$('#overwriteManualBtn').onclick=()=>finish('overwrite');$('#modalClose').onclick=()=>finish('keep');$('#modal').onclick=e=>{if(e.target.id==='modal')finish('keep')}})}
-async function importExcel(files){if(!files?.length)return;if(typeof XLSX==='undefined'){toast('Excel解析ライブラリを読み込めませんでした');return}let cloudPin=null;if(cloud.ready){cloudPin=await requestAdminPin('PL Excelをクラウドへ反映');if(!cloudPin)return}let count=0,kept=0;for(const file of files){try{const ab=await file.arrayBuffer(),wb=XLSX.read(ab,{type:'array'});const parsed=parseWorkbook(wb,file.name);if(!parsed)throw new Error('必要なPL項目を認識できません');const existing=state.months.find(x=>x.key===parsed.key);let mode='overwrite';if(existing?.manualSales)mode=await askManualOverwrite(existing,parsed,file.name);upsertMonth(parsed,{preserveManualSales:mode==='keep',sourceFile:file.name});const finalMonth=state.months.find(x=>x.key===parsed.key);if(cloud.ready)await cloudAdminUpsertMonth(finalMonth,cloudPin,`Excel反映: ${file.name}`);if(mode==='keep')kept++;state.history.unshift({file:file.name,date:stamp(),month:parsed.short,type:'excel',actor:cloudActor(),detail:mode==='keep'?'Excel反映・手動売上は保持':'Excelデータを反映'});count++}catch(e){console.error(e);toast(`${file.name}: ${e.message}`)}}state.history=state.history.slice(0,100);save();if(cloud.ready)await cloudPullAll({quiet:true});renderAll();toast(`${count}件のExcelを反映しました${kept?`（${kept}件は手動売上を保持）`:''}`)}
+async function importExcel(files){if(!files?.length)return;if(typeof XLSX==='undefined'){toast('Excel解析ライブラリを読み込めませんでした');return}let cloudPin=null;if(cloud.ready){cloudPin=await requestAdminPin('PL Excelをクラウドへ反映');if(!cloudPin)return}let count=0,kept=0,lastImportedKey=null;for(const file of files){try{const ab=await file.arrayBuffer(),wb=XLSX.read(ab,{type:'array'});const parsed=parseWorkbook(wb,file.name);if(!parsed)throw new Error('必要なPL項目を認識できません');const existing=state.months.find(x=>x.key===parsed.key);let mode='overwrite';if(existing?.manualSales)mode=await askManualOverwrite(existing,parsed,file.name);upsertMonth(parsed,{preserveManualSales:mode==='keep',sourceFile:file.name});lastImportedKey=parsed.key;const finalMonth=state.months.find(x=>x.key===parsed.key);if(cloud.ready)await cloudAdminUpsertMonth(finalMonth,cloudPin,`Excel反映: ${file.name}`);if(mode==='keep')kept++;state.history.unshift({file:file.name,date:stamp(),month:parsed.short,type:'excel',actor:cloudActor(),detail:mode==='keep'?'Excel反映・手動売上は保持':'Excelデータを反映'});count++}catch(e){console.error(e);toast(`${file.name}: ${e.message}`)}}state.history=state.history.slice(0,100);save();if(cloud.ready)await cloudPullAll({quiet:true});if(lastImportedKey&&state.months.some(x=>x.key===lastImportedKey))state.selected=lastImportedKey;sortMonths();save();renderAll();toast(`${count}件のExcelを反映しました${kept?`（${kept}件は手動売上を保持）`:''}`)}
 function buildPrintReport(options={sales:true,rates:true,labor:true,ai:true}){
  const m=current(),r=ratios(m),s=state.settings,a=getAssessment(m),p=prev(),months=state.months.slice(-6),salesRate=m.sales/s.salesTarget*100;
  const need=requiredExtraSales(m,s.marginTarget),laborBudget=m.sales*s.laborTarget/100,laborGap=laborBudget-m.labor;
@@ -901,7 +1022,7 @@ function addReportField(){openModal(`<h2>売上報告の項目を追加</h2><div
 function editReportField(key){const f=reportFieldByKey(key);if(!f)return;openModal(`<h2>項目設定</h2><div class="form-grid" style="grid-template-columns:1fr"><label>表示名<input id="rfeLabel" value="${f.label.replace(/"/g,'&quot;')}"></label><label>別名（カンマ区切り）<input id="rfeAliases" value="${(f.aliases||[]).join(',')}"></label><label>分類<select id="rfeCategory">${['売上','人件費','集客','経費','その他'].map(x=>`<option ${x===f.category?'selected':''}>${x}</option>`).join('')}</select></label></div><button id="rfeSave" class="primary-btn">保存</button>`);$('#rfeSave').onclick=()=>{f.label=$('#rfeLabel').value.trim()||f.label;f.aliases=$('#rfeAliases').value.split(',').map(x=>x.trim()).filter(Boolean);f.category=$('#rfeCategory').value;state.businessLog.unshift({date:stamp(),type:'設定',title:'売上報告項目を変更',detail:f.label});save();closeModal();renderReport();toast('項目設定を保存しました')}}
 function wireSmartReport(){const analyze=$('#reportAnalyzeBtn');if(!analyze)return;analyze.onclick=()=>{pendingReport=parseLineReport($('#reportPaste').value);if(!pendingReport){toast('解析できる売上報告を貼り付けてください');return}renderReportPreview(pendingReport);setReportFlow('analyzed',`${pendingReport.date} / ${pendingReport.items.length}項目を解析しました`)};$('#reportSaveBtn').onclick=saveParsedReport;$('#reportClearBtn').onclick=()=>{$('#reportPaste').value='';pendingReport=null;renderReportPreview(null);setReportFlow('idle')};$('#reportSampleBtn').onclick=()=>{$('#reportPaste').value=`【売上報告】\n\nお疲れさまです。\n8/7（金）の業務報告です。\n当日売上 :366,700円(税込)\n当日達成率 : 114.8%\n人件費 : 59,500円\n人件費率 : 16.2%\n口コミ件数：5件\n\n【経費報告】\n前日残高：47,661円\n本日使用分：920円\n経費残高：46,741円\nよろしくお願いいたします。`;pendingReport=parseLineReport($('#reportPaste').value);renderReportPreview(pendingReport);setReportFlow('analyzed',`${pendingReport.date} / ${pendingReport.items.length}項目を解析しました`)};$('#addReportFieldBtn').onclick=addReportField;document.querySelectorAll('[data-report-field-toggle]').forEach(x=>x.onchange=()=>{const f=reportFieldByKey(x.dataset.reportFieldToggle);if(f){f.enabled=x.checked;save();renderReport()}});document.querySelectorAll('[data-report-field-edit]').forEach(x=>x.onclick=()=>editReportField(x.dataset.reportFieldEdit))}
 
-function bind(){wireSmartReport();$('#cloudStatusBtn')?.addEventListener('click',openCloudInfo);$('#cloudOpenSettings')?.addEventListener('click',openCloudInfo);document.addEventListener('click',e=>{if(e.target.closest('#editMonthlySalesBtn')){e.preventDefault();editMonthlySales(state.selected);return}const page=e.target.closest('[data-page]')?.dataset.page;if(page)nav(page);const tool=e.target.closest('[data-tool]')?.dataset.tool;if(tool)showTool(tool);const edit=e.target.closest('[data-edit-month]')?.dataset.editMonth;if(edit)editMonthlySales(edit);const open=e.target.closest('[data-open-month]')?.dataset.openMonth;if(open){state.selected=open;renderAll();nav('home');toast(`${current().label}を開きました`)}});document.addEventListener('change',e=>{const cb=e.target.closest('[data-calendar-index]');if(cb){const k=current().key;state.calendar[k]=state.calendar[k]||{};state.calendar[k][cb.dataset.calendarIndex]=cb.checked;save();renderManagementCalendar();}});$$('[data-kpi-page]').forEach(card=>{const go=()=>nav(card.dataset.kpiPage);card.addEventListener('click',go);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});$('#businessSignal').onclick=openSignalDetail;$('#businessSignal').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSignalDetail()}};$('#signalDetailBtn').onclick=e=>{e.stopPropagation();openSignalDetail()};$('#meetingBtn').onclick=()=>setMeetingMode(true);$('#meetingExitBtn').onclick=()=>setMeetingMode(false);$('#modalClose').onclick=closeModal;$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};['excelTopBtn','excelHomeBtn','excelPageBtn'].forEach(id=>$('#'+id).onclick=()=>$('#excelInput').click());$('#settingsTopBtn').onclick=()=>nav('settings');$('#kpiQuickBtn').onclick=()=>nav('settings');$('#excelInput').onchange=e=>{importExcel([...e.target.files]);e.target.value=''};['excelDrop','excelDrop2'].forEach(id=>{const el=$('#'+id);el.onclick=e=>{if(!e.target.closest('button'))$('#excelInput').click()};['dragover','dragenter'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.style.background='#f5edd9'}));['dragleave','drop'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.style.background=''}));el.addEventListener('drop',e=>importExcel([...e.dataTransfer.files]))});$('#homeExtraSales').addEventListener('input',renderForecast);$('#saveSettingsBtn').onclick=async()=>{const next={...state.settings,laborTarget:+$('input#setLaborTarget').value,laborMin:+$('input#setLaborMin').value,laborMax:+$('input#setLaborMax').value,costTarget:+$('input#setCostTarget').value,marginTarget:+$('input#setMarginTarget').value,salesTarget:+$('input#setSalesTarget').value,ticket:+$('input#setTicket').value,wage:+$('input#setWage').value,alerts:$('#toggleAlerts').checked,ai:$('#toggleAi').checked,tax:$('#toggleTax').checked};let pin=null;if(cloud.ready){pin=await requestAdminPin('KPI目標・設定を変更');if(!pin)return;try{await cloudAdminSettings(next,pin)}catch(e){toast(e.message||'設定を更新できませんでした');return}}state.settings=next;save();if(cloud.ready)await cloudPullAll({quiet:true});renderAll();toast('設定を保存しました')};$('#resetDataBtn').onclick=()=>{if(cloud.ready){toast('クラウド接続中は誤削除防止のため一括初期化できません。復元センターをご利用ください');return}if(confirm('この端末のローカルデータを初期状態に戻しますか？')){state=clone(INITIAL);state.reportFields=clone(DEFAULT_REPORT_FIELDS);save();renderAll();toast('この端末のローカルデータを初期化しました')}};$('#clearHistoryBtn').onclick=()=>{state.history=[];save();renderExcel();renderHistory('#homeHistory',3);toast('履歴を消去しました')};$('#exportBackupBtn').onclick=exportBackup;$('#importBackupInput').onchange=e=>e.target.files[0]&&importBackup(e.target.files[0]);$('#printBtn').onclick=openPrintDialog;$('#addInventoryBtn').onclick=addInventory;$('#addDailyBtn').onclick=addDaily;$('#quickEditSalesBtn').onclick=e=>{e.stopPropagation();editMonthlySales(state.selected)};$('#prevMonthBtn').onclick=()=>switchMonthBy(-1);$('#nextMonthBtn').onclick=()=>switchMonthBy(1);$('#monthCenterBtn').onclick=showMonthPicker;$('#currentMonthBtn').onclick=jumpToCurrentPeriod;$('#openRecoveryBtn').onclick=showRecoveryCenter;$('#todayAddBtn').onclick=addDaily;$('#compareDetailBtn').onclick=()=>nav('ai');$('#copyPlBtn').onclick=()=>{const m=current(),r=ratios(m);navigator.clipboard?.writeText(`${m.label}\n売上 ${yen(m.sales)}\n原価 ${yen(m.cogs)} (${pct(r.cost)})\n人件費 ${yen(m.labor)} (${pct(r.labor)})\n営業利益 ${yen(m.profit)} (${pct(r.margin)})`);toast('PL概要をコピーしました')};$('#helpBtn').onclick=()=>openModal('<h2>使い方</h2><p>①「Excel読込」から月次PLを選択します。②読み込んだ月へ自動で切替わり、KPI・PL・人件費・売上・AI診断が更新されます。③「目標設定」で人件費率30%前後など店舗基準を変更できます。</p><p><b>補足：</b>シフト・在庫・日次入力は端末内保存です。クラウド接続時は重要データを共有し、変更・削除前の世代を自動保存します。Excelデータ管理の「復元センター」から管理者PINで過去時点へ復元できます。</p>');$('#alertListBtn').onclick=$('#allAlertsBtn').onclick=()=>openModal(`<h2>アラート一覧</h2><div class="notice-list">${$('#noticeList').innerHTML}</div>`);$('#headerMonthBtn').onclick=showMonthPicker;setInterval(updateClock,60000)}
+function bind(){wireSmartReport();$('#cloudStatusBtn')?.addEventListener('click',openCloudInfo);$('#cloudOpenSettings')?.addEventListener('click',openCloudInfo);document.addEventListener('click',e=>{if(e.target.closest('#editMonthlySalesBtn')){e.preventDefault();editMonthlySales(state.selected);return}const page=e.target.closest('[data-page]')?.dataset.page;if(page)nav(page);const tool=e.target.closest('[data-tool]')?.dataset.tool;if(tool)showTool(tool);const edit=e.target.closest('[data-edit-month]')?.dataset.editMonth;if(edit)editMonthlySales(edit);const open=e.target.closest('[data-open-month]')?.dataset.openMonth;if(open){state.selected=open;renderAll();nav('home');toast(`${current().label}を開きました`)}});document.addEventListener('change',e=>{const cb=e.target.closest('[data-calendar-index]');if(cb){const k=current().key;state.calendar[k]=state.calendar[k]||{};state.calendar[k][cb.dataset.calendarIndex]=cb.checked;save();renderManagementCalendar();}});$$('[data-kpi-page]').forEach(card=>{const go=()=>nav(card.dataset.kpiPage);card.addEventListener('click',go);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});$('#businessSignal').onclick=openSignalDetail;$('#businessSignal').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSignalDetail()}};$('#signalDetailBtn').onclick=e=>{e.stopPropagation();openSignalDetail()};$('#meetingBtn').onclick=()=>setMeetingMode(true);$('#meetingExitBtn').onclick=()=>setMeetingMode(false);$('#modalClose').onclick=closeModal;$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};['excelTopBtn','excelHomeBtn','excelPageBtn'].forEach(id=>$('#'+id).onclick=()=>$('#excelInput').click());$('#settingsTopBtn').onclick=()=>nav('settings');$('#kpiQuickBtn').onclick=()=>nav('settings');$('#excelInput').onchange=e=>{importExcel([...e.target.files]);e.target.value=''};['excelDrop','excelDrop2'].forEach(id=>{const el=$('#'+id);el.onclick=e=>{if(!e.target.closest('button'))$('#excelInput').click()};['dragover','dragenter'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.style.background='#f5edd9'}));['dragleave','drop'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.style.background=''}));el.addEventListener('drop',e=>importExcel([...e.dataTransfer.files]))});$('#homeExtraSales').addEventListener('input',renderForecast);$('#saveSettingsBtn').onclick=async()=>{const next={...state.settings,laborTarget:+$('input#setLaborTarget').value,laborMin:+$('input#setLaborMin').value,laborMax:+$('input#setLaborMax').value,costTarget:+$('input#setCostTarget').value,marginTarget:+$('input#setMarginTarget').value,salesTarget:+$('input#setSalesTarget').value,ticket:+$('input#setTicket').value,wage:+$('input#setWage').value,alerts:$('#toggleAlerts').checked,ai:$('#toggleAi').checked,tax:$('#toggleTax').checked};let pin=null;if(cloud.ready){pin=await requestAdminPin('KPI目標・設定を変更');if(!pin)return;try{await cloudAdminSettings(next,pin)}catch(e){toast(e.message||'設定を更新できませんでした');return}}state.settings=next;save();if(cloud.ready)await cloudPullAll({quiet:true});renderAll();toast('設定を保存しました')};$('#resetDataBtn').onclick=()=>{if(cloud.ready){toast('クラウド接続中は誤削除防止のため一括初期化できません。復元センターをご利用ください');return}if(confirm('この端末のローカルデータを初期状態に戻しますか？')){state=clone(INITIAL);state.reportFields=clone(DEFAULT_REPORT_FIELDS);save();renderAll();toast('この端末のローカルデータを初期化しました')}};$('#clearHistoryBtn').onclick=()=>{state.history=[];save();renderExcel();renderHistory('#homeHistory',3);toast('履歴を消去しました')};$('#exportBackupBtn').onclick=exportBackup;$('#importBackupInput').onchange=e=>e.target.files[0]&&importBackup(e.target.files[0]);$('#printBtn').onclick=openPrintDialog;$('#addInventoryBtn').onclick=addInventory;$('#addDailyBtn').onclick=addDaily;$('#quickEditSalesBtn').onclick=e=>{e.stopPropagation();editMonthlySales(state.selected)};$('#prevMonthBtn').onclick=()=>switchMonthBy(-1);$('#nextMonthBtn').onclick=()=>switchMonthBy(1);$('#monthCenterBtn').onclick=showMonthPicker;$('#currentMonthBtn').onclick=jumpToCurrentPeriod;$('#openRecoveryBtn').onclick=showRecoveryCenter;$('#openRecoverySettingsBtn').onclick=showRecoveryCenter;$('#todayAddBtn').onclick=addDaily;$('#compareDetailBtn').onclick=()=>nav('ai');$('#copyPlBtn').onclick=()=>{const m=current(),r=ratios(m);navigator.clipboard?.writeText(`${m.label}\n売上 ${yen(m.sales)}\n原価 ${yen(m.cogs)} (${pct(r.cost)})\n人件費 ${yen(m.labor)} (${pct(r.labor)})\n営業利益 ${yen(m.profit)} (${pct(r.margin)})`);toast('PL概要をコピーしました')};$('#helpBtn').onclick=()=>openModal('<h2>使い方</h2><p>①「Excel読込」から月次PLを選択します。②読み込んだ月へ自動で切替わり、KPI・PL・人件費・売上・AI診断が更新されます。③「目標設定」で人件費率30%前後など店舗基準を変更できます。</p><p><b>補足：</b>シフト・在庫・日次入力は端末内保存です。クラウド接続時は重要データを共有し、変更・削除前の世代を自動保存します。Excelデータ管理の「復元センター」から管理者PINで過去時点へ復元できます。</p>');$('#alertListBtn').onclick=$('#allAlertsBtn').onclick=()=>openModal(`<h2>アラート一覧</h2><div class="notice-list">${$('#noticeList').innerHTML}</div>`);$('#headerMonthBtn').onclick=showMonthPicker;setInterval(updateClock,60000)}
 function showMonthPicker(){const latest=latestAvailableMonthKey();openModal(`<h2>表示月を選択</h2><p class="muted">最新月を先頭に表示しています。</p><div class="check-grid">${state.months.slice().reverse().map(m=>`<button class="outline-gold month-choice" data-month="${m.key}">${m.label}${m.key===latest?'　現時点':''}</button>`).join('')}</div>`);$$('.month-choice').forEach(b=>b.onclick=()=>{state.selected=b.dataset.month;closeModal();renderAll();toast(`${current().label}に切り替えました`)})}
 function showTool(tool){const names={daily:'日次入力',budget:'予算管理',customer:'客単価分析',product:'商品別分析',hourly:'時間帯分析',forecast:'来月予測'};openModal(`<h2>${names[tool]||'クイックツール'}</h2><p>このクイックツールは管理者ホームから素早く確認するための入口です。</p>${tool==='daily'?'<button class="primary-btn" id="modalDailyAdd">日次データを追加</button>':'<p>現在のPLデータと目標設定を基準に表示します。詳細データ連携を追加すると、さらに精密な分析へ拡張できます。</p>'}`);if(tool==='daily')$('#modalDailyAdd').onclick=()=>{closeModal();addDaily()}}
 function addInventory(){openModal(`<h2>在庫・廃棄メモを追加</h2><div class="form-grid" style="grid-template-columns:1fr"><label>項目<input id="invName" placeholder="例：残うなぎ"></label><label>数量<input id="invQty" placeholder="例：12尾"></label><label>メモ<input id="invNote" placeholder="例：8/9朝確認"></label></div><button id="invSave" class="primary-btn" style="margin-top:12px">保存</button>`);$('#invSave').onclick=()=>{const name=$('#invName').value.trim();if(!name)return;state.inventory.unshift({name,qty:$('#invQty').value,note:$('#invNote').value});save();closeModal();renderInventory();toast('在庫メモを追加しました')}}
@@ -930,7 +1051,7 @@ function v42SetupUi(){
  if(localStorage.getItem('doraimon_cloud_setup_done')==='1'){gate.classList.add('hidden');setTimeout(async()=>{try{await cloudInit();if(!cloud.ready){localStorage.removeItem('doraimon_cloud_setup_done');gate.classList.remove('hidden')}}catch(e){localStorage.removeItem('doraimon_cloud_setup_done');gate.classList.remove('hidden')}},300)}
 }
 
-function boot(){v42SetupUi();bind();renderAll();setReportFlow('idle');cloudInit();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('/sw.js').catch(()=>{})}
+function boot(){v42SetupUi();if(state.months?.length)state.selected=latestAvailableMonthKey();bind();renderAll();setReportFlow('idle');cloudInit();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('/sw.js').catch(()=>{})}
 boot();
 })();
 
