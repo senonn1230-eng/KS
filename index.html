@@ -248,8 +248,9 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
 .admin-only-banner{margin:12px 22px 0;padding:10px 14px;border:1px solid rgba(183,145,62,.35);border-radius:14px;background:linear-gradient(90deg,#f7f0dc,#fffaf0);display:flex;gap:10px;align-items:center;font-size:12px;color:#4d4b42}.admin-only-banner b{color:#875f12;white-space:nowrap}.admin-only-banner span{line-height:1.45}@media(max-width:760px){.admin-only-banner{margin:10px 14px 0;display:block}.admin-only-banner b{display:block;margin-bottom:3px}}
 
 
-#firstSetupGate{position:fixed;inset:0;z-index:99999;background:#f5f0e5;display:flex;align-items:flex-start;justify-content:center;padding:env(safe-area-inset-top) 14px 24px;overflow:auto;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+#firstSetupGate{position:fixed;inset:0;z-index:99999;background:#f5f0e5;display:none;align-items:flex-start;justify-content:center;padding:env(safe-area-inset-top) 14px 24px;overflow:auto;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
 #firstSetupGate.hidden{display:none}
+#firstSetupGate.needs-setup{display:flex}
 .setup-card-v42{width:min(680px,100%);margin:22px auto;background:#fffdf7;border:1px solid #dbc994;border-radius:24px;padding:22px;box-shadow:0 12px 40px rgba(37,56,47,.14);color:#183d32}
 .setup-card-v42 h1{font-size:25px;margin:0 0 8px}.setup-card-v42 p{line-height:1.75}.setup-step-v42{display:flex;gap:12px;align-items:flex-start;border-top:1px solid #eee5d2;padding:16px 0}.setup-num-v42{flex:0 0 34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#0b5a45;color:#fff;font-weight:900}.setup-body-v42{flex:1}.setup-body-v42 b{display:block;font-size:17px;margin-bottom:6px}.setup-btn-v42{width:100%;border:0;border-radius:14px;padding:15px 14px;margin-top:8px;font-size:16px;font-weight:900;background:#0b5a45;color:#fff}.setup-btn-v42.alt{background:#fffdf7;color:#0b5a45;border:1px solid #bfa357}.setup-note-v42{background:#eef6f0;border-radius:14px;padding:13px;margin-top:14px;font-size:13px;color:#43594f}.setup-code-v42{display:none;width:100%;height:38vh;box-sizing:border-box;margin-top:10px;padding:10px;font-size:11px;line-height:1.4;border:1px solid #d8cfbd;border-radius:10px;background:#fff;white-space:pre;font-family:ui-monospace,monospace}
 .setup-code-v42.show{display:block}
@@ -567,9 +568,9 @@ async function cloudInit(){
   cloud.client=window.supabase.createClient(CLOUD_CFG.url,CLOUD_CFG.publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},realtime:{params:{eventsPerSecond:5}}});
   await cloudPullAll({quiet:true,initial:true});
   const pin=await cloud.client.rpc('has_admin_pin');cloud.pinConfigured=!!pin.data;
-  cloud.ready=true;cloud.lastSync=new Date();setCloudStatus('online','クラウド同期');cloudSubscribe();renderAll();
+  cloud.ready=true;cloud.lastSync=new Date();setCloudStatus('online','クラウド同期');const setupGate=document.getElementById('firstSetupGate');if(setupGate){setupGate.classList.remove('needs-setup');setupGate.classList.add('hidden')}localStorage.setItem('doraimon_cloud_setup_done','1');cloudSubscribe();renderAll();
   if(!cloud.pinConfigured)setTimeout(()=>showInitialPinSetup(),600);
- }catch(e){console.error('Cloud init',e);cloud.ready=false;const schemaMissing=/does not exist|42P01|PGRST|Could not find the table|schema cache/i.test(String(e?.message||e));setCloudStatus(schemaMissing?'setup':'error',schemaMissing?'初期設定が必要':'同期エラー');if(schemaMissing)setTimeout(()=>showDbSetupHelper(),300)}
+ }catch(e){console.error('Cloud init',e);cloud.ready=false;const schemaMissing=/does not exist|42P01|PGRST|Could not find the table|schema cache/i.test(String(e?.message||e));setCloudStatus(schemaMissing?'setup':'error',schemaMissing?'初期設定が必要':'同期エラー');if(schemaMissing){const setupGate=document.getElementById('firstSetupGate');if(setupGate){setupGate.classList.remove('hidden');setupGate.classList.add('needs-setup')}setTimeout(()=>showDbSetupHelper(),300)}}
  finally{cloud.connecting=false}
 }
 
@@ -1287,8 +1288,8 @@ function v42SetupUi(){
  document.getElementById('v42CopySql').onclick=v42CopySetupSql;
  document.getElementById('v42ShowSql').onclick=()=>{box.classList.toggle('show'); if(box.classList.contains('show')){box.focus();box.select();box.setSelectionRange(0,box.value.length)}};
  document.getElementById('v42OpenSupabase').onclick=()=>{const ref=supabaseProjectRef();location.href=ref?`https://supabase.com/dashboard/project/${ref}/sql/new`:'https://supabase.com/dashboard'};
- document.getElementById('v42CheckCloud').onclick=async()=>{const s=document.getElementById('v42CheckStatus');s.textContent='確認中…';try{await cloudInit();if(cloud.ready){s.textContent='✓ 接続できました。Manager Proを開きます。';localStorage.setItem('doraimon_cloud_setup_done','1');setTimeout(()=>gate.classList.add('hidden'),500)}else{s.textContent='まだ接続できません。Supabaseで「走る / Run」が完了しているか確認してください。'}}catch(e){s.textContent='まだ接続できません。Supabaseで「走る / Run」が完了しているか確認してください。'}};
- if(localStorage.getItem('doraimon_cloud_setup_done')==='1'){gate.classList.add('hidden');setTimeout(async()=>{try{await cloudInit();if(!cloud.ready){localStorage.removeItem('doraimon_cloud_setup_done');gate.classList.remove('hidden')}}catch(e){localStorage.removeItem('doraimon_cloud_setup_done');gate.classList.remove('hidden')}},300)}
+ document.getElementById('v42CheckCloud').onclick=async()=>{const s=document.getElementById('v42CheckStatus');s.textContent='確認中…';try{await cloudInit();if(cloud.ready){s.textContent='✓ 接続できました。Manager Proを開きます。';localStorage.setItem('doraimon_cloud_setup_done','1');setTimeout(()=>{gate.classList.remove('needs-setup');gate.classList.add('hidden')},500)}else{s.textContent='まだ接続できません。Supabaseで「走る / Run」が完了しているか確認してください。'}}catch(e){s.textContent='まだ接続できません。Supabaseで「走る / Run」が完了しているか確認してください。'}};
+ gate.classList.add('hidden');gate.classList.remove('needs-setup');if(localStorage.getItem('doraimon_cloud_setup_done')==='1'){setTimeout(()=>cloudInit().catch(()=>{}),300)}
 }
 
 function boot(){v42SetupUi();ensureTemporalMonths();state.selected=latestAvailableMonthKey();bind();renderAll();setReportFlow('idle');cloudInit();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('/sw.js').catch(()=>{})}
