@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.8.4</title>
+<title>土雷門 経営管理 Manager Pro Ver 5.8.5</title>
 <style>
 :root{
   --green-950:#052f24;--green-900:#083f30;--green-850:#0b4937;--green-800:#0f5a43;--green-700:#18684f;
@@ -508,7 +508,7 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
 
     <section id="page-settings" class="page">
       <div class="page-title"><div><span>SETTINGS</span><h1>目標設定・管理</h1><small>管理基準はいつでも変更できます</small></div></div>
-      <section class="settings-grid"><article class="panel"><h2>KPI目標</h2><div class="form-grid"><label>人件費率 目標（%）<input id="setLaborTarget" type="number" step="0.1"></label><label>適正下限（%）<input id="setLaborMin" type="number" step="0.1"></label><label>適正上限（%）<input id="setLaborMax" type="number" step="0.1"></label><label>原価率 目標（%）<input id="setCostTarget" type="number" step="0.1"></label><label>営業利益率 目標（%）<input id="setMarginTarget" type="number" step="0.1"></label><label>デフォルト月間予算（円）<input id="setSalesTarget" type="number" step="10000"></label><label>平均客単価（円）<input id="setTicket" type="number" step="100"></label><label>平均時給（円）<input id="setWage" type="number" step="10"></label></div><button id="saveSettingsBtn" class="primary-btn">設定を保存して全画面に反映</button></article><article class="panel"><h2>表示・データ</h2><div class="toggle-list"><label><span>アラート表示</span><input id="toggleAlerts" type="checkbox" checked></label><label><span>自動診断コメント</span><input id="toggleAi" type="checkbox" checked></label><label><span>金額を税込表示</span><input id="toggleTax" type="checkbox"></label></div><button id="resetDataBtn" class="danger-btn">すべての読込データを初期化</button><div class="version-info">土雷門 経営管理<br><b>Manager Pro Ver 5.8.4</b><small>管理者向け / PWA対応</small></div></article></section>
+      <section class="settings-grid"><article class="panel"><h2>KPI目標</h2><div class="form-grid"><label>人件費率 目標（%）<input id="setLaborTarget" type="number" step="0.1"></label><label>適正下限（%）<input id="setLaborMin" type="number" step="0.1"></label><label>適正上限（%）<input id="setLaborMax" type="number" step="0.1"></label><label>原価率 目標（%）<input id="setCostTarget" type="number" step="0.1"></label><label>営業利益率 目標（%）<input id="setMarginTarget" type="number" step="0.1"></label><label>デフォルト月間予算（円）<input id="setSalesTarget" type="number" step="10000"></label><label>平均客単価（円）<input id="setTicket" type="number" step="100"></label><label>平均時給（円）<input id="setWage" type="number" step="10"></label></div><button id="saveSettingsBtn" class="primary-btn">設定を保存して全画面に反映</button></article><article class="panel"><h2>表示・データ</h2><div class="toggle-list"><label><span>アラート表示</span><input id="toggleAlerts" type="checkbox" checked></label><label><span>自動診断コメント</span><input id="toggleAi" type="checkbox" checked></label><label><span>金額を税込表示</span><input id="toggleTax" type="checkbox"></label></div><button id="resetDataBtn" class="danger-btn">すべての読込データを初期化</button><div class="version-info">土雷門 経営管理<br><b>Manager Pro Ver 5.8.5</b><small>管理者向け / PWA対応</small></div></article></section>
       <section class="panel cloud-settings-panel"><div class="panel-head"><div><h2>クラウド同期・権限</h2><small>閲覧・日報入力はPIN不要 / 重要変更だけ管理者PIN</small></div><button id="cloudOpenSettings" class="pill-btn">クラウド状態を見る</button></div><div class="cloud-settings-copy"><p>同じManager Proを開いている端末は、売上・日報・PL・目標設定をSupabase経由で共有します。</p><p><b>保護対象：</b>月売上、PL Excel反映、KPI目標・設定。これらを変更するときだけ管理者PINを確認し、監査ログへ記録します。</p></div></section>
       <section class="panel"><div class="panel-head"><div><h2>変更履歴・データ復元</h2><small>誤入力・削除・上書き前のデータへ戻せます</small></div><button id="openRecoverySettingsBtn" class="pill-btn">復元センター</button></div><div class="recovery-note"><b>安全設計：</b>復元前の現在データも自動保存します。数か月後に誤りへ気付いた場合でも、保存済みの世代から選んで復元できます。復元操作には管理者PINが必要です。</div><div id="recoverySettingsSummary" class="data-health"></div></section>
     </section>
@@ -631,7 +631,7 @@ async function cloudInit(){
   const setupGate=document.getElementById('firstSetupGate');if(setupGate){setupGate.classList.remove('needs-setup');setupGate.classList.add('hidden')}safeLocalSet('doraimon_cloud_setup_done','1');cloudSubscribe();cloud.lastStage='接続済み';renderAll();
   if(!cloud.pinConfigured)setTimeout(()=>showInitialPinSetup(),600);
   return true;
- }catch(e){console.error('Cloud init',e);cloud.ready=false;cloud.lastError=e?.message||String(e);const schemaMissing=/does not exist|42P01|PGRST|Could not find the table|schema cache/i.test(String(e?.message||e));setCloudStatus(schemaMissing?'setup':'error',schemaMissing?'初期設定が必要':'同期エラー');if(schemaMissing){const setupGate=document.getElementById('firstSetupGate');if(setupGate){setupGate.classList.remove('hidden');setupGate.classList.add('needs-setup')}setTimeout(()=>showDbSetupHelper(),300)}return false}
+ }catch(e){console.error('Cloud init',e);cloud.ready=false;cloud.lastError=e?.message||String(e);cloud._verifiedRecovery=false;const schemaMissing=/does not exist|42P01|PGRST|Could not find the table|schema cache/i.test(String(e?.message||e));setCloudStatus(schemaMissing?'setup':'error',schemaMissing?'初期設定が必要':'同期エラー');if(state?._localLoadFailed&&!schemaMissing)toast?.('クラウド復旧に失敗したため、端末保存データの安全確認が必要です。通信状態を確認して再同期してください');if(schemaMissing){const setupGate=document.getElementById('firstSetupGate');if(setupGate){setupGate.classList.remove('hidden');setupGate.classList.add('needs-setup')}setTimeout(()=>showDbSetupHelper(),300)}return false}
  finally{cloud.connecting=false}
 }
 
@@ -699,10 +699,15 @@ async function cloudPullAll(opts={}){
   else state.selected=latestAvailableMonthKey();
   // クラウドから正規データを取得できた時点で、ローカル破損・再取得保留フラグを解除する。
   // これを残すと save() が恒久的に拒否され、復旧後も端末キャッシュが更新されない。
+  const hadUnreadableLocal=!!state._localLoadFailed;
   delete state._localLoadFailed;delete state._cloudRefreshPending;delete state._localCompacted;
   // 正常なクラウド取得完了を先に記録し、その状態を端末キャッシュへ保存する。
+  // 旧キャッシュ自体が壊れていた場合は、正規クラウド取得後に古いキーを捨てて再構築する。
   cloud.lastSync=new Date();
+  cloud._verifiedRecovery=true;
+  if(hadUnreadableLocal){try{localStorage.removeItem(STORAGE)}catch(e){console.warn('Could not clear unreadable local cache',e)}}
   const localRecovered=save();
+  cloud._verifiedRecovery=false;
   if(!localRecovered)console.warn('Cloud pull succeeded but local cache could not be persisted');
   if(!opts.quiet)renderAll();setCloudStatus('online','クラウド同期');
   if(!fieldRows.length&&!opts.skipFieldSeed&&cloud.ready){try{await cloudSyncReportFields()}catch(e){console.warn('report_fields seed failed after pull',e);cloud.lastError=`日報項目同期: ${e?.message||e}`}}
@@ -867,13 +872,17 @@ function compactStateForLocalCache(src){
 }
 function save(){
  if(state?._localLoadFailed){
-  // 同一セッション内でクラウド同期が正常完了している場合は、
-  // クラウドから取得した正規状態を端末キャッシュへ再構築してよい。
-  if(cloud?.ready && cloud?.lastSync){
+  // 初回描画はクラウド復旧より先に走るため、接続設定済み端末では
+  // 「破損警告」を先に出さず、クラウド取得結果を待つ。
+  const canRecoverFromCloud=cloudConfigured()&&safeLocalGet('doraimon_cloud_setup_done')==='1';
+  if((cloud?.ready&&cloud?.lastSync)||cloud?._verifiedRecovery){
    console.warn('Recovering local cache from verified cloud state');
    delete state._localLoadFailed;
    delete state._cloudRefreshPending;
    delete state._localCompacted;
+  }else if(canRecoverFromCloud){
+   console.warn('Local cache is unreadable; waiting for cloud recovery');
+   return false;
   }else{
    console.error('Refusing to overwrite unreadable local state');
    toast?.('端末保存データを正常に読み込めていないため、自動上書きを停止しています。クラウド同期またはJSON復元で確認してください');
@@ -884,7 +893,7 @@ function save(){
   const normal=clone(state);delete normal._localCompacted;delete normal._storageSaveFailed;localStorage.setItem(STORAGE,JSON.stringify(normal));delete state._storageSaveFailed;delete state._localCompacted;return true;
  }catch(e){
   console.warn('LocalStorage normal save unavailable',e);
-  if(cloud.ready){
+  if(cloud.ready||cloud?._verifiedRecovery||cloud?.lastSync){
    try{const compact=compactStateForLocalCache(state);localStorage.setItem(STORAGE,JSON.stringify(compact));state._localCompacted=compact._localCompacted;delete state._storageSaveFailed;return true}catch(ce){console.warn('Local compact cache save unavailable',ce)}
   }
   state._storageSaveFailed={at:Date.now(),reason:'local-capacity'};
@@ -895,7 +904,7 @@ function save(){
 function exportBackup(){
  try{
   const backupState=clone(state);['_localLoadFailed','_storageSaveFailed','_cloudRefreshPending','_localCompacted'].forEach(k=>delete backupState[k]);
-  const payload={app:'土雷門 Manager Pro',version:'5.8.4',exportedAt:new Date().toISOString(),state:backupState};
+  const payload={app:'土雷門 Manager Pro',version:'5.8.5',exportedAt:new Date().toISOString(),state:backupState};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download=`doraimon_manager_backup_${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500);toast('JSONバックアップを書き出しました');
  }catch(e){console.error(e);toast('バックアップを書き出せませんでした')}
@@ -1809,7 +1818,7 @@ function buildRangeMeetingReport(){
  <section class="pr-section"><h2>4. LINE日報 読込状況</h2><table class="pr-table"><thead><tr><th>月</th><th>読込済み</th><th>暦日</th><th>読込率</th></tr></thead><tbody>${rangeAgg.rows.map(x=>`<tr><td>${x.key}</td><td>${x.lineCount}日</td><td>${x.expectedDays}日</td><td>${x.expectedDays?pct(x.lineCount/x.expectedDays*100):'-'}</td></tr>`).join('')}</tbody></table></section>
  <section class="pr-section"><h2>5. 日別ハイライト</h2><h3>売上上位</h3><table class="pr-table"><tbody>${dailyTable(top)}</tbody></table><h3>売上下位</h3><table class="pr-table"><tbody>${dailyTable(low)}</tbody></table></section>
  <section class="pr-section"><h2>6. Airメイト 商品ABC 上位10</h2><p>${abcPeriodNote}。会議資料の対象期間と一致しない場合は参考値として扱ってください。</p><table class="pr-table"><thead><tr><th>順位</th><th>商品</th><th>ABC</th><th>売上</th><th>出数</th></tr></thead><tbody>${abcRows}</tbody></table></section>
- <section class="pr-section"><h2>7. 会議で決めること</h2><ol><li>売上変動を客数・客単価・曜日・ランチ/ディナーに分け、最も影響した要因を特定する。</li><li>好調日と不調日の違いを確認し、再現する施策と止める施策を決める。</li><li>予算未達の月は残り必要売上と人員配置・原価・販促の優先順位を決める。</li><li>LINE日報の未読込日を確認し、会議判断に必要なデータ欠損を減らす。</li><li>商品ABC上位は欠品防止と推奨強化、下位商品は継続・改善・整理を検討する。</li></ol></section><div class="pr-foot">Manager Pro Ver 5.8.4 / ${stamp()} / 未提供・未確定データは推測せず「-」として扱います。</div>`;
+ <section class="pr-section"><h2>7. 会議で決めること</h2><ol><li>売上変動を客数・客単価・曜日・ランチ/ディナーに分け、最も影響した要因を特定する。</li><li>好調日と不調日の違いを確認し、再現する施策と止める施策を決める。</li><li>予算未達の月は残り必要売上と人員配置・原価・販促の優先順位を決める。</li><li>LINE日報の未読込日を確認し、会議判断に必要なデータ欠損を減らす。</li><li>商品ABC上位は欠品防止と推奨強化、下位商品は継続・改善・整理を検討する。</li></ol></section><div class="pr-foot">Manager Pro Ver 5.8.5 / ${stamp()} / 未提供・未確定データは推測せず「-」として扱います。</div>`;
  $('#printReport').innerHTML=body;$('#printReport').setAttribute('aria-hidden','false');document.body.classList.add('printing-report');setTimeout(()=>window.print(),180)
 }
 function renderReport(){const page=$('#page-report');if(!page)return;const key=reportDisplayMonth(),rs=recordsForMonth(key).filter(r=>String(r.raw||'').trim()),y=+key.slice(0,4),mo=+key.slice(5,7),days=new Date(y,mo,0).getDate(),sales=reportAggregate(rs,'sales'),labor=reportAggregate(rs,'laborCost'),reviews=reportAggregate(rs,'reviews'),expense=reportAggregate(rs,'expenseUsed'),laborRate=(sales&&labor!=null)?labor/sales*100:null,avg=rs.length&&sales!=null?sales/rs.length:null,forecast=avg!=null?avg*days:null;$('#reportSummaryMonth').textContent=`${y}年${mo}月 / ${rs.length}日分`;
