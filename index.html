@@ -475,9 +475,10 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
     </section>
 
     <section id="page-excel" class="page">
-      <div class="page-title"><div><span>DATA SOURCE</span><h1>Excelデータ管理</h1><small>PLファイルの読込・履歴・バックアップ</small></div></div>
-      <section class="excel-page-grid"><article class="panel"><div class="excel-drop large" id="excelDrop2"><span class="upload-icon">⇧</span><h2>PL Excelを読み込む</h2><p>複数ファイルをまとめて読み込めます</p><button id="excelPageBtn" class="outline-gold">ファイルを選択</button></div></article><article class="panel"><div class="panel-head"><h2>データ状態</h2></div><div id="dataHealth" class="data-health"></div></article></section>
-      <section class="panel month-data-panel"><div class="panel-head"><div><h2>月別データ管理</h2><small>各月の売上・データ状態を確認して直接編集</small></div></div><div id="monthDataTable" class="table-wrap"></div></section>
+      <div class="page-title"><div><span>DATA SOURCE</span><h1>データ読込・管理</h1><small>PL Excel・Airメイト CSV / PDFの読込・履歴・バックアップ</small></div></div>
+      <section class="excel-page-grid"><article class="panel"><div class="excel-drop large" id="excelDrop2"><span class="upload-icon">⇧</span><h2>Excel・Airメイトを読み込む</h2><p>PL Excel / Airメイト CSV / Airメイト PDFを自動判定します<br>複数ファイルをまとめて読み込めます</p><button id="excelPageBtn" class="outline-gold">ファイルを選択</button></div></article><article class="panel"><div class="panel-head"><h2>データ状態</h2></div><div id="dataHealth" class="data-health"></div></article></section>
+      <section class="panel" id="airmateMenuPanel"><div class="panel-head"><div><h2>Airメイト 商品ABC分析</h2><small>menu_abc CSVを読み込むと売上上位商品・出数・ABCランクを保存します</small></div></div><div id="airmateMenuSummary" class="table-wrap"></div></section>
+      <section class="panel" id="airmatePdfPanel"><div class="panel-head"><div><h2>Airメイト PDF分析</h2><small>Airメイトの「売上分析」PDFから月次・ランチ/ディナー・日別情報を読み込みます。PDF内で丸められた値は「概算」として扱い、PL確定値を上書きしません。</small></div></div><div id="airmatePdfSummary" class="table-wrap"></div></section>       <section class="panel month-data-panel"><div class="panel-head"><div><h2>月別データ管理</h2><small>各月の売上・データ状態を確認して直接編集</small></div></div><div id="monthDataTable" class="table-wrap"></div></section>
       <section class="panel"><div class="panel-head"><h2>変更・読込履歴</h2><button id="clearHistoryBtn" class="pill-btn danger-lite">履歴を消去</button></div><div id="excelHistory" class="history-list full"></div></section>
       <section class="panel"><div class="panel-head"><h2>バックアップ</h2></div><div class="backup-actions"><button id="exportBackupBtn" class="outline-gold">JSONバックアップを書き出す</button><label class="outline-gold file-label">バックアップを復元<input id="importBackupInput" type="file" accept="application/json" hidden></label></div></section>
       <section class="panel"><div class="panel-head"><div><h2>変更履歴・データ復元</h2><small>間違った修正・削除・過去月の誤入力から戻せます</small></div><button id="openRecoveryBtn" class="pill-btn">復元センター</button></div><div class="recovery-note"><b>安全設計：</b>復元前の現在データも自動で履歴保存されるため、復元後にさらに元へ戻すこともできます。復元操作は管理者PINが必要です。</div><div id="recoverySummary" class="data-health"></div></section>
@@ -499,7 +500,7 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
     <button data-page="home" class="active"><span>⌂</span>ホーム</button><button data-page="pl"><span>▤</span>PL</button><button data-page="labor"><span>♙</span>人件費</button><button data-page="sales"><span>▥</span>売上</button><button data-page="sim"><span>↗</span>予測</button><button data-page="report"><span>文</span>日報</button><button data-page="ai"><span>✣</span>AI</button>
   </nav>
 
-  <input id="excelInput" type="file" accept=".xlsx,.xls,.xlsm,.csv,text/csv" multiple hidden>
+  <input id="excelInput" type="file" accept=".xlsx,.xls,.xlsm,.csv,.pdf,text/csv,application/pdf" multiple hidden>
   <div id="modal" class="modal" aria-hidden="true"><div class="modal-card"><button id="modalClose" class="modal-close">×</button><div id="modalContent"></div></div></div>
   <div id="toast" class="toast"></div>
 </div>
@@ -529,7 +530,7 @@ const INITIAL={
   {key:'2026-06',label:'2026年6月',short:'6月',sales:9555700,cogs:3148208,gross:7254167,labor:3003430,sgna:4967644,profit:2286523},
   {key:'2026-07',label:'2026年7月',short:'7月',sales:9654100,cogs:3114890,gross:7008214,labor:2735050,sgna:4653772,profit:2354442}
  ],
- selected:'2026-07',history:[],inventory:[],daily:[],calendar:{},reportRecords:[],reportFields:[],businessLog:[],restoreVersions:[],analyticsDaily:[],analyticsImports:[]
+ selected:'2026-07',history:[],inventory:[],daily:[],calendar:{},reportRecords:[],reportFields:[],businessLog:[],restoreVersions:[],analyticsDaily:[],analyticsImports:[],airmatePdfReports:{}
 };
 const DEFAULT_REPORT_FIELDS=[
  {key:'sales',label:'当日売上',aliases:['当日売上','売上','本日売上'],type:'currency',category:'売上',enabled:true,aggregate:'sum',core:true},
@@ -717,7 +718,7 @@ function repairLegacySalesBug(months){
  return repaired;
 }
 function clone(x){return JSON.parse(JSON.stringify(x))}
-function load(){try{const s=JSON.parse(localStorage.getItem(STORAGE));if(s&&s.months){const out={...clone(INITIAL),...s,settings:{...INITIAL.settings,...s.settings,monthBudgets:{...(INITIAL.settings.monthBudgets||{}),...(s.settings?.monthBudgets||{})}},calendar:s.calendar||{},reportRecords:s.reportRecords||[],reportFields:s.reportFields||[],businessLog:s.businessLog||[],restoreVersions:s.restoreVersions||[],analyticsDaily:s.analyticsDaily||[],analyticsImports:s.analyticsImports||[]};if(!out.reportFields.length)out.reportFields=clone(DEFAULT_REPORT_FIELDS);repairLegacySalesBug(out.months);return out}}catch(e){}const out=clone(INITIAL);out.reportFields=clone(DEFAULT_REPORT_FIELDS);return out}
+function load(){try{const s=JSON.parse(localStorage.getItem(STORAGE));if(s&&s.months){const out={...clone(INITIAL),...s,settings:{...INITIAL.settings,...s.settings,monthBudgets:{...(INITIAL.settings.monthBudgets||{}),...(s.settings?.monthBudgets||{})}},calendar:s.calendar||{},reportRecords:s.reportRecords||[],reportFields:s.reportFields||[],businessLog:s.businessLog||[],restoreVersions:s.restoreVersions||[],analyticsDaily:s.analyticsDaily||[],analyticsImports:s.analyticsImports||[],airmatePdfReports:s.airmatePdfReports||{}};if(!out.reportFields.length)out.reportFields=clone(DEFAULT_REPORT_FIELDS);repairLegacySalesBug(out.months);return out}}catch(e){}const out=clone(INITIAL);out.reportFields=clone(DEFAULT_REPORT_FIELDS);return out}
 function save(){try{localStorage.setItem(STORAGE,JSON.stringify(state))}catch(e){console.warn('LocalStorage unavailable',e)}}
 function exportBackup(){
  try{
@@ -732,7 +733,7 @@ async function importBackup(file){
  try{
   const raw=await file.text(),data=JSON.parse(raw),incoming=data?.state||data;
   if(!incoming||!Array.isArray(incoming.months)||!incoming.settings)throw new Error('Manager Proのバックアップ形式ではありません');
-  const next={...clone(INITIAL),...incoming,settings:{...clone(INITIAL.settings),...(incoming.settings||{}),monthBudgets:{...(incoming.settings?.monthBudgets||{})}},calendar:incoming.calendar||{},reportRecords:incoming.reportRecords||[],reportFields:incoming.reportFields?.length?incoming.reportFields:clone(DEFAULT_REPORT_FIELDS),businessLog:incoming.businessLog||[],restoreVersions:incoming.restoreVersions||[],analyticsDaily:incoming.analyticsDaily||[],analyticsImports:incoming.analyticsImports||[]};
+  const next={...clone(INITIAL),...incoming,settings:{...clone(INITIAL.settings),...(incoming.settings||{}),monthBudgets:{...(incoming.settings?.monthBudgets||{})}},calendar:incoming.calendar||{},reportRecords:incoming.reportRecords||[],reportFields:incoming.reportFields?.length?incoming.reportFields:clone(DEFAULT_REPORT_FIELDS),businessLog:incoming.businessLog||[],restoreVersions:incoming.restoreVersions||[],analyticsDaily:incoming.analyticsDaily||[],analyticsImports:incoming.analyticsImports||[],airmatePdfReports:incoming.airmatePdfReports||{}};
   state=next;repairLegacySalesBug(state.months);ensureTemporalMonths();save();renderAll();toast('バックアップを復元しました');
  }catch(e){console.error(e);toast(e.message||'バックアップを復元できませんでした')}
 }
@@ -899,7 +900,21 @@ function recoveryEntityLabel(v){return v.entity_type==='monthly_data'?'月次PL'
 function renderRecoverySummary(){const vs=state.restoreVersions||[];const latest=vs[0];const html=metricCards([['復元可能履歴',`${vs.length}件`,'クラウド保存'],['最新履歴',latest?.createdLabel||'未作成',latest?`${recoveryEntityLabel(latest)} / ${latest.entity_key}`:'変更後に自動作成'],['復元権限','管理者PIN','復元前も自動バックアップ'],['保存方式','世代管理','削除・上書き前を保存']]).replaceAll('<div>','<div class="health-card">');['#recoverySummary','#recoverySettingsSummary'].forEach(sel=>{const el=$(sel);if(el)el.innerHTML=html})}
 async function showRecoveryCenter(){if(!cloud.ready){openModal('<h2>復元センター</h2><p>クラウド接続時に利用できます。</p>');return}try{await cloudLoadVersions()}catch(e){toast('復元履歴を読み込めませんでした');return}const rows=(state.restoreVersions||[]).map(v=>`<div class="recovery-row"><time>${v.createdLabel||'-'}</time><div><b>${recoveryEntityLabel(v)} / ${v.entity_key}</b><small>${v.action==='DELETE'?'削除前':v.action==='UPDATE'?'変更前':v.action==='INSERT'?'新規登録前へ戻せる':'保存'}${v.actor?' ・ '+v.actor:''}</small></div><button class="mini-action gold" data-restore-version="${v.id}">この時点へ復元</button></div>`).join('');openModal(`<h2>変更履歴・データ復元</h2><p class="recovery-note">戻したい行の「この時点へ復元」を押してください。新規登録の履歴は、その登録自体を取り消して登録前へ戻せます。復元する直前の現在データも自動保存されるため、やり直しできます。</p><div class="recovery-list">${rows||'<div class="recovery-empty">まだ復元履歴がありません。今後の変更・削除から自動保存されます。</div>'}</div>`);$$('[data-restore-version]').forEach(b=>b.onclick=()=>restoreCloudVersion(b.dataset.restoreVersion))}
 async function restoreCloudVersion(id){const v=(state.restoreVersions||[]).find(x=>x.id===id);if(!v)return;const pin=await requestAdminPin(`${recoveryEntityLabel(v)} ${v.entity_key} を復元`);if(!pin)return;if(!confirm(`${recoveryEntityLabel(v)}「${v.entity_key}」を ${v.createdLabel||'選択時点'} の内容へ戻しますか？\n\n現在の内容も復元前に自動保存されます。`))return;try{const r=await cloud.client.rpc('admin_restore_version',{p_pin:pin,p_version_id:id,p_actor:cloudActor(),p_device:cloud.deviceId});if(r.error)throw r.error;closeModal();await cloudPullAll({quiet:true});renderAll();toast('選択した時点のデータへ復元しました')}catch(e){console.error(e);toast(e.message||'復元に失敗しました')}}
-function renderExcel(){renderHistory('#excelHistory',50);renderMonthDataTable();renderRecoverySummary();const last=state.history[0];$('#dataHealth').innerHTML=metricCards([['登録月数',`${state.months.length}か月`,'PLデータ'],['最新月',state.months[state.months.length-1]?.short||'-','最新データ'],['最終更新',last?last.date:'未更新',last?.file||'初期データ'],['保存先',cloud.ready?'クラウド同期':'この端末',cloud.ready?'Supabase Realtime':'LocalStorage']]).replaceAll('<div>','<div class="health-card">')}
+function renderExcel(){renderHistory('#excelHistory',50);renderMonthDataTable();renderAirmateMenuSummary();renderAirmatePdfSummary();renderRecoverySummary();const last=state.history[0];$('#dataHealth').innerHTML=metricCards([['登録月数',`${state.months.length}か月`,'PLデータ'],['最新月',state.months[state.months.length-1]?.short||'-','最新データ'],['最終更新',last?last.date:'未更新',last?.file||'初期データ'],['保存先',cloud.ready?'クラウド同期':'この端末',cloud.ready?'Supabase Realtime':'LocalStorage']]).replaceAll('<div>','<div class="health-card">')}
+function renderAirmateMenuSummary(){
+ const el=$('#airmateMenuSummary');if(!el)return;const d=state.airmateMenuABC,items=d?.items||[];
+ if(!items.length){el.innerHTML='<div style="padding:20px;text-align:center;color:#7b7c76">Airメイトの商品ABC CSVはまだ読み込まれていません</div>';return}
+ const top=[...items].sort((a,b)=>(b.sales||0)-(a.sales||0)).slice(0,10);
+ el.innerHTML=`<div style="padding:10px 14px;color:#6a716c">${d.sourceFile} ／ ${items.length}商品 ／ 最終読込 ${d.updatedAt}</div><table class="data-table"><thead><tr><th>順位</th><th>商品</th><th>カテゴリ</th><th>売上ABC</th><th>売上</th><th>構成比</th><th>出数</th></tr></thead><tbody>${top.map((x,i)=>`<tr><td>${x.rank||i+1}</td><td><b>${x.name}</b></td><td>${x.category||'-'}</td><td>${x.salesClass||'-'}</td><td>${yen(x.sales||0)}</td><td>${x.salesShare!=null?pct(x.salesShare):'-'}</td><td>${num(x.count||0)}</td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderAirmatePdfSummary(){
+ const el=$('#airmatePdfSummary');if(!el)return;const reports=state.airmatePdfReports||{},keys=Object.keys(reports).sort().reverse();
+ if(!keys.length){el.innerHTML='<div style="padding:20px;text-align:center;color:#7b7c76">Airメイトの売上分析PDFはまだ読み込まれていません</div>';return}
+ const d=reports[keys[0]],warn=d.approximateDaily?'<span class="source-badge manual">日別はPDF表示値からの概算</span>':'<span class="source-badge clean">月次値を読込</span>';
+ el.innerHTML=`<div style="padding:10px 14px;color:#6a716c"><b>${d.label}</b> ／ ${d.store||'-'} ／ ${d.sourceFile} ／ 最終読込 ${d.updatedAt}　${warn}</div><table class="data-table"><thead><tr><th>項目</th><th>全体</th><th>ランチ</th><th>ディナー</th></tr></thead><tbody><tr><td>売上</td><td><b>${yen(d.sales||0)}</b></td><td>${yen(d.lunchSales||0)}</td><td>${yen(d.dinnerSales||0)}</td></tr><tr><td>客数</td><td>${num(d.customers||0)}人</td><td>${num(d.lunchCustomers||0)}人</td><td>${num(d.dinnerCustomers||0)}人</td></tr><tr><td>客単価</td><td>${d.customers?yen((d.sales||0)/d.customers):'-'}</td><td>${yen(d.lunchTicket||0)}</td><td>${yen(d.dinnerTicket||0)}</td></tr><tr><td>目標</td><td>${yen(d.target||0)}</td><td>-</td><td>-</td></tr><tr><td>日別抽出</td><td>${d.dailyCount||0}日</td><td>${d.lunchDailyCount||0}日</td><td>${d.dinnerDailyCount||0}日</td></tr></tbody></table><div style="padding:10px 14px;color:#7b7c76;font-size:12px">※ PDFに表示される「○○.○万」は千円単位に丸められているため、日別値は厳密な会計値ではありません。月次PL・CSVの確定値を優先します。</div>`;
+}
+
 function monthSource(m){if(m.manualSales&&m.excelSource)return 'Excel＋手動';if(m.manualSales)return '手動';if(m.excelSource)return 'Excel';return '初期データ'}
 function renderMonthDataTable(){const el=$('#monthDataTable');if(!el)return;el.innerHTML=`<table class="data-table month-manage-table"><thead><tr><th>月</th><th>売上</th><th>データ元</th><th>状態</th><th>最終更新</th><th>操作</th></tr></thead><tbody>${state.months.map(m=>`<tr class="${m.key===state.selected?'selected-month-row':''}"><td><b>${m.label}</b></td><td>${yen(m.sales)}</td><td><span class="source-badge ${m.excelSource?'excel':'initial'}">${m.excelSource?'Excel':'初期'}</span></td><td>${m.manualSales?'<span class="source-badge manual">手動変更済み</span>':'<span class="source-badge clean">確定値</span>'}</td><td>${m.manualUpdatedAt||m.excelUpdatedAt||'-'}</td><td><div class="row-actions"><button class="mini-action" data-open-month="${m.key}">開く</button><button class="mini-action gold" data-edit-month="${m.key}">売上編集</button></div></td></tr>`).join('')}</tbody></table>`}
 function renderHistory(sel,limit){const h=state.history.slice(0,limit);$(sel).innerHTML=h.length?h.map(x=>`<div class="history-row"><span class="doc">${x.type==='manual'?'手':x.type==='restore'?'戻':'XL'}</span><div><b>${x.file}</b><small>${x.date}　${x.month||''}${x.actor?'　'+x.actor:''}${x.detail?'　'+x.detail:''}</small></div><span class="status-mini">${x.type==='manual'?'手動':x.type==='restore'?'復元':'反映済'}</span><span>⋮</span></div>`).join(''):`<div style="padding:20px;text-align:center;color:#7b7c76">まだ変更・読込履歴はありません</div>`}
@@ -1041,7 +1056,7 @@ function parseCsvText(text){
 async function readCsvRows(file){
  const ab=await file.arrayBuffer(),u8=new Uint8Array(ab);let txt='';
  try{txt=new TextDecoder('shift_jis').decode(u8)}catch(e){txt=new TextDecoder('utf-8').decode(u8)}
- if(!/店舗名|日付|年月日|売上/.test(txt))txt=new TextDecoder('utf-8').decode(u8);
+ if(!/店舗名|日付|年月日|売上|メニュー名|ABC分析|分析タグ/.test(txt))txt=new TextDecoder('utf-8').decode(u8);
  return parseCsvText(txt);
 }
 function csvNum(v){const n=Number(String(v??'').replace(/[¥￥,\s円%％]/g,''));return Number.isFinite(n)?n:null}
@@ -1052,6 +1067,8 @@ function detectAnalyticsCsv(rows){
  if(hi>=0&&rows[hi].includes('売上目標')&&rows[hi].includes('ランチ売上'))return {type:'airmate',header:hi};
  const si=rows.findIndex(r=>r.includes('年月日')&&r.includes('ランチ売上')&&r.includes('ディナー売上'));
  if(si>=0)return {type:'sales_export',header:si};
+ const mi=rows.findIndex(r=>r.includes('メニュー名')&&r.includes('売上合計')&&r.includes('出数合計'));
+ if(mi>=0)return {type:'airmate_menu_abc',header:mi};
  return null;
 }
 function normalizeAnalyticsRows(rows,det,sourceFile){
@@ -1079,7 +1096,7 @@ function normalizeAnalyticsRows(rows,det,sourceFile){
  return out;
 }
 function mergeAnalyticsDaily(rows){
- const rank={sales_export:1,airmate:2};
+ const rank={airmate_pdf:0.5,sales_export:1,airmate:2};
  rows.forEach(n=>{
   const i=state.analyticsDaily.findIndex(x=>x.date===n.date&&(x.store||'')===(n.store||''));
   if(i<0)state.analyticsDaily.push(n);
@@ -1092,11 +1109,11 @@ function mergeAnalyticsDaily(rows){
  state.analyticsDaily.sort((a,b)=>a.date.localeCompare(b.date));
 }
 function monthAnalytics(key){
- const rows=(state.analyticsDaily||[]).filter(x=>x.month===key),sum=k=>rows.reduce((a,x)=>a+(Number(x[k])||0),0);
+ const rows=(state.analyticsDaily||[]).filter(x=>x.month===key),sum=k=>rows.reduce((a,x)=>a+(Number(x[k])||0),0),pdf=state.airmatePdfReports?.[key]||null,onlyPdf=rows.length>0&&rows.every(x=>x.sourceType==='airmate_pdf');
  const detailSales=sum('sales'),detailCustomers=sum('customers'),target=sum('target'),lastYear=sum('lastYearSales'),lunch=sum('lunchSales'),dinner=sum('dinnerSales'),labor=sum('labor'),fl=sum('flCost');
  const dailyFallback=(state.daily||[]).filter(x=>String(x.date||'').slice(0,7)===key),dailySales=dailyFallback.reduce((a,x)=>a+(Number(x.sales)||0),0),dailyCustomers=dailyFallback.reduce((a,x)=>a+(Number(x.customers)||0),0);
- const monthly=state.months.find(x=>x.key===key);const sales=detailSales||dailySales||Number(monthly?.sales)||0,customers=detailCustomers||dailyCustomers||0;
- return {key,rows,days:rows.length||dailyFallback.length,sales,customers,target,lastYear,lunch,dinner,labor,fl,ticket:customers?sales/customers:0,targetRate:target?sales/target*100:null,yoy:lastYear?sales/lastYear*100:null,laborRate:sales&&labor?labor/sales*100:null,flRate:sales&&fl?fl/sales*100:null,detailAvailable:rows.length>0,fallbackSource:rows.length?'詳細CSV':dailyFallback.length?'日報':'月次PL'};
+ const monthly=state.months.find(x=>x.key===key);const sales=(onlyPdf&&pdf?.sales)||detailSales||dailySales||Number(monthly?.sales)||0,customers=(onlyPdf&&pdf?.customers)||detailCustomers||dailyCustomers||0,finalTarget=(onlyPdf&&pdf?.target)||target,finalLunch=(onlyPdf&&pdf?.lunchSales)||lunch,finalDinner=(onlyPdf&&pdf?.dinnerSales)||dinner;
+ return {key,rows,days:rows.length||dailyFallback.length,sales,customers,target:finalTarget,lastYear,lunch:finalLunch,dinner:finalDinner,labor,fl,ticket:customers?sales/customers:0,targetRate:finalTarget?sales/finalTarget*100:null,yoy:lastYear?sales/lastYear*100:null,laborRate:sales&&labor?labor/sales*100:null,flRate:sales&&fl?fl/sales*100:null,detailAvailable:rows.length>0||!!pdf,fallbackSource:onlyPdf?'AirメイトPDF':rows.length?'詳細CSV':dailyFallback.length?'日報':'月次PL'};
 }
 function shiftMonthKey(key,delta){const [y,m]=key.split('-').map(Number),d=new Date(y,m-1+delta,1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
 function compareMetric(cur,base){if(!base)return null;return {diff:cur-base,rate:base?((cur/base)-1)*100:null}}
@@ -1112,6 +1129,19 @@ function analyticsInsight(key){
 }
 async function importAnalyticsCsv(file){
  const rows=await readCsvRows(file),det=detectAnalyticsCsv(rows);if(!det)return false;
+ if(det.type==='airmate_menu_abc'){
+  const h=headerMap(rows[det.header]),items=[];
+  for(const r of rows.slice(det.header+1)){
+   const name=String(r[h['メニュー名']]||'').trim();if(!name)continue;
+   const g=k=>h[k]===undefined?null:csvNum(r[h[k]]);
+   items.push({rank:g('順位'),group:String(r[h['分析タググループ']]||''),category:String(r[h['カテゴリー']]||''),name,countClass:String(r[h['出数ABC分析']]||''),countShare:g('出数構成比'),count:g('出数合計'),salesClass:String(r[h['売上ABC分析']]||''),salesShare:g('売上構成比'),sales:g('売上合計'),grossClass:String(r[h['粗利ABC分析']]||''),grossShare:g('粗利構成比'),gross:g('粗利合計')});
+  }
+  if(!items.length)throw new Error('Airメイト商品ABCデータを認識できません');
+  state.airmateMenuABC={sourceFile:file.name,updatedAt:stamp(),items};
+  state.analyticsImports=state.analyticsImports||[];state.analyticsImports.unshift({file:file.name,date:stamp(),type:det.type,rows:items.length});
+  state.history.unshift({file:file.name,date:stamp(),month:'商品ABC',type:'csv',actor:cloudActor(),detail:`Airメイト商品ABC ${items.length}商品を反映`});
+  return true;
+ }
  const normalized=normalizeAnalyticsRows(rows,det,file.name);if(!normalized.length)throw new Error('CSVの日次データを認識できません');
  mergeAnalyticsDaily(normalized);
  if(cloud.ready)await cloudUpsertAnalyticsRows(normalized);
@@ -1143,14 +1173,67 @@ function buildMeetingReport(){
  <div class="pr-foot">Manager Pro / ${stamp()} / データが0または未提供の項目は推測せず「-」として扱います。</div>`;
  $('#printReport').innerHTML=body;$('#printReport').setAttribute('aria-hidden','false');document.body.classList.add('printing-report');setTimeout(()=>window.print(),180);
 }
+
+let _pdfjsPromise=null;
+async function getPdfJs(){
+ if(!_pdfjsPromise){
+  _pdfjsPromise=import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs').then(m=>{m.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';return m}).catch(e=>{_pdfjsPromise=null;throw new Error('PDF解析ライブラリを読み込めません。通信状態を確認してください')});
+ }
+ return _pdfjsPromise;
+}
+function normalizePdfText(s){return String(s||'').normalize('NFKC').replace(/[\u0000-\u001f\u007f]+/g,' ').replace(/[ \t]+/g,' ').replace(/\s*\n\s*/g,'\n').trim()}
+function pdfWanToYen(v){const n=Number(String(v||'').replace(/,/g,''));return Number.isFinite(n)?Math.round(n*10000):null}
+function pdfYen(v){const n=Number(String(v||'').replace(/[¥￥,\s]/g,''));return Number.isFinite(n)?n:null}
+async function extractPdfPages(file){
+ const pdfjs=await getPdfJs(),ab=await file.arrayBuffer(),pdf=await pdfjs.getDocument({data:new Uint8Array(ab)}).promise,pages=[];
+ for(let p=1;p<=pdf.numPages;p++){
+  const page=await pdf.getPage(p),tc=await page.getTextContent(),parts=[];
+  for(const item of tc.items){if(!item?.str)continue;parts.push(item.str);if(item.hasEOL)parts.push('\n');else parts.push(' ')}
+  pages.push(normalizePdfText(parts.join('')));
+ }
+ return pages;
+}
+function match1(text,re,conv=x=>x){const m=String(text||'').match(re);return m?conv(m[1]):null}
+function parsePdfDailySection(text,kind,year,month){
+ const startToken='曜日平均',endToken='時間平均';let s=String(text||''),a=s.indexOf(startToken),b=s.indexOf(endToken,a+1);if(a>=0)s=s.slice(a+startToken.length,b>a?b:undefined);
+ // PDF.jsの改行・空白差を許容。祝日表記にも対応。
+ const re=/(?:^|\n|\s)(\d{1,2})(?:\s*\(\s*祝\s*\))?\s*¥\s*([\d,.]+)\s*万\s*([\d,]+)\s*人\s*\/\s*¥\s*([\d,]+)/g;
+ const out=[];let m;
+ while((m=re.exec(s))){const day=+m[1];if(day<1||day>31)continue;const date=`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;out.push({date,sales:pdfWanToYen(m[2]),customers:+m[3].replace(/,/g,''),ticket:pdfYen(m[4]),kind})}
+ return out;
+}
+function parseAirmatePdfPages(pages,fileName){
+ const all=normalizePdfText(pages.join('\n'));if(!/売上分析/.test(all)||!/(Airメイト|ランチ売上詳細分析|ディナー売上詳細分析)/.test(all))throw new Error('Airメイトの売上分析PDFとして認識できません');
+ const ym=all.match(/売上分析\s*(\d{4})\s*[\/年]\s*(\d{1,2})/);if(!ym)throw new Error('PDFから対象年月を認識できません');const year=+ym[1],month=+ym[2],key=`${year}-${String(month).padStart(2,'0')}`;
+ const p1=pages.find(x=>/売上分析/.test(x))||all,pLunch=pages.find(x=>/ランチ売上詳細分析/.test(x))||'',pDinner=pages.find(x=>/ディナー売上詳細分析/.test(x))||'';
+ const store=match1(p1,/売上分析\s*\d{4}\s*[\/年]\s*\d{1,2}\s*([^\n]+?)(?:\n|\d+月売上|売上)/,x=>x.trim())||'土雷門';
+ const sales=match1(p1,/(?:\d{1,2}月)?売上\s*¥\s*([\d,.]+)\s*万/,pdfWanToYen),target=match1(p1,/目標\s*¥\s*([\d,.]+)\s*万/,pdfWanToYen);
+ const lunchSales=match1(pLunch,/ランチ売上(?:\s+前年\s+前月\s+目標)?\s*¥\s*([\d,.]+)\s*万/,pdfWanToYen),dinnerSales=match1(pDinner,/ディナー売上(?:\s+前年\s+前月\s+目標)?\s*¥\s*([\d,.]+)\s*万/,pdfWanToYen);
+ const lunchCustomers=match1(pLunch,/ランチ客数(?:\s+前年\s+前月\s+目標)?\s*([\d,]+)\s*人/,x=>+x.replace(/,/g,'')),dinnerCustomers=match1(pDinner,/ディナー客数(?:\s+前年\s+前月\s+目標)?\s*([\d,]+)\s*人/,x=>+x.replace(/,/g,''));
+ const lunchTicket=match1(pLunch,/ランチ客単価(?:\s+前年\s+前月\s+目標)?\s*¥\s*([\d,]+)/,pdfYen),dinnerTicket=match1(pDinner,/ディナー客単価(?:\s+前年\s+前月\s+目標)?\s*¥\s*([\d,]+)/,pdfYen);
+ if(!sales||!lunchSales||!dinnerSales||!lunchCustomers||!dinnerCustomers)throw new Error('PDFの主要項目を十分に認識できません。Airメイトの「売上分析」PDFか確認してください');
+ const lunchDaily=parsePdfDailySection(pLunch,'lunch',year,month),dinnerDaily=parsePdfDailySection(pDinner,'dinner',year,month),byDate=new Map();
+ for(const x of [...lunchDaily,...dinnerDaily]){const d=byDate.get(x.date)||{date:x.date,month:key,store,sourceFile:fileName,sourceType:'airmate_pdf',approximate:true,lunchSales:null,dinnerSales:null,lunchCustomers:null,dinnerCustomers:null};if(x.kind==='lunch'){d.lunchSales=x.sales;d.lunchCustomers=x.customers;d.lunchTicket=x.ticket}else{d.dinnerSales=x.sales;d.dinnerCustomers=x.customers;d.dinnerTicket=x.ticket}byDate.set(x.date,d)}
+ const rows=[...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date)).map(d=>{d.sales=(d.lunchSales||0)+(d.dinnerSales||0);d.customers=(d.lunchCustomers||0)+(d.dinnerCustomers||0);d.ticket=d.customers?d.sales/d.customers:null;return d});
+ return {key,label:`${year}年${month}月`,year,month,store,sales,target,lunchSales,dinnerSales,customers:lunchCustomers+dinnerCustomers,lunchCustomers,dinnerCustomers,lunchTicket,dinnerTicket,dailyRows:rows,lunchDailyCount:lunchDaily.length,dinnerDailyCount:dinnerDaily.length,dailyCount:rows.length,approximateDaily:true,sourceFile:fileName,updatedAt:stamp()};
+}
+async function importAirmatePdf(file){
+ const pages=await extractPdfPages(file),report=parseAirmatePdfPages(pages,file.name);state.airmatePdfReports=state.airmatePdfReports||{};state.airmatePdfReports[report.key]=report;
+ if(report.dailyRows.length){mergeAnalyticsDaily(report.dailyRows);if(cloud.ready)await cloudUpsertAnalyticsRows(report.dailyRows)}
+ state.analyticsImports=state.analyticsImports||[];state.analyticsImports.unshift({file:file.name,date:stamp(),type:'airmate_pdf',rows:report.dailyRows.length,month:report.key});
+ state.history.unshift({file:file.name,date:stamp(),month:report.label,type:'pdf',actor:cloudActor(),detail:`AirメイトPDF ${report.label}（月売上 ${yen(report.sales)}・日別${report.dailyRows.length}日）を反映`});
+ ensureTemporalMonths();if(state.months.some(x=>x.key===report.key))state.selected=report.key;return report;
+}
+
 async function importExcel(files){
  if(!files?.length)return;
- let cloudPin=null,count=0,kept=0,lastImportedKey=null,csvCount=0;
+ let cloudPin=null,count=0,kept=0,lastImportedKey=null,csvCount=0,pdfCount=0;
  for(const file of files){
   try{
    if(/\.csv$/i.test(file.name)){
     const ok=await importAnalyticsCsv(file);if(!ok)throw new Error('対応CSV形式を認識できません');csvCount++;count++;continue;
    }
+   if(/\.pdf$/i.test(file.name)||file.type==='application/pdf'){await importAirmatePdf(file);pdfCount++;count++;continue;}
    if(typeof XLSX==='undefined')throw new Error('Excel解析ライブラリを読み込めませんでした');
    if(cloud.ready&&!cloudPin){cloudPin=await requestAdminPin('PL Excelをクラウドへ反映');if(!cloudPin)break}
    const ab=await file.arrayBuffer(),wb=XLSX.read(ab,{type:'array'}),parsed=parseWorkbook(wb,file.name);
@@ -1162,9 +1245,9 @@ async function importExcel(files){
    if(mode==='keep')kept++;state.history.unshift({file:file.name,date:stamp(),month:parsed.short,type:'excel',actor:cloudActor(),detail:mode==='keep'?'Excel反映・手動売上は保持':'Excelデータを反映'});count++;
   }catch(e){console.error(e);toast(`${file.name}: ${e.message}`)}
  }
- state.history=state.history.slice(0,100);save();if(cloud.ready&&(lastImportedKey||csvCount))await cloudPullAll({quiet:true});
+ state.history=state.history.slice(0,100);save();if(cloud.ready&&(lastImportedKey||csvCount||pdfCount))await cloudPullAll({quiet:true});
  if(lastImportedKey&&state.months.some(x=>x.key===lastImportedKey))state.selected=lastImportedKey;
- sortMonths();save();renderAll();toast(`${count}件を反映しました${csvCount?`（分析CSV ${csvCount}件）`:''}${kept?`（${kept}件は手動売上を保持）`:''}`);
+ sortMonths();save();renderAll();toast(`${count}件を反映しました${csvCount?`（分析CSV ${csvCount}件）`:''}${pdfCount?`（AirメイトPDF ${pdfCount}件）`:''}${kept?`（${kept}件は手動売上を保持）`:''}`);
 }
 function printRateSvg(months){
  const w=720,h=150,padL=38,padR=12,padT=12,padB=26,plotW=w-padL-padR,plotH=h-padT-padB;
@@ -1263,7 +1346,7 @@ function addReportField(){openModal(`<h2>売上報告の項目を追加</h2><div
 function editReportField(key){const f=reportFieldByKey(key);if(!f)return;openModal(`<h2>項目設定</h2><div class="form-grid" style="grid-template-columns:1fr"><label>表示名<input id="rfeLabel" value="${f.label.replace(/"/g,'&quot;')}"></label><label>別名（カンマ区切り）<input id="rfeAliases" value="${(f.aliases||[]).join(',')}"></label><label>分類<select id="rfeCategory">${['売上','人件費','集客','経費','その他'].map(x=>`<option ${x===f.category?'selected':''}>${x}</option>`).join('')}</select></label></div><button id="rfeSave" class="primary-btn">保存</button>`);$('#rfeSave').onclick=()=>{f.label=$('#rfeLabel').value.trim()||f.label;f.aliases=$('#rfeAliases').value.split(',').map(x=>x.trim()).filter(Boolean);f.category=$('#rfeCategory').value;state.businessLog.unshift({date:stamp(),type:'設定',title:'売上報告項目を変更',detail:f.label});save();closeModal();renderReport();toast('項目設定を保存しました')}}
 function wireSmartReport(){const analyze=$('#reportAnalyzeBtn');if(!analyze)return;analyze.onclick=()=>{pendingReport=parseLineReport($('#reportPaste').value);if(!pendingReport){toast('解析できる売上報告を貼り付けてください');return}renderReportPreview(pendingReport);setReportFlow('analyzed',`${pendingReport.date} / ${pendingReport.items.length}項目を解析しました`)};$('#reportSaveBtn').onclick=saveParsedReport;$('#reportClearBtn').onclick=()=>{$('#reportPaste').value='';pendingReport=null;renderReportPreview(null);setReportFlow('idle')};$('#reportSampleBtn').onclick=()=>{$('#reportPaste').value=`【売上報告】\n\nお疲れさまです。\n8/7（金）の業務報告です。\n当日売上 :366,700円(税込)\n当日達成率 : 114.8%\n人件費 : 59,500円\n人件費率 : 16.2%\n口コミ件数：5件\n\n【経費報告】\n前日残高：47,661円\n本日使用分：920円\n経費残高：46,741円\nよろしくお願いいたします。`;pendingReport=parseLineReport($('#reportPaste').value);renderReportPreview(pendingReport);setReportFlow('analyzed',`${pendingReport.date} / ${pendingReport.items.length}項目を解析しました`)};$('#addReportFieldBtn').onclick=addReportField;document.querySelectorAll('[data-report-field-toggle]').forEach(x=>x.onchange=()=>{const f=reportFieldByKey(x.dataset.reportFieldToggle);if(f){f.enabled=x.checked;save();renderReport()}});document.querySelectorAll('[data-report-field-edit]').forEach(x=>x.onclick=()=>editReportField(x.dataset.reportFieldEdit))}
 
-function bind(){wireSmartReport();$('#cloudStatusBtn')?.addEventListener('click',openCloudInfo);$('#cloudOpenSettings')?.addEventListener('click',openCloudInfo);document.addEventListener('click',e=>{if(e.target.closest('#editMonthlySalesBtn')){e.preventDefault();editMonthlySales(state.selected);return}const page=e.target.closest('[data-page]')?.dataset.page;if(page)nav(page);const tool=e.target.closest('[data-tool]')?.dataset.tool;if(tool)showTool(tool);const edit=e.target.closest('[data-edit-month]')?.dataset.editMonth;if(edit)editMonthlySales(edit);const open=e.target.closest('[data-open-month]')?.dataset.openMonth;if(open){state.selected=open;renderAll();nav('home');toast(`${current().label}を開きました`)}});document.addEventListener('change',e=>{const cb=e.target.closest('[data-calendar-index]');if(cb){const k=current().key;state.calendar[k]=state.calendar[k]||{};state.calendar[k][cb.dataset.calendarIndex]=cb.checked;save();renderManagementCalendar();}});$$('[data-kpi-page]').forEach(card=>{const go=()=>nav(card.dataset.kpiPage);card.addEventListener('click',go);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});$('#businessSignal').onclick=openSignalDetail;$('#businessSignal').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSignalDetail()}};$('#signalDetailBtn').onclick=e=>{e.stopPropagation();openSignalDetail()};$('#meetingBtn').onclick=()=>setMeetingMode(true);$('#meetingExitBtn').onclick=()=>setMeetingMode(false);$('#modalClose').onclick=closeModal;$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};['excelTopBtn','excelHomeBtn','excelPageBtn'].forEach(id=>$('#'+id).onclick=()=>$('#excelInput').click());$('#settingsTopBtn').onclick=()=>nav('settings');$('#kpiQuickBtn').onclick=()=>nav('settings');$('#excelInput').onchange=e=>{importExcel([...e.target.files]);e.target.value=''};['excelDrop','excelDrop2'].forEach(id=>{const el=$('#'+id);el.onclick=e=>{if(!e.target.closest('button'))$('#excelInput').click()};['dragover','dragenter'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.style.background='#f5edd9'}));['dragleave','drop'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.style.background=''}));el.addEventListener('drop',e=>importExcel([...e.dataTransfer.files]))});$('#homeExtraSales').addEventListener('input',renderForecast);$('#saveSettingsBtn').onclick=async()=>{const next={...state.settings,laborTarget:+$('input#setLaborTarget').value,laborMin:+$('input#setLaborMin').value,laborMax:+$('input#setLaborMax').value,costTarget:+$('input#setCostTarget').value,marginTarget:+$('input#setMarginTarget').value,salesTarget:+$('input#setSalesTarget').value,ticket:+$('input#setTicket').value,wage:+$('input#setWage').value,alerts:$('#toggleAlerts').checked,ai:$('#toggleAi').checked,tax:$('#toggleTax').checked,monthBudgets:{...(state.settings.monthBudgets||{})}};let pin=null;if(cloud.ready){pin=await requestAdminPin('KPI目標・設定を変更');if(!pin)return;try{await cloudAdminSettings(next,pin)}catch(e){toast(e.message||'設定を更新できませんでした');return}}state.settings=next;save();if(cloud.ready)await cloudPullAll({quiet:true});renderAll();toast('設定を保存しました')};$('#resetDataBtn').onclick=()=>{if(cloud.ready){toast('クラウド接続中は誤削除防止のため一括初期化できません。復元センターをご利用ください');return}if(confirm('この端末のローカルデータを初期状態に戻しますか？')){state=clone(INITIAL);state.reportFields=clone(DEFAULT_REPORT_FIELDS);save();renderAll();toast('この端末のローカルデータを初期化しました')}};$('#clearHistoryBtn').onclick=()=>{state.history=[];save();renderExcel();renderHistory('#homeHistory',3);toast('履歴を消去しました')};$('#exportBackupBtn').onclick=exportBackup;$('#importBackupInput').onchange=e=>e.target.files[0]&&importBackup(e.target.files[0]);$('#printBtn').onclick=openPrintDialog;$('#meetingPrintBtn')?.addEventListener('click',buildMeetingReport);$('#addInventoryBtn').onclick=addInventory;$('#addDailyBtn').onclick=addDaily;$('#quickEditSalesBtn').onclick=e=>{e.stopPropagation();editMonthlySales(state.selected)};$('#prevMonthBtn').onclick=()=>switchMonthBy(-1);$('#nextMonthBtn').onclick=()=>switchMonthBy(1);$('#monthCenterBtn').onclick=showMonthPicker;$('#currentMonthBtn').onclick=jumpToCurrentPeriod;$('#monthlyBudgetBtn')?.addEventListener('click',()=>editMonthlyBudget(state.selected));$('#openRecoveryBtn').onclick=showRecoveryCenter;$('#openRecoverySettingsBtn').onclick=showRecoveryCenter;$('#todayAddBtn').onclick=addDaily;$('#compareDetailBtn').onclick=()=>nav('ai');$('#copyPlBtn').onclick=()=>{const m=current(),r=ratios(m);navigator.clipboard?.writeText(`${m.label}\n売上 ${yen(m.sales)}\n原価 ${yen(m.cogs)} (${pct(r.cost)})\n人件費 ${yen(m.labor)} (${pct(r.labor)})\n営業利益 ${yen(m.profit)} (${pct(r.margin)})`);toast('PL概要をコピーしました')};$('#helpBtn').onclick=()=>openModal('<h2>使い方</h2><p>①「Excel読込」から月次PLを選択します。②読み込んだ月へ自動で切替わり、KPI・PL・人件費・売上・AI診断が更新されます。③「目標設定」で人件費率30%前後など店舗基準を変更できます。</p><p><b>補足：</b>シフト・在庫・日次入力は端末内保存です。クラウド接続時は重要データを共有し、変更・削除前の世代を自動保存します。Excelデータ管理の「復元センター」から管理者PINで過去時点へ復元できます。</p>');$('#alertListBtn').onclick=$('#allAlertsBtn').onclick=()=>openModal(`<h2>アラート一覧</h2><div class="notice-list">${$('#noticeList').innerHTML}</div>`);$('#headerMonthBtn').onclick=showMonthPicker;setInterval(updateClock,60000)}
+function bind(){wireSmartReport();$('#cloudStatusBtn')?.addEventListener('click',openCloudInfo);$('#cloudOpenSettings')?.addEventListener('click',openCloudInfo);document.addEventListener('click',e=>{if(e.target.closest('#editMonthlySalesBtn')){e.preventDefault();editMonthlySales(state.selected);return}const page=e.target.closest('[data-page]')?.dataset.page;if(page)nav(page);const tool=e.target.closest('[data-tool]')?.dataset.tool;if(tool)showTool(tool);const edit=e.target.closest('[data-edit-month]')?.dataset.editMonth;if(edit)editMonthlySales(edit);const open=e.target.closest('[data-open-month]')?.dataset.openMonth;if(open){state.selected=open;renderAll();nav('home');toast(`${current().label}を開きました`)}});document.addEventListener('change',e=>{const cb=e.target.closest('[data-calendar-index]');if(cb){const k=current().key;state.calendar[k]=state.calendar[k]||{};state.calendar[k][cb.dataset.calendarIndex]=cb.checked;save();renderManagementCalendar();}});$$('[data-kpi-page]').forEach(card=>{const go=()=>nav(card.dataset.kpiPage);card.addEventListener('click',go);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});$('#businessSignal').onclick=openSignalDetail;$('#businessSignal').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSignalDetail()}};$('#signalDetailBtn').onclick=e=>{e.stopPropagation();openSignalDetail()};$('#meetingBtn').onclick=()=>setMeetingMode(true);$('#meetingExitBtn').onclick=()=>setMeetingMode(false);$('#modalClose').onclick=closeModal;$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};['excelTopBtn','excelHomeBtn','excelPageBtn'].forEach(id=>$('#'+id).onclick=()=>$('#excelInput').click());$('#settingsTopBtn').onclick=()=>nav('settings');$('#kpiQuickBtn').onclick=()=>nav('settings');$('#excelInput').onchange=e=>{importExcel([...e.target.files]);e.target.value=''};['excelDrop','excelDrop2'].forEach(id=>{const el=$('#'+id);el.onclick=e=>{if(!e.target.closest('button'))$('#excelInput').click()};['dragover','dragenter'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.style.background='#f5edd9'}));['dragleave','drop'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.style.background=''}));el.addEventListener('drop',e=>importExcel([...e.dataTransfer.files]))});$('#homeExtraSales').addEventListener('input',renderForecast);$('#saveSettingsBtn').onclick=async()=>{const next={...state.settings,laborTarget:+$('input#setLaborTarget').value,laborMin:+$('input#setLaborMin').value,laborMax:+$('input#setLaborMax').value,costTarget:+$('input#setCostTarget').value,marginTarget:+$('input#setMarginTarget').value,salesTarget:+$('input#setSalesTarget').value,ticket:+$('input#setTicket').value,wage:+$('input#setWage').value,alerts:$('#toggleAlerts').checked,ai:$('#toggleAi').checked,tax:$('#toggleTax').checked,monthBudgets:{...(state.settings.monthBudgets||{})}};let pin=null;if(cloud.ready){pin=await requestAdminPin('KPI目標・設定を変更');if(!pin)return;try{await cloudAdminSettings(next,pin)}catch(e){toast(e.message||'設定を更新できませんでした');return}}state.settings=next;save();if(cloud.ready)await cloudPullAll({quiet:true});renderAll();toast('設定を保存しました')};$('#resetDataBtn').onclick=()=>{if(cloud.ready){toast('クラウド接続中は誤削除防止のため一括初期化できません。復元センターをご利用ください');return}if(confirm('この端末のローカルデータを初期状態に戻しますか？')){state=clone(INITIAL);state.reportFields=clone(DEFAULT_REPORT_FIELDS);save();renderAll();toast('この端末のローカルデータを初期化しました')}};$('#clearHistoryBtn').onclick=()=>{state.history=[];save();renderExcel();renderHistory('#homeHistory',3);toast('履歴を消去しました')};$('#exportBackupBtn').onclick=exportBackup;$('#importBackupInput').onchange=e=>e.target.files[0]&&importBackup(e.target.files[0]);$('#printBtn').onclick=openPrintDialog;$('#meetingPrintBtn')?.addEventListener('click',buildMeetingReport);$('#addInventoryBtn').onclick=addInventory;$('#addDailyBtn').onclick=addDaily;$('#quickEditSalesBtn').onclick=e=>{e.stopPropagation();editMonthlySales(state.selected)};$('#prevMonthBtn').onclick=()=>switchMonthBy(-1);$('#nextMonthBtn').onclick=()=>switchMonthBy(1);$('#monthCenterBtn').onclick=showMonthPicker;$('#currentMonthBtn').onclick=jumpToCurrentPeriod;$('#monthlyBudgetBtn')?.addEventListener('click',()=>editMonthlyBudget(state.selected));$('#openRecoveryBtn').onclick=showRecoveryCenter;$('#openRecoverySettingsBtn').onclick=showRecoveryCenter;$('#todayAddBtn').onclick=addDaily;$('#compareDetailBtn').onclick=()=>nav('ai');$('#copyPlBtn').onclick=()=>{const m=current(),r=ratios(m);navigator.clipboard?.writeText(`${m.label}\n売上 ${yen(m.sales)}\n原価 ${yen(m.cogs)} (${pct(r.cost)})\n人件費 ${yen(m.labor)} (${pct(r.labor)})\n営業利益 ${yen(m.profit)} (${pct(r.margin)})`);toast('PL概要をコピーしました')};$('#helpBtn').onclick=()=>openModal('<h2>使い方</h2><p>①「データ読込」からPL Excel・Airメイト CSV / PDFを選択します。ファイル種類は自動判定します。②読み込んだ月へ自動で切替わり、KPI・PL・人件費・売上・AI診断が更新されます。③「目標設定」で人件費率30%前後など店舗基準を変更できます。</p><p><b>補足：</b>シフト・在庫・日次入力は端末内保存です。クラウド接続時は重要データを共有し、変更・削除前の世代を自動保存します。Excelデータ管理の「復元センター」から管理者PINで過去時点へ復元できます。</p>');$('#alertListBtn').onclick=$('#allAlertsBtn').onclick=()=>openModal(`<h2>アラート一覧</h2><div class="notice-list">${$('#noticeList').innerHTML}</div>`);$('#headerMonthBtn').onclick=showMonthPicker;setInterval(updateClock,60000)}
 function showMonthPicker(){ensureTemporalMonths();sortMonths();const latest=latestAvailableMonthKey();openModal(`<h2>表示月を選択</h2><p class="muted">最新月を先頭に表示しています。</p><div class="check-grid">${state.months.slice().reverse().map(m=>`<button class="outline-gold month-choice" data-month="${m.key}">${m.label}${m.key===latest?'　現時点':''}</button>`).join('')}</div>`);$$('.month-choice').forEach(b=>b.onclick=()=>{state.selected=b.dataset.month;closeModal();renderAll();toast(`${current().label}に切り替えました`)})}
 function showTool(tool){const names={daily:'日次入力',budget:'予算管理',customer:'客単価分析',product:'商品別分析',hourly:'時間帯分析',forecast:'来月予測'};openModal(`<h2>${names[tool]||'クイックツール'}</h2><p>このクイックツールは管理者ホームから素早く確認するための入口です。</p>${tool==='daily'?'<button class="primary-btn" id="modalDailyAdd">日次データを追加</button>':'<p>現在のPLデータと目標設定を基準に表示します。詳細データ連携を追加すると、さらに精密な分析へ拡張できます。</p>'}`);if(tool==='daily')$('#modalDailyAdd').onclick=()=>{closeModal();addDaily()}}
 function addInventory(){openModal(`<h2>在庫・廃棄メモを追加</h2><div class="form-grid" style="grid-template-columns:1fr"><label>項目<input id="invName" placeholder="例：残うなぎ"></label><label>数量<input id="invQty" placeholder="例：12尾"></label><label>メモ<input id="invNote" placeholder="例：8/9朝確認"></label></div><button id="invSave" class="primary-btn" style="margin-top:12px">保存</button>`);$('#invSave').onclick=()=>{const name=$('#invName').value.trim();if(!name)return;state.inventory.unshift({name,qty:$('#invQty').value,note:$('#invNote').value});save();closeModal();renderInventory();toast('在庫メモを追加しました')}}
