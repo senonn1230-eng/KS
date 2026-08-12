@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.8.1</title>
+<title>土雷門 経営管理 Manager Pro Ver 5.8.2</title>
 <style>
 :root{
   --green-950:#052f24;--green-900:#083f30;--green-850:#0b4937;--green-800:#0f5a43;--green-700:#18684f;
@@ -508,7 +508,7 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
 
     <section id="page-settings" class="page">
       <div class="page-title"><div><span>SETTINGS</span><h1>目標設定・管理</h1><small>管理基準はいつでも変更できます</small></div></div>
-      <section class="settings-grid"><article class="panel"><h2>KPI目標</h2><div class="form-grid"><label>人件費率 目標（%）<input id="setLaborTarget" type="number" step="0.1"></label><label>適正下限（%）<input id="setLaborMin" type="number" step="0.1"></label><label>適正上限（%）<input id="setLaborMax" type="number" step="0.1"></label><label>原価率 目標（%）<input id="setCostTarget" type="number" step="0.1"></label><label>営業利益率 目標（%）<input id="setMarginTarget" type="number" step="0.1"></label><label>デフォルト月間予算（円）<input id="setSalesTarget" type="number" step="10000"></label><label>平均客単価（円）<input id="setTicket" type="number" step="100"></label><label>平均時給（円）<input id="setWage" type="number" step="10"></label></div><button id="saveSettingsBtn" class="primary-btn">設定を保存して全画面に反映</button></article><article class="panel"><h2>表示・データ</h2><div class="toggle-list"><label><span>アラート表示</span><input id="toggleAlerts" type="checkbox" checked></label><label><span>自動診断コメント</span><input id="toggleAi" type="checkbox" checked></label><label><span>金額を税込表示</span><input id="toggleTax" type="checkbox"></label></div><button id="resetDataBtn" class="danger-btn">すべての読込データを初期化</button><div class="version-info">土雷門 経営管理<br><b>Manager Pro Ver 5.8.1</b><small>管理者向け / PWA対応</small></div></article></section>
+      <section class="settings-grid"><article class="panel"><h2>KPI目標</h2><div class="form-grid"><label>人件費率 目標（%）<input id="setLaborTarget" type="number" step="0.1"></label><label>適正下限（%）<input id="setLaborMin" type="number" step="0.1"></label><label>適正上限（%）<input id="setLaborMax" type="number" step="0.1"></label><label>原価率 目標（%）<input id="setCostTarget" type="number" step="0.1"></label><label>営業利益率 目標（%）<input id="setMarginTarget" type="number" step="0.1"></label><label>デフォルト月間予算（円）<input id="setSalesTarget" type="number" step="10000"></label><label>平均客単価（円）<input id="setTicket" type="number" step="100"></label><label>平均時給（円）<input id="setWage" type="number" step="10"></label></div><button id="saveSettingsBtn" class="primary-btn">設定を保存して全画面に反映</button></article><article class="panel"><h2>表示・データ</h2><div class="toggle-list"><label><span>アラート表示</span><input id="toggleAlerts" type="checkbox" checked></label><label><span>自動診断コメント</span><input id="toggleAi" type="checkbox" checked></label><label><span>金額を税込表示</span><input id="toggleTax" type="checkbox"></label></div><button id="resetDataBtn" class="danger-btn">すべての読込データを初期化</button><div class="version-info">土雷門 経営管理<br><b>Manager Pro Ver 5.8.2</b><small>管理者向け / PWA対応</small></div></article></section>
       <section class="panel cloud-settings-panel"><div class="panel-head"><div><h2>クラウド同期・権限</h2><small>閲覧・日報入力はPIN不要 / 重要変更だけ管理者PIN</small></div><button id="cloudOpenSettings" class="pill-btn">クラウド状態を見る</button></div><div class="cloud-settings-copy"><p>同じManager Proを開いている端末は、売上・日報・PL・目標設定をSupabase経由で共有します。</p><p><b>保護対象：</b>月売上、PL Excel反映、KPI目標・設定。これらを変更するときだけ管理者PINを確認し、監査ログへ記録します。</p></div></section>
       <section class="panel"><div class="panel-head"><div><h2>変更履歴・データ復元</h2><small>誤入力・削除・上書き前のデータへ戻せます</small></div><button id="openRecoverySettingsBtn" class="pill-btn">復元センター</button></div><div class="recovery-note"><b>安全設計：</b>復元前の現在データも自動保存します。数か月後に誤りへ気付いた場合でも、保存済みの世代から選んで復元できます。復元操作には管理者PINが必要です。</div><div id="recoverySettingsSummary" class="data-health"></div></section>
     </section>
@@ -604,7 +604,7 @@ const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const CLOUD_CFG=window.DORAI_CLOUD_CONFIG||{};
 const DEVICE_KEY='dorai_manager_device_id';
 const ACTOR_KEY='dorai_manager_actor';
-const cloud={client:null,ready:false,connecting:false,pulling:false,channel:null,pinConfigured:false,status:'local',lastSync:null,pullTimer:null,settingsUpdatedAt:null,deviceId:safeLocalGet(DEVICE_KEY)||('dev_'+crypto.randomUUID())};
+const cloud={client:null,ready:false,connecting:false,pulling:false,channel:null,pinConfigured:false,status:'local',lastSync:null,pullTimer:null,settingsUpdatedAt:null,lastError:null,lastStage:'待機',deviceId:safeLocalGet(DEVICE_KEY)||('dev_'+crypto.randomUUID())};
 safeLocalSet(DEVICE_KEY,cloud.deviceId);
 if(!safeLocalGet(ACTOR_KEY))safeLocalSet(ACTOR_KEY,'管理者端末');
 function cloudActor(){return safeLocalGet(ACTOR_KEY)||'管理者端末'}
@@ -612,18 +612,26 @@ function cloudConfigured(){return !!(CLOUD_CFG.url&&CLOUD_CFG.publishableKey&&wi
 function setCloudStatus(status,label){cloud.status=status;const el=document.querySelector('#cloudStatusBtn');if(!el)return;el.dataset.status=status;el.innerHTML=`<span class="cloud-dot"></span><span>${label||({online:'クラウド同期',connecting:'接続中',setup:'初期設定',error:'同期エラー',local:'ローカル'}[status]||status)}</span>`}
 function cloudStamp(ts){try{return new Date(ts).toLocaleString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(e){return ts||''}}
 async function cloudInit(){
- if(!cloudConfigured()){setCloudStatus('local','ローカル');return}
- if(cloud.connecting)return;cloud.connecting=true;setCloudStatus('connecting','接続中');
+ if(!cloudConfigured()){cloud.lastStage='設定確認';cloud.lastError='Supabase設定またはライブラリを確認できません';setCloudStatus('local','ローカル');return false}
+ if(cloud.connecting)return cloud.ready;cloud.connecting=true;cloud.lastError=null;cloud.lastStage='クライアント作成';setCloudStatus('connecting','接続中');
  try{
   cloud.client=window.supabase.createClient(CLOUD_CFG.url,CLOUD_CFG.publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},realtime:{params:{eventsPerSecond:5}}});
-  await cloudPullAll({quiet:true,initial:true});
-  // データ取得が成功した時点でクラウド接続は成立。PIN状態確認だけの失敗で「未接続」へ戻さない。
-  cloud.ready=true;cloud.lastSync=new Date();setCloudStatus('online','クラウド同期');
+  cloud.lastStage='クラウドデータ読込';
+  await cloudPullAll({quiet:true,initial:true,skipFieldSeed:true});
+  // 月次・日次などの読込が完了した時点で接続成立。補助設定の失敗では接続を落とさない。
+  cloud.ready=true;cloud.lastSync=new Date();cloud.lastStage='接続済み';setCloudStatus('online','クラウド同期');
+  cloud.lastStage='PIN状態確認';
   try{const pin=await cloud.client.rpc('has_admin_pin');if(pin.error)throw pin.error;cloud.pinConfigured=!!pin.data}
-  catch(pinErr){console.warn('Admin PIN status check failed',pinErr);cloud.pinConfigured=true}
-  const setupGate=document.getElementById('firstSetupGate');if(setupGate){setupGate.classList.remove('needs-setup');setupGate.classList.add('hidden')}safeLocalSet('doraimon_cloud_setup_done','1');cloudSubscribe();renderAll();
+  catch(pinErr){console.warn('Admin PIN status check failed',pinErr);cloud.pinConfigured=true;cloud.lastError=`PIN状態確認: ${pinErr?.message||pinErr}`}
+  // report_fields が未作成/空でも、初期読込成功を失敗扱いにしない。初期値の送信は補助処理として後から試す。
+  if(!(state.reportFields||[]).some(f=>f.cloudUpdatedAt)){
+   cloud.lastStage='日報項目の補助同期';
+   try{await cloudSyncReportFields()}catch(fieldErr){console.warn('Initial report_fields seed failed (non-fatal)',fieldErr);cloud.lastError=`日報項目の補助同期: ${fieldErr?.message||fieldErr}`}
+  }
+  const setupGate=document.getElementById('firstSetupGate');if(setupGate){setupGate.classList.remove('needs-setup');setupGate.classList.add('hidden')}safeLocalSet('doraimon_cloud_setup_done','1');cloudSubscribe();cloud.lastStage='接続済み';renderAll();
   if(!cloud.pinConfigured)setTimeout(()=>showInitialPinSetup(),600);
- }catch(e){console.error('Cloud init',e);cloud.ready=false;const schemaMissing=/does not exist|42P01|PGRST|Could not find the table|schema cache/i.test(String(e?.message||e));setCloudStatus(schemaMissing?'setup':'error',schemaMissing?'初期設定が必要':'同期エラー');if(schemaMissing){const setupGate=document.getElementById('firstSetupGate');if(setupGate){setupGate.classList.remove('hidden');setupGate.classList.add('needs-setup')}setTimeout(()=>showDbSetupHelper(),300)}}
+  return true;
+ }catch(e){console.error('Cloud init',e);cloud.ready=false;cloud.lastError=e?.message||String(e);const schemaMissing=/does not exist|42P01|PGRST|Could not find the table|schema cache/i.test(String(e?.message||e));setCloudStatus(schemaMissing?'setup':'error',schemaMissing?'初期設定が必要':'同期エラー');if(schemaMissing){const setupGate=document.getElementById('firstSetupGate');if(setupGate){setupGate.classList.remove('hidden');setupGate.classList.add('needs-setup')}setTimeout(()=>showDbSetupHelper(),300)}return false}
  finally{cloud.connecting=false}
 }
 
@@ -693,9 +701,9 @@ async function cloudPullAll(opts={}){
   // これを残すと save() が恒久的に拒否され、復旧後も端末キャッシュが更新されない。
   delete state._localLoadFailed;delete state._cloudRefreshPending;delete state._localCompacted;
   save();cloud.lastSync=new Date();if(!opts.quiet)renderAll();setCloudStatus('online','クラウド同期');
-  if(!fieldRows.length)await cloudSyncReportFields();
+  if(!fieldRows.length&&!opts.skipFieldSeed&&cloud.ready){try{await cloudSyncReportFields()}catch(e){console.warn('report_fields seed failed after pull',e);cloud.lastError=`日報項目同期: ${e?.message||e}`}}
   return true;
- }catch(e){cloud.lastPullError=e;throw e}
+ }catch(e){cloud.lastPullError=e;cloud.lastError=e?.message||String(e);throw e}
  finally{cloud.pulling=false}
 }
 function cloudSubscribe(){
@@ -787,7 +795,7 @@ async function cloudAdminSettings(next,pin){
  if(!cloud.ready)return {ok:false,local:true};const q=await cloud.client.from('app_settings').select('updated_at').eq('id',1).maybeSingle();if(q.error)throw q.error;const remoteAt=q.data?.updated_at||null,base=cloud.settingsUpdatedAt||null;if(remoteAt&&base&&Math.abs((Date.parse(remoteAt)||0)-(Date.parse(base)||0))>1)throw new Error('KPI設定は別端末で更新されています。最新同期後にもう一度変更してください');
  const r=await cloud.client.rpc('admin_update_settings',{p_pin:pin,p_settings:next,p_actor:cloudActor(),p_device:cloud.deviceId});if(r.error)throw r.error;const q2=await cloud.client.from('app_settings').select('updated_at').eq('id',1).maybeSingle();if(!q2.error)cloud.settingsUpdatedAt=q2.data?.updated_at||null;cloud.lastSync=new Date();return {ok:true}
 }
-function openCloudInfo(){const last=cloud.lastSync?cloud.lastSync.toLocaleString('ja-JP'):'未同期',actor=cloudActor();openModal(`<h2>クラウド同期</h2><div class="cloud-info-grid"><div><span>状態</span><b>${cloud.ready?'接続済み':'未接続'}</b></div><div><span>端末</span><b>${escHtml(actor)}</b></div><div><span>最終同期</span><b>${escHtml(last)}</b></div><div><span>Device ID</span><b>${escHtml(cloud.deviceId.slice(0,12))}…</b></div></div><label style="display:block;margin-top:14px">この端末の表示名<input id="cloudActorEdit" value="${escHtml(actor)}"></label><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button id="cloudActorSave" class="primary-btn">端末名を保存</button><button id="cloudSyncNow" class="outline-gold">今すぐ同期</button><button id="cloudPinChange" class="outline-gold">管理者PIN変更</button></div>`);$('#cloudActorSave').onclick=()=>{safeLocalSet(ACTOR_KEY,$('#cloudActorEdit').value.trim()||'管理者端末');closeModal();toast('端末名を保存しました')};$('#cloudSyncNow').onclick=async()=>{try{if(!cloud.ready){await cloudInit();if(!cloud.ready)throw new Error('cloud init failed')}else await cloudPullAll();toast('最新データに同期しました');closeModal();setTimeout(openCloudInfo,80)}catch(e){console.warn('Manual cloud sync failed',e);toast('同期に失敗しました。通信状態を確認してください')}};$('#cloudPinChange').onclick=()=>{closeModal();changeAdminPin()}}
+function openCloudInfo(){const last=cloud.lastSync?cloud.lastSync.toLocaleString('ja-JP'):'未同期',actor=cloudActor();openModal(`<h2>クラウド同期</h2><div class="cloud-info-grid"><div><span>状態</span><b>${cloud.ready?'接続済み':'未接続'}</b></div><div><span>端末</span><b>${escHtml(actor)}</b></div><div><span>最終同期</span><b>${escHtml(last)}</b></div><div><span>Device ID</span><b>${escHtml(cloud.deviceId.slice(0,12))}…</b></div><div><span>診断</span><b>${escHtml(cloud.lastStage||'待機')}</b></div></div>${cloud.lastError?`<div class="cloud-diagnostic" style="margin-top:10px;padding:10px;border-radius:10px;background:#f7f1e7;font-size:12px;word-break:break-word"><b>直近エラー</b><br>${escHtml(cloud.lastError)}</div>`:''}<label style="display:block;margin-top:14px">この端末の表示名<input id="cloudActorEdit" value="${escHtml(actor)}"></label><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button id="cloudActorSave" class="primary-btn">端末名を保存</button><button id="cloudSyncNow" class="outline-gold">今すぐ同期</button><button id="cloudPinChange" class="outline-gold">管理者PIN変更</button></div>`);$('#cloudActorSave').onclick=()=>{safeLocalSet(ACTOR_KEY,$('#cloudActorEdit').value.trim()||'管理者端末');closeModal();toast('端末名を保存しました')};$('#cloudSyncNow').onclick=async()=>{try{if(!cloud.ready){await cloudInit();if(!cloud.ready)throw new Error('cloud init failed')}else await cloudPullAll();toast('最新データに同期しました');closeModal();setTimeout(openCloudInfo,80)}catch(e){console.warn('Manual cloud sync failed',e);toast(`同期に失敗しました：${cloud.lastStage||'接続処理'}${cloud.lastError?' / '+cloud.lastError:''}`)}};$('#cloudPinChange').onclick=()=>{closeModal();changeAdminPin()}}
 function setReportFlow(stage,detail=''){const el=$('#reportFlow');if(!el)return;el.dataset.stage=stage;el.querySelectorAll('.flow-step').forEach(x=>x.classList.toggle('done',Number(x.dataset.step)<=({idle:1,analyzed:2,saved:3}[stage]||1)));const msg=$('#reportFlowMessage');if(msg)msg.textContent=detail||({idle:'LINE本文を貼り付けて解析してください',analyzed:'解析完了。内容を確認して「保存・反映」を押してください',saved:'保存完了。日次集計・着地予測・他端末へ反映しました'}[stage]||'')}
 function showReportSaved(rec,values,synced){const box=$('#reportPreview');if(!box)return;box.className='report-save-success';box.innerHTML=`<div class="save-check">✓</div><h3>${rec.date} の売上報告を反映しました</h3><p>${synced?'クラウド保存済み。接続中の他端末にも自動反映されます。':'この端末へ保存しました。クラウド未接続のため他端末にはまだ反映されません。'}</p><div class="saved-kpis">${values.sales!=null?`<div><span>売上</span><b>${yen(values.sales)}</b></div>`:''}${values.laborCost!=null?`<div><span>人件費</span><b>${yen(values.laborCost)}</b></div>`:''}${values.laborRate!=null?`<div><span>人件費率</span><b>${pct(values.laborRate)}</b></div>`:''}${values.reviews!=null?`<div><span>口コミ</span><b>${num(values.reviews)}件</b></div>`:''}</div><button id="reportNextBtn" class="outline-gold">次の報告を入力</button>`;$('#reportPreviewSub').textContent='保存・反映完了';$('#reportConfidence').textContent=synced?'クラウド反映済み':'端末保存済み';$('#reportSaveBtn').disabled=true;setTimeout(()=>{$('#reportNextBtn')?.addEventListener('click',()=>{renderReportPreview(null);setReportFlow('idle');$('#reportPaste').focus()})},0)}
 
@@ -1784,7 +1792,7 @@ function buildRangeMeetingReport(){
  <section class="pr-section"><h2>4. LINE日報 読込状況</h2><table class="pr-table"><thead><tr><th>月</th><th>読込済み</th><th>暦日</th><th>読込率</th></tr></thead><tbody>${rangeAgg.rows.map(x=>`<tr><td>${x.key}</td><td>${x.lineCount}日</td><td>${x.expectedDays}日</td><td>${x.expectedDays?pct(x.lineCount/x.expectedDays*100):'-'}</td></tr>`).join('')}</tbody></table></section>
  <section class="pr-section"><h2>5. 日別ハイライト</h2><h3>売上上位</h3><table class="pr-table"><tbody>${dailyTable(top)}</tbody></table><h3>売上下位</h3><table class="pr-table"><tbody>${dailyTable(low)}</tbody></table></section>
  <section class="pr-section"><h2>6. Airメイト 商品ABC 上位10</h2><p>${abcPeriodNote}。会議資料の対象期間と一致しない場合は参考値として扱ってください。</p><table class="pr-table"><thead><tr><th>順位</th><th>商品</th><th>ABC</th><th>売上</th><th>出数</th></tr></thead><tbody>${abcRows}</tbody></table></section>
- <section class="pr-section"><h2>7. 会議で決めること</h2><ol><li>売上変動を客数・客単価・曜日・ランチ/ディナーに分け、最も影響した要因を特定する。</li><li>好調日と不調日の違いを確認し、再現する施策と止める施策を決める。</li><li>予算未達の月は残り必要売上と人員配置・原価・販促の優先順位を決める。</li><li>LINE日報の未読込日を確認し、会議判断に必要なデータ欠損を減らす。</li><li>商品ABC上位は欠品防止と推奨強化、下位商品は継続・改善・整理を検討する。</li></ol></section><div class="pr-foot">Manager Pro Ver 5.8.1 / ${stamp()} / 未提供・未確定データは推測せず「-」として扱います。</div>`;
+ <section class="pr-section"><h2>7. 会議で決めること</h2><ol><li>売上変動を客数・客単価・曜日・ランチ/ディナーに分け、最も影響した要因を特定する。</li><li>好調日と不調日の違いを確認し、再現する施策と止める施策を決める。</li><li>予算未達の月は残り必要売上と人員配置・原価・販促の優先順位を決める。</li><li>LINE日報の未読込日を確認し、会議判断に必要なデータ欠損を減らす。</li><li>商品ABC上位は欠品防止と推奨強化、下位商品は継続・改善・整理を検討する。</li></ol></section><div class="pr-foot">Manager Pro Ver 5.8.2 / ${stamp()} / 未提供・未確定データは推測せず「-」として扱います。</div>`;
  $('#printReport').innerHTML=body;$('#printReport').setAttribute('aria-hidden','false');document.body.classList.add('printing-report');setTimeout(()=>window.print(),180)
 }
 function renderReport(){const page=$('#page-report');if(!page)return;const key=reportDisplayMonth(),rs=recordsForMonth(key).filter(r=>String(r.raw||'').trim()),y=+key.slice(0,4),mo=+key.slice(5,7),days=new Date(y,mo,0).getDate(),sales=reportAggregate(rs,'sales'),labor=reportAggregate(rs,'laborCost'),reviews=reportAggregate(rs,'reviews'),expense=reportAggregate(rs,'expenseUsed'),laborRate=(sales&&labor!=null)?labor/sales*100:null,avg=rs.length&&sales!=null?sales/rs.length:null,forecast=avg!=null?avg*days:null;$('#reportSummaryMonth').textContent=`${y}年${mo}月 / ${rs.length}日分`;
