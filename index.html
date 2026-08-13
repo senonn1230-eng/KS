@@ -2074,10 +2074,10 @@ function buildRangeMeetingReport(){
  if(sections.pl||kind==='executive'){if(cur.margin!=null)notes.push(`確定PL ${cur.plConfirmedMonths}か月分の営業利益率は ${cur.margin.toFixed(1)}%、人件費率は ${cur.laborRate!=null?cur.laborRate.toFixed(1):'-'}%。`);else notes.push('対象期間に確定PLがないため、利益率は判定していません。')}
  const periodLabel=r.compare?`${r.end} vs ${r.start}${r.comparisonType==='yoy'?'（前年同月）':'（前月）'}`:`${r.start} ～ ${r.end}`;
  const monthRows=rangeAgg.rows.map(x=>`<tr><td>${x.key}</td><td>${x.salesKnown?yen(x.sales):'-'}</td><td>${yen(x.budget)}</td><td>${x.budgetRate!=null?pct(x.budgetRate):'-'}</td><td>${numericProvided(x.a.customers)?num(x.a.customers)+'名':'-'}</td><td>${numericProvided(x.a.ticket)?yen(x.a.ticket):'-'}</td><td>${x.lineCount}/${x.expectedDays}日</td></tr>`).join('');
- const abcRows=abc.map(x=>`<tr><td>${numericProvided(x.rank)?num(x.rank):'-'}</td><td>${escHtml(x.name||'-')}</td><td>${escHtml(x.salesClass||'-')}</td><td>${numericProvided(x.sales)?yen(x.sales):'-'}</td><td>${abcTotal?((Number(x.sales)||0)/abcTotal*100).toFixed(1)+'%':'-'}</td><td>${numericProvided(x.count)?num(x.count):'-'}</td></tr>`).join('')||'<tr><td colspan="6">商品ABCデータなし</td></tr>';
  const dailyTable=(arr)=>arr.map(x=>`<tr><td>${x.date}</td><td>${yen(x.sales)}</td><td>${numericProvided(x.customers)?num(x.customers)+'名':'-'}</td><td>${numericProvided(x.customers)&&Number(x.customers)>0?yen(x.sales/x.customers):'-'}</td></tr>`).join('')||'<tr><td colspan="4">日次データなし</td></tr>';
  const decisions=meetingDecisionItems(cur,rangeAgg,daily,weekday,forecast);
  const abcMeta=state.airmateMenuABC||{},abcPeriodNote=abcMeta.periodStart&&abcMeta.periodEnd?`対象期間 ${escHtml(abcMeta.periodStart)} ～ ${escHtml(abcMeta.periodEnd)}`:'対象期間はファイルから特定できません',abcAll=(abcMeta.items||[]).slice().filter(x=>numericProvided(x.sales)).sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0)),abc=abcAll.slice(0,12),abcTotal=abcAll.reduce((z,x)=>z+(Number(x.sales)||0),0),abcTop3=abc.slice(0,3).reduce((z,x)=>z+(Number(x.sales)||0),0);
+ const abcRows=abc.map(x=>`<tr><td>${numericProvided(x.rank)?num(x.rank):'-'}</td><td>${escHtml(x.name||'-')}</td><td>${escHtml(x.salesClass||'-')}</td><td>${numericProvided(x.sales)?yen(x.sales):'-'}</td><td>${abcTotal?((Number(x.sales)||0)/abcTotal*100).toFixed(1)+'%':'-'}</td><td>${numericProvided(x.count)?num(x.count):'-'}</td></tr>`).join('')||'<tr><td colspan="6">商品ABCデータなし</td></tr>';
  const cmpSmall=salesComp?.rate!=null?`${samePeriod?.usable?'同日比':'比較期間比'} ${salesComp.rate>=0?'+':''}${salesComp.rate.toFixed(1)}%`:(r.compare&&isPartialCurrent?'同日比較データ不足':'比較データなし');
  const kpiCard=(label,value,small='',primary=false)=>`<div class="pr-kpi ${primary?'primary':''}"><span>${label}</span><strong>${value}</strong><small>${small}</small></div>`;
  let kpiItems;
@@ -2099,7 +2099,7 @@ function buildRangeMeetingReport(){
   if(sections.line)simpleBlocks.push(`<section class="pr-section"><h2>LINE日報</h2><p>${cur.lineCount}/${cur.calendarDays}日読込 / ${lineRate.toFixed(1)}%。未読込 ${Math.max(0,cur.calendarDays-cur.lineCount)}日。</p></section>`);
   if(sections.forecast)simpleBlocks.push(`<section class="pr-section"><h2>着地予測</h2>${forecastHtml}</section>`);
   if(sections.actions)simpleBlocks.push(`<section class="pr-section"><h2>次の行動</h2><ol class="pr-compact">${decisions.slice(0,5).map(x=>`<li><b>${x.theme}</b>：${x.action}</li>`).join('')}</ol></section>`);
-  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Manager Pro Ver 5.10.0 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
+  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Manager Pro Ver 5.10.1 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
   $('#printReport').innerHTML=body;triggerReportPrint();return
  }
  const sheet1=`<div class="pr-page pr-sheet">${meetingHeader(kindCfg.title,periodLabel,'1/7')}<div class="pr-kind-badge">${kindCfg.title} / ${r.comparisonType==='yoy'?'前年同月比較':r.comparisonType==='previous'?'前月比較':r.preset==='custom'?'任意期間':'期間分析'}</div>${kpis}
@@ -2138,7 +2138,7 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>残り期間の判断指標</h2>${forecast?`<div class="pr-forecast-note"><div><span>現在の日平均</span><strong>${yen(forecast.avg)}</strong></div><div><span>必要な日平均</span><strong>${forecast.neededDaily!=null?yen(forecast.neededDaily):'-'}</strong></div><div><span>必要ペース差</span><strong>${forecast.neededDaily!=null?`${forecast.neededDaily>forecast.avg?'+':''}${yen(forecast.neededDaily-forecast.avg)}`:'-'}</strong></div></div>`:''}<ul class="pr-compact"><li>必要日商は暦日ベースの目安。休業日は実営業日で再配分。</li><li>好調曜日は再現、不調曜日は人件費・販促・商品訴求を分けて検証。</li><li>客数不足と客単価不足は分けて対策。</li></ul></section>
     ${sections.actions?`<section class="pr-section pr-actions-compact"><h2>改善アクション</h2><table class="pr-table"><thead><tr><th>優先</th><th>テーマ</th><th>実行内容</th></tr></thead><tbody>${decisions.slice(0,4).map(x=>`<tr><td>${x.priority}</td><td>${x.theme}</td><td>${x.action}</td></tr>`).join('')}</tbody></table><h3>次回まで</h3><ul class="pr-compact"><li>LINE日報の未読込日を補完</li><li>月締め後に確定PLへ差替</li><li>施策実施日を日報へ記録</li></ul></section>`:''}
   </div>
-  <div class="pr-foot">Manager Pro Ver 5.10.0 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.10.1 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
  const actionRows=decisions.map((x,i)=>`<tr><td>${i+1}</td><td>${x.priority}</td><td>${x.theme}</td><td>${x.reason}</td><td>${x.action}</td><td>次回会議</td></tr>`).join('');
  const sheet7='';
  const pages=[sheet1,sheet2,sheet3,sheet4,sheet5,sheet6,sheet7].filter(Boolean),total=pages.length;
