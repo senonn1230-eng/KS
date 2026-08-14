@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.14.9</title>
+<title>土雷門 経営管理 Manager Pro Ver 5.14.10</title>
 <style>
 :root{
   --green-950:#052f24;--green-900:#083f30;--green-850:#0b4937;--green-800:#0f5a43;--green-700:#18684f;
@@ -2242,13 +2242,19 @@ function parseAirmatePdfPages(pages,fileName){
  const target=match1(p1,/目標\s*¥\s*([\d,.]+)\s*万/,pdfWanToYen)||matchAfterLabel(all,'目標',/¥\s*([\d,.]+)\s*万/,pdfWanToYen,500);
  let lunchSales=matchAfterLabel(pLunch,'ランチ売上',/¥\s*([\d,.]+)\s*万/,pdfWanToYen,2400),dinnerSales=matchAfterLabel(pDinner,'ディナー売上',/¥\s*([\d,.]+)\s*万/,pdfWanToYen,2400);
  const summaryPair=String(p1Raw).match(/客\s*数\s+客単価\s+客\s*数\s+客単価[\s\S]{0,500}?([\d,]+)\s*人[\s\S]{0,150}?¥\s*([\d,]+)[\s\S]{0,150}?([\d,]+)\s*人[\s\S]{0,150}?¥\s*([\d,]+)/);
- let lunchCustomers=summaryPair?+summaryPair[1].replace(/,/g,''):matchAfterLabel(pLunchRaw,'ランチ客数',/([\d,]+)\s*人/,x=>+x.replace(/,/g,''),900),dinnerCustomers=summaryPair?+summaryPair[3].replace(/,/g,''):matchAfterLabel(pDinnerRaw,'ディナー客数',/([\d,]+)\s*人/,x=>+x.replace(/,/g,''),900);
- let lunchTicket=summaryPair?pdfYen(summaryPair[2]):matchAfterLabel(pLunchRaw,'ランチ客単価',/¥\s*([\d,]+)/,pdfYen,900),dinnerTicket=summaryPair?pdfYen(summaryPair[4]):matchAfterLabel(pDinnerRaw,'ディナー客単価',/¥\s*([\d,]+)/,pdfYen,900);
+ // 詳細ページのKPIカードを最優先。『前月 -50人』等を現在客数として誤取得しない。
+ const lunchCard=String(pLunchRaw).replace(/\s+/g,'').match(/ランチ客数前年前月目標([\d,]+)人[\s\S]{0,180}?ランチ客単価前年前月目標[¥￥]([\d,]+)/);
+ const dinnerCard=String(pDinnerRaw).replace(/\s+/g,'').match(/ディナー客数前年前月目標([\d,]+)人[\s\S]{0,180}?ディナー客単価前年前月目標[¥￥]([\d,]+)/);
  const spatialSeg=extractAirmateSegmentMetricsSpatial(pages,iL,iD);
- if(!lunchCustomers&&spatialSeg.lunchCustomers)lunchCustomers=spatialSeg.lunchCustomers;
- if(!dinnerCustomers&&spatialSeg.dinnerCustomers)dinnerCustomers=spatialSeg.dinnerCustomers;
- if(!lunchTicket&&spatialSeg.lunchTicket)lunchTicket=spatialSeg.lunchTicket;
- if(!dinnerTicket&&spatialSeg.dinnerTicket)dinnerTicket=spatialSeg.dinnerTicket;
+ let lunchCustomers=lunchCard?+lunchCard[1].replace(/,/g,''):(summaryPair?+summaryPair[1].replace(/,/g,''):spatialSeg.lunchCustomers);
+ let dinnerCustomers=dinnerCard?+dinnerCard[1].replace(/,/g,''):(summaryPair?+summaryPair[3].replace(/,/g,''):spatialSeg.dinnerCustomers);
+ let lunchTicket=lunchCard?pdfYen(lunchCard[2]):(summaryPair?pdfYen(summaryPair[2]):spatialSeg.lunchTicket);
+ let dinnerTicket=dinnerCard?pdfYen(dinnerCard[2]):(summaryPair?pdfYen(summaryPair[4]):spatialSeg.dinnerTicket);
+ // 座標抽出まで取れない端末だけ、見出し後方検索へフォールバックする。
+ if(!lunchCustomers)lunchCustomers=matchAfterLabel(pLunchRaw,'ランチ客数',/([\d,]+)\s*人/,x=>+x.replace(/,/g,''),900);
+ if(!dinnerCustomers)dinnerCustomers=matchAfterLabel(pDinnerRaw,'ディナー客数',/([\d,]+)\s*人/,x=>+x.replace(/,/g,''),900);
+ if(!lunchTicket)lunchTicket=matchAfterLabel(pLunchRaw,'ランチ客単価',/¥\s*([\d,]+)/,pdfYen,900);
+ if(!dinnerTicket)dinnerTicket=matchAfterLabel(pDinnerRaw,'ディナー客単価',/¥\s*([\d,]+)/,pdfYen,900);
  if(!lunchSales)lunchSales=matchAfterLabel(p1,'ランチ',/¥\s*([\d,.]+)\s*万/,pdfWanToYen,1800);if(!dinnerSales)dinnerSales=matchAfterLabel(pDinner,'ディナー',/¥\s*([\d,.]+)\s*万/,pdfWanToYen,1800);
  // 端末によって改行位置が変わる場合に備え、概要ページの4指標並びも空白除去版で再確認する。
  if(!lunchCustomers||!dinnerCustomers||!lunchTicket||!dinnerTicket){
@@ -2791,7 +2797,7 @@ function buildRangeMeetingReport(){
   <section class="pr-section"><h2>ランチ / ディナー 月次比較</h2><table class="pr-table"><thead><tr><th>月</th><th>ランチ売上</th><th>構成比</th><th>客数</th><th>客単価</th><th>ディナー売上</th><th>構成比</th><th>客数</th><th>客単価</th></tr></thead><tbody>${segmentRows}</tbody></table></section>
   <section class="pr-section"><h2>会議で見るポイント</h2><ul class="pr-compact">${segmentNotes.map(x=>`<li>${x}</li>`).join('')}<li>ランチ／ディナーの区分はAirメイトPDFの定義を使用します。取得できない値は「-」とし、推測しません。</li><li>客数・客単価はAirメイト詳細ページの見出しと座標関係から再抽出し、売上÷客数との整合性も確認して保存します。</li></ul></section>
   ${segmentDailyTable?`<section class="pr-section"><h2>日別 ランチ / ディナー</h2><table class="pr-table"><thead><tr><th>日付</th><th>ランチ売上</th><th>客数</th><th>客単価</th><th>ディナー売上</th><th>客数</th><th>客単価</th></tr></thead><tbody>${segmentDailyTable}</tbody></table><p class="pr-note">PDFの日別値はAirメイトPDFから抽出した参考値です。PDF内で丸められた値は概算として扱います。</p></section>`:''}
-  <div class="pr-foot">Manager Pro Ver 5.14.9 / ${stamp()} / Airメイト ランチ・ディナー分析 / 未提供データは推測しません。</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.14.10 / ${stamp()} / Airメイト ランチ・ディナー分析 / 未提供データは推測しません。</div></div>`:'';
  const pages=[sheet1,sheet2,sheet3,sheet4,sheet5,sheet6,sheet7].filter(Boolean),total=pages.length;
  const numbered=pages.map((p,i)=>p.replace(/<div class="pr-month">[^<]*<small>MEETING<\/small><\/div>/,`<div class="pr-month">${i+1}/${total}<small>MEETING</small></div>`));
  $('#printReport').innerHTML=numbered.join('');
