@@ -964,7 +964,7 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
 
     <section id="page-settings" class="page">
       <div class="page-title"><div><span>SETTINGS</span><h1>目標設定・管理</h1><small>管理基準はいつでも変更できます</small></div></div>
-      <section class="settings-grid"><article class="panel"><h2>KPI目標</h2><div class="form-grid"><label>人件費率 目標（%）<input id="setLaborTarget" type="number" step="0.1"></label><label>適正下限（%）<input id="setLaborMin" type="number" step="0.1"></label><label>適正上限（%）<input id="setLaborMax" type="number" step="0.1"></label><label>原価率 目標（%）<input id="setCostTarget" type="number" step="0.1"></label><label>営業利益率 目標（%）<input id="setMarginTarget" type="number" step="0.1"></label><label>デフォルト月間予算（円）<input id="setSalesTarget" type="number" step="10000"></label><label>平均客単価（円）<input id="setTicket" type="number" step="100"></label><label>平均時給（円）<input id="setWage" type="number" step="10"></label></div><button id="saveSettingsBtn" class="primary-btn">設定を保存して全画面に反映</button></article><article class="panel"><h2>表示・データ</h2><div class="toggle-list"><label><span>アラート表示</span><input id="toggleAlerts" type="checkbox" checked></label><label><span>自動診断コメント</span><input id="toggleAi" type="checkbox" checked></label><label><span>金額を税込表示</span><input id="toggleTax" type="checkbox"></label></div><button id="resetDataBtn" class="danger-btn">すべての読込データを初期化</button><div class="version-info">土雷門 経営管理<br><b>Manager Pro Ver 5.14.7</b><small>管理者向け / PWA対応</small></div></article></section>
+      <section class="settings-grid"><article class="panel"><h2>KPI目標</h2><div class="form-grid"><label>人件費率 目標（%）<input id="setLaborTarget" type="number" step="0.1"></label><label>適正下限（%）<input id="setLaborMin" type="number" step="0.1"></label><label>適正上限（%）<input id="setLaborMax" type="number" step="0.1"></label><label>原価率 目標（%）<input id="setCostTarget" type="number" step="0.1"></label><label>営業利益率 目標（%）<input id="setMarginTarget" type="number" step="0.1"></label><label>デフォルト月間予算（円）<input id="setSalesTarget" type="number" step="10000"></label><label>平均客単価（円）<input id="setTicket" type="number" step="100"></label><label>平均時給（円）<input id="setWage" type="number" step="10"></label></div><button id="saveSettingsBtn" class="primary-btn">設定を保存して全画面に反映</button></article><article class="panel"><h2>表示・データ</h2><div class="toggle-list"><label><span>アラート表示</span><input id="toggleAlerts" type="checkbox" checked></label><label><span>自動診断コメント</span><input id="toggleAi" type="checkbox" checked></label><label><span>金額を税込表示</span><input id="toggleTax" type="checkbox"></label></div><button id="resetDataBtn" class="danger-btn">すべての読込データを初期化</button><div class="version-info">土雷門 経営管理<br><b>Manager Pro Ver 5.14.8</b><small>管理者向け / PWA対応</small></div></article></section>
       <section class="panel cloud-settings-panel"><div class="panel-head"><div><h2>クラウド同期・権限</h2><small>閲覧・日報入力はPIN不要 / 重要変更だけ管理者PIN</small></div><button id="cloudOpenSettings" class="pill-btn">クラウド状態を見る</button></div><div class="cloud-settings-copy"><p>同じManager Proを開いている端末は、売上・日報・PL・目標設定をSupabase経由で共有します。</p><p><b>保護対象：</b>月売上、PL Excel反映、KPI目標・設定。これらを変更するときだけ管理者PINを確認し、監査ログへ記録します。</p></div></section>
       <section class="panel"><div class="panel-head"><div><h2>変更履歴・データ復元</h2><small>誤入力・削除・上書き前のデータへ戻せます</small></div><button id="openRecoverySettingsBtn" class="pill-btn">復元センター</button></div><div class="recovery-note"><b>安全設計：</b>復元前の現在データも自動保存します。数か月後に誤りへ気付いた場合でも、保存済みの世代から選んで復元できます。復元操作には管理者PINが必要です。</div><div id="recoverySettingsSummary" class="data-health"></div></section>
     </section>
@@ -1871,7 +1871,7 @@ function genericPdfFindTicket(text,labels){
  const ordered=[...(labels||[])].sort((a,b)=>genericNorm(b).length-genericNorm(a).length);
  for(const label of ordered){
   const esc=label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  const m=text.match(new RegExp(esc+'[\s\S]{0,120}?[¥￥]\s*([\d,]+)'));
+  const m=text.match(new RegExp(esc+'[\\s\\S]{0,120}?[¥￥]\\s*([\\d,]+)'));
   if(m)return pdfYen(m[1]);
  }
  return null;
@@ -2188,6 +2188,50 @@ function parsePdfDailyGrid(page,kind,year,month){
  }
  return out.sort((a,b)=>a.date.localeCompare(b.date));
 }
+function pdfItemText(i){return normalizePdfText(i?.str||'').replace(/\s+/g,'').trim()}
+function parsePdfMetricValue(str,kind){
+ const t=normalizePdfText(str||'').replace(/\s+/g,'');
+ if(kind==='count'){const m=t.match(/^([\d,]+)人$/);return m?+m[1].replace(/,/g,''):null}
+ if(kind==='ticket'){const m=t.match(/^[¥￥]([\d,]+)$/);return m?pdfYen(m[1]):null}
+ return null;
+}
+function spatialMetricAfterLabel(page,label,kind){
+ const items=(page?.items||[]).map(i=>({...i,_t:pdfItemText(i)})).filter(i=>i._t);
+ const labels=items.filter(i=>i._t===label||i._t.includes(label));
+ if(!labels.length)return null;
+ let best=null;
+ for(const lab of labels){
+  for(const it of items){
+   if(it===lab)continue;
+   const value=parsePdfMetricValue(it._t,kind);if(value==null)continue;
+   const dx=Math.abs((it.x||0)-(lab.x||0)),dy=Math.abs((it.y||0)-(lab.y||0));
+   // Airメイト詳細PDFでは値は見出しのほぼ真下。同じ列を最優先し、PDF座標方向差は吸収する。
+   if(dx>95||dy<4||dy>80)continue;
+   const score=dx*1.8+dy;
+   if(!best||score<best.score)best={value,score};
+  }
+ }
+ return best?best.value:null;
+}
+function extractAirmateSegmentMetricsSpatial(pages,iL,iD){
+ const lp=iL>=0?pages[iL]:null,dp=iD>=0?pages[iD]:null;
+ return {
+  lunchCustomers:spatialMetricAfterLabel(lp,'ランチ客数','count'),
+  lunchTicket:spatialMetricAfterLabel(lp,'ランチ客単価','ticket'),
+  dinnerCustomers:spatialMetricAfterLabel(dp,'ディナー客数','count'),
+  dinnerTicket:spatialMetricAfterLabel(dp,'ディナー客単価','ticket')
+ };
+}
+function validateAirmateSegmentMetrics({lunchSales,dinnerSales,lunchCustomers,dinnerCustomers,lunchTicket,dinnerTicket}){
+ const errs=[];
+ for(const [name,sales,cust,ticket] of [['ランチ',lunchSales,lunchCustomers,lunchTicket],['ディナー',dinnerSales,dinnerCustomers,dinnerTicket]]){
+  if(!(sales>0)||!(cust>0)||!(ticket>0)){errs.push(`${name}の売上・客数・客単価のいずれかが未取得です`);continue}
+  const calc=sales/cust,diff=Math.abs(calc-ticket);
+  // PDF売上は「万」単位で丸められるので、厳密一致ではなく十分な整合性を確認。
+  if(diff>Math.max(50,ticket*0.03))errs.push(`${name}客単価の整合性確認に失敗しました（計算 ${Math.round(calc)} / PDF ${ticket}）`);
+ }
+ return errs;
+}
 function parseAirmatePdfPages(pages,fileName){
  const rawTexts=pages.map(pdfPageText),texts=rawTexts.map(t=>String(t||'').replace(/\s+/g,'')),all=texts.join('');if(!/売上分析/.test(all)||!/(ランチ|ディナー)/.test(all))throw new Error('Airメイトの売上分析PDFとして認識できません');
  const ym=all.match(/売上分析\s*(\d{4})\s*[\/年]\s*(\d{1,2})/);if(!ym)throw new Error('PDFから対象年月を認識できません');const year=+ym[1],month=+ym[2],key=`${year}-${String(month).padStart(2,'0')}`;
@@ -2200,6 +2244,11 @@ function parseAirmatePdfPages(pages,fileName){
  const summaryPair=String(p1Raw).match(/客\s*数\s+客単価\s+客\s*数\s+客単価[\s\S]{0,500}?([\d,]+)\s*人[\s\S]{0,150}?¥\s*([\d,]+)[\s\S]{0,150}?([\d,]+)\s*人[\s\S]{0,150}?¥\s*([\d,]+)/);
  let lunchCustomers=summaryPair?+summaryPair[1].replace(/,/g,''):matchAfterLabel(pLunchRaw,'ランチ客数',/([\d,]+)\s*人/,x=>+x.replace(/,/g,''),900),dinnerCustomers=summaryPair?+summaryPair[3].replace(/,/g,''):matchAfterLabel(pDinnerRaw,'ディナー客数',/([\d,]+)\s*人/,x=>+x.replace(/,/g,''),900);
  let lunchTicket=summaryPair?pdfYen(summaryPair[2]):matchAfterLabel(pLunchRaw,'ランチ客単価',/¥\s*([\d,]+)/,pdfYen,900),dinnerTicket=summaryPair?pdfYen(summaryPair[4]):matchAfterLabel(pDinnerRaw,'ディナー客単価',/¥\s*([\d,]+)/,pdfYen,900);
+ const spatialSeg=extractAirmateSegmentMetricsSpatial(pages,iL,iD);
+ if(!lunchCustomers&&spatialSeg.lunchCustomers)lunchCustomers=spatialSeg.lunchCustomers;
+ if(!dinnerCustomers&&spatialSeg.dinnerCustomers)dinnerCustomers=spatialSeg.dinnerCustomers;
+ if(!lunchTicket&&spatialSeg.lunchTicket)lunchTicket=spatialSeg.lunchTicket;
+ if(!dinnerTicket&&spatialSeg.dinnerTicket)dinnerTicket=spatialSeg.dinnerTicket;
  if(!lunchSales)lunchSales=matchAfterLabel(p1,'ランチ',/¥\s*([\d,.]+)\s*万/,pdfWanToYen,1800);if(!dinnerSales)dinnerSales=matchAfterLabel(pDinner,'ディナー',/¥\s*([\d,.]+)\s*万/,pdfWanToYen,1800);
  // 端末によって改行位置が変わる場合に備え、概要ページの4指標並びも空白除去版で再確認する。
  if(!lunchCustomers||!dinnerCustomers||!lunchTicket||!dinnerTicket){
@@ -2214,7 +2263,9 @@ function parseAirmatePdfPages(pages,fileName){
  if(!lunchTicket){const m=allCompact.match(/ランチ客単価[\s\S]{0,500}?[¥￥]([\d,]+)/);if(m)lunchTicket=pdfYen(m[1])}
  if(!dinnerTicket){const m=allCompact.match(/ディナー客単価[\s\S]{0,500}?[¥￥]([\d,]+)/);if(m)dinnerTicket=pdfYen(m[1])}
  if(!lunchTicket&&lunchSales&&lunchCustomers)lunchTicket=Math.round(lunchSales/lunchCustomers);if(!dinnerTicket&&dinnerSales&&dinnerCustomers)dinnerTicket=Math.round(dinnerSales/dinnerCustomers);
- if(sales==null||lunchSales==null||dinnerSales==null||lunchCustomers==null||dinnerCustomers==null)throw new Error(`PDF主要項目の認識に失敗しました（売上:${!!sales} ランチ売上:${!!lunchSales} ディナー売上:${!!dinnerSales} ランチ客数:${!!lunchCustomers} ディナー客数:${!!dinnerCustomers}）。Airメイトの「売上分析」PDFか確認してください`);
+ if(sales==null||lunchSales==null||dinnerSales==null||lunchCustomers==null||dinnerCustomers==null||lunchTicket==null||dinnerTicket==null)throw new Error(`PDF主要項目の認識に失敗しました（売上:${!!sales} ランチ売上:${!!lunchSales} ディナー売上:${!!dinnerSales} ランチ客数:${!!lunchCustomers} ランチ客単価:${!!lunchTicket} ディナー客数:${!!dinnerCustomers} ディナー客単価:${!!dinnerTicket}）。Airメイトの「売上分析」PDFか確認してください`);
+ const metricErrors=validateAirmateSegmentMetrics({lunchSales,dinnerSales,lunchCustomers,dinnerCustomers,lunchTicket,dinnerTicket});
+ if(metricErrors.length)throw new Error('AirメイトPDFのランチ・ディナー指標が整合しないため、安全のため読込を中止しました。'+metricErrors.join(' / '));
  const segmentDiff=Math.abs(sales-(lunchSales+dinnerSales));if(segmentDiff>Math.max(50000,sales*0.015))throw new Error('PDF内の月売上とランチ・ディナー合計が大きく一致しないため、安全のため読込を中止しました');
  const lunchDaily=iL>=0?parsePdfDailyGrid(pages[iL],'lunch',year,month):[],dinnerDaily=iD>=0?parsePdfDailyGrid(pages[iD],'dinner',year,month):[],byDate=new Map();
  for(const x of [...lunchDaily,...dinnerDaily]){const d=byDate.get(x.date)||{date:x.date,month:key,store,sourceFile:fileName,sourceType:'airmate_pdf',pdfDaily:true,approximate:true,lunchSales:null,dinnerSales:null,lunchCustomers:null,dinnerCustomers:null};if(x.kind==='lunch'){d.lunchSales=x.sales;d.lunchCustomers=x.customers;d.lunchTicket=x.ticket}else{d.dinnerSales=x.sales;d.dinnerCustomers=x.customers;d.dinnerTicket=x.ticket}byDate.set(x.date,d)}
@@ -2319,7 +2370,7 @@ function buildPrintReport(options={sales:true,rates:true,labor:true,ai:true}){
    ${options.labor?`<section class="pr-section"><div class="pr-sec-head"><h2>人件費チェック</h2></div><div class="pr-labor-box"><div><span>実績</span><strong>${yen(m.labor)}</strong></div><div><span>${pct(s.laborTarget)}予算</span><strong>${yen(laborBudget)}</strong></div><div><span>差額</span><strong>${laborGap>=0?'+':''}${yen(laborGap)}</strong></div></div><p class="pr-note">人件費率 ${pct(r.labor)} ／ 管理範囲 ${pct(s.laborMin)}〜${pct(s.laborMax)}</p></section>`:''}
    ${options.ai?`<section class="pr-section"><div class="pr-sec-head"><h2>経営診断・次の行動</h2><span>総合 ${a.grade} / ${a.word}</span></div><ol class="pr-actions">${checks.map(x=>`<li>${x}</li>`).join('')}</ol></section>`:''}
   </div>
-  <footer class="pr-foot"><span>伏見稲荷 土雷門｜経営管理 Manager Pro Ver 5.14.7</span><span>${m.label}</span></footer>
+  <footer class="pr-foot"><span>伏見稲荷 土雷門｜経営管理 Manager Pro Ver 5.14.8</span><span>${m.label}</span></footer>
  </div>`;
  $('#printReport').setAttribute('aria-hidden','false');
 }
@@ -2656,7 +2707,7 @@ function buildRangeMeetingReport(){
    <section class="pr-section"><h2>月別PL比較</h2><table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>原価</th><th>原価率</th><th>人件費</th><th>人件費率</th><th>営業利益</th><th>利益率</th></tr></thead><tbody>${plRowsOnly}</tbody></table></section>
    <section class="pr-section"><h2>利益率推移</h2>${confirmedRows.length?meetingBars(confirmedRows.map(x=>{const rr=ratios(x.m);return {label:x.key,margin:rr.margin}}),'label','margin',v=>pct(v)):'<p>確定PLデータがないため利益率推移は表示しません。</p>'}</section>
    <section class="pr-section"><h2>PLで確認するポイント</h2><ul class="pr-compact"><li>上部KPI・利益率はすべて確定PL期間だけで統一しています。</li><li>未確定月のCSV売上は参考値として別枠表示し、確定PLへ混ぜません。</li><li>原価率：仕入・ロス・商品構成の変化を確認。</li><li>人件費率：売上に対する配置と総労働時間を確認。</li><li>営業利益率：売上増だけでなく原価・人件費・販管費を合わせて判断。</li></ul></section>
-   <div class="pr-foot">Manager Pro Ver 5.14.7 / ${stamp()} / PL専用資料 / 確定PL基準</div></div>`;
+   <div class="pr-foot">Manager Pro Ver 5.14.8 / ${stamp()} / PL専用資料 / 確定PL基準</div></div>`;
   $('#printReport').innerHTML=page;triggerReportPrint();return
  }
  if(mode==='simple'){
@@ -2669,7 +2720,7 @@ function buildRangeMeetingReport(){
   if(sections.line)simpleBlocks.push(`<section class="pr-section"><h2>LINE日報</h2><p>${cur.lineCount}/${cur.calendarDays}日読込 / ${lineRate.toFixed(1)}%。未読込 ${Math.max(0,cur.calendarDays-cur.lineCount)}日。</p></section>`);
   if(sections.forecast)simpleBlocks.push(`<section class="pr-section"><h2>着地予測</h2>${forecastHtml}</section>`);
   if(sections.actions)simpleBlocks.push(`<section class="pr-section"><h2>次の行動</h2><ol class="pr-compact">${decisions.slice(0,5).map(x=>`<li><b>${x.theme}</b>：${x.action}</li>`).join('')}</ol></section>`);
-  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Manager Pro Ver 5.14.7 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
+  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Manager Pro Ver 5.14.8 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
   $('#printReport').innerHTML=body;triggerReportPrint();return
  }
  const includeExecutive=(kind==='executive'||kind==='meeting')&&selectedNames.length>1;
@@ -2710,7 +2761,7 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>残り期間の判断指標</h2>${forecast?`<div class="pr-forecast-note"><div><span>${forecast.partialToday?'現在ペース（当日途中含む）':'現在ペース（暦日平均）'}</span><strong>${yen(forecast.avg)}</strong></div><div><span>確定日平均売上</span><strong>${forecast.completeAvg!=null?yen(forecast.completeAvg):'-'}</strong></div><div><span>予算達成に必要な日商</span><strong>${forecast.neededDaily!=null?yen(forecast.neededDaily):'-'}</strong></div><div><span>現在平均との比較</span><strong>${forecast.neededDaily!=null?((forecast.completeAvg??forecast.avg)>=forecast.neededDaily?`必要日商を ${yen((forecast.completeAvg??forecast.avg)-forecast.neededDaily)} 上回る`:`必要日商を ${yen(forecast.neededDaily-(forecast.completeAvg??forecast.avg))} 下回る`):'-'}</strong></div></div>`:''}<ul class="pr-compact"><li>必要日商は暦日ベースの目安。休業日は実営業日で再配分。</li><li>好調曜日は再現、不調曜日は人件費・販促・商品訴求を分けて検証。</li><li>客数不足と客単価不足は分けて対策。</li></ul></section>
     ${sections.actions?`<section class="pr-section pr-actions-compact"><h2>改善アクション</h2><table class="pr-table"><thead><tr><th>優先</th><th>テーマ</th><th>実行内容</th></tr></thead><tbody>${decisions.slice(0,4).map(x=>`<tr><td>${x.priority}</td><td>${x.theme}</td><td>${x.action}</td></tr>`).join('')}</tbody></table><h3>次回まで</h3><ul class="pr-compact"><li>LINE日報の未読込日を補完</li><li>月締め後に確定PLへ差替</li><li>施策実施日を日報へ記録</li></ul></section>`:''}
   </div>
-  <div class="pr-foot">Manager Pro Ver 5.14.7 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.14.8 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
  const actionRows=decisions.map((x,i)=>`<tr><td>${i+1}</td><td>${x.priority}</td><td>${x.theme}</td><td>${x.reason}</td><td>${x.action}</td><td>次回会議</td></tr>`).join('');
  // AirメイトPDFのランチ/ディナー月次データを会議資料へ反映。未取得値は推測しない。
  const segmentReports=r.keys.map(key=>state.airmatePdfReports?.[key]).filter(x=>x&&numericProvided(x.lunchSales)&&numericProvided(x.dinnerSales));
@@ -2732,9 +2783,9 @@ function buildRangeMeetingReport(){
  const sheet7=segmentReports.length?`<div class="pr-page pr-sheet">${meetingHeader('ランチ・ディナー分析',segmentCurrent?`${segmentCurrent.label} / Airメイト売上分析PDF`:'Airメイト売上分析PDF','7/7')}
   <div class="pr-mini-grid"><div class="pr-mini"><span>ランチ売上</span><strong>${segmentCurrent?yen(segmentCurrent.lunchSales):'-'}</strong></div><div class="pr-mini"><span>ランチ客数</span><strong>${segmentCurrent&&numericProvided(segmentCurrent.lunchCustomers)?num(segmentCurrent.lunchCustomers)+'名':'-'}</strong></div><div class="pr-mini"><span>ランチ客単価</span><strong>${segmentCurrent&&numericProvided(segmentCurrent.lunchTicket)?yen(segmentCurrent.lunchTicket):'-'}</strong></div><div class="pr-mini"><span>ディナー売上</span><strong>${segmentCurrent?yen(segmentCurrent.dinnerSales):'-'}</strong></div><div class="pr-mini"><span>ディナー客数</span><strong>${segmentCurrent&&numericProvided(segmentCurrent.dinnerCustomers)?num(segmentCurrent.dinnerCustomers)+'名':'-'}</strong></div><div class="pr-mini"><span>ディナー客単価</span><strong>${segmentCurrent&&numericProvided(segmentCurrent.dinnerTicket)?yen(segmentCurrent.dinnerTicket):'-'}</strong></div></div>
   <section class="pr-section"><h2>ランチ / ディナー 月次比較</h2><table class="pr-table"><thead><tr><th>月</th><th>ランチ売上</th><th>構成比</th><th>客数</th><th>客単価</th><th>ディナー売上</th><th>構成比</th><th>客数</th><th>客単価</th></tr></thead><tbody>${segmentRows}</tbody></table></section>
-  <section class="pr-section"><h2>会議で見るポイント</h2><ul class="pr-compact">${segmentNotes.map(x=>`<li>${x}</li>`).join('')}<li>ランチ／ディナーの区分はAirメイトPDFの定義を使用します。取得できない値は「-」とし、推測しません。</li><li>旧版で売上だけ保存されたPDFは、同じAirメイトPDFを再読込すると客数・客単価まで再抽出して更新します。</li></ul></section>
+  <section class="pr-section"><h2>会議で見るポイント</h2><ul class="pr-compact">${segmentNotes.map(x=>`<li>${x}</li>`).join('')}<li>ランチ／ディナーの区分はAirメイトPDFの定義を使用します。取得できない値は「-」とし、推測しません。</li><li>客数・客単価はAirメイト詳細ページの見出しと座標関係から再抽出し、売上÷客数との整合性も確認して保存します。</li></ul></section>
   ${segmentDailyTable?`<section class="pr-section"><h2>日別 ランチ / ディナー</h2><table class="pr-table"><thead><tr><th>日付</th><th>ランチ売上</th><th>客数</th><th>客単価</th><th>ディナー売上</th><th>客数</th><th>客単価</th></tr></thead><tbody>${segmentDailyTable}</tbody></table><p class="pr-note">PDFの日別値はAirメイトPDFから抽出した参考値です。PDF内で丸められた値は概算として扱います。</p></section>`:''}
-  <div class="pr-foot">Manager Pro Ver 5.14.7 / ${stamp()} / Airメイト ランチ・ディナー分析 / 未提供データは推測しません。</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.14.8 / ${stamp()} / Airメイト ランチ・ディナー分析 / 未提供データは推測しません。</div></div>`:'';
  const pages=[sheet1,sheet2,sheet3,sheet4,sheet5,sheet6,sheet7].filter(Boolean),total=pages.length;
  const numbered=pages.map((p,i)=>p.replace(/<div class="pr-month">[^<]*<small>MEETING<\/small><\/div>/,`<div class="pr-month">${i+1}/${total}<small>MEETING</small></div>`));
  $('#printReport').innerHTML=numbered.join('');
