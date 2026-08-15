@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.16.12</title>
+<title>土雷門 経営管理 Manager Pro Ver 5.16.13</title>
 <style>
 :root{
   --green-950:#052f24;--green-900:#083f30;--green-850:#0b4937;--green-800:#0f5a43;--green-700:#18684f;
@@ -2135,13 +2135,13 @@ async function importAggregateCsv(file,rows){
    mpDiagSnapshot('cloudUpsert直後',{file:file.name,kind:parsed.kind})
   }
   const latest=parsed.daily.map(x=>x.month).sort().pop();ensureTemporalMonths();if(latest&&state.months.some(x=>x.key===latest))state.selected=latest;
-  state.analyticsImports=state.analyticsImports||[];state.analyticsImports.unshift({file:file.name,date:stamp(),type:'aggregate_csv',rows:parsed.daily.length});
+  state.analyticsImports=state.analyticsImports||[];state.analyticsImports.unshift({file:file.name,date:stamp(),type:'aggregate_csv',rows:parsed.daily.length,months:[...new Set(parsed.daily.map(x=>x.month).filter(Boolean))].sort()});
   state.history.unshift({file:file.name,date:stamp(),month:latest||'',type:'csv',actor:cloudActor(),detail:`集計CSV ${parsed.daily.length}日を反映`});return true
  }
  if(parsed.monthly?.length){
   for(const x of parsed.monthly){let m=state.months.find(z=>z.key===x.key);if(!m){const [y,mo]=x.key.split('-').map(Number);m={key:x.key,label:`${y}年${mo}月`,short:`${mo}月`,sales:0,cogs:0,gross:0,labor:0,sgna:0,profit:0,provisional:true};state.months.push(m)}
    m.sales=Number(x.sales);m.manualSales=false;m.provisional=true;m.csvSalesSource=file.name;m.updatedAt=stamp()}
-  const latest=parsed.monthly.map(x=>x.key).sort().pop();state.selected=latest;state.analyticsImports=state.analyticsImports||[];state.analyticsImports.unshift({file:file.name,date:stamp(),type:'aggregate_monthly_csv',rows:parsed.monthly.length});
+  const latest=parsed.monthly.map(x=>x.key).sort().pop();state.selected=latest;state.analyticsImports=state.analyticsImports||[];state.analyticsImports.unshift({file:file.name,date:stamp(),type:'aggregate_monthly_csv',rows:parsed.monthly.length,months:parsed.monthly.map(x=>x.key).filter(Boolean).sort()});
   state.history.unshift({file:file.name,date:stamp(),month:latest,type:'csv',actor:cloudActor(),detail:`売上集計CSV ${parsed.monthly.length}か月を反映`});return true
  }
  return false
@@ -2305,7 +2305,10 @@ function monthAnalytics(key){
  if(legacyJulySignature){if(!numericProvided(repairedLunchCustomers))repairedLunchCustomers=1351;if(!numericProvided(repairedDinnerCustomers))repairedDinnerCustomers=675}
  const pdfSegmentCustomers=numericProvided(repairedLunchCustomers)&&numericProvided(repairedDinnerCustomers)?Number(repairedLunchCustomers)+Number(repairedDinnerCustomers):null;
  const pdf={...(pdfRaw||{}),lunchCustomers:repairedLunchCustomers,dinnerCustomers:repairedDinnerCustomers,customers:numericProvided(pdfSegmentCustomers)?pdfSegmentCustomers:(numericProvided(metaPdf?.customers)?Number(metaPdf.customers):(numericProvided(pdfRaw?.customers)?Number(pdfRaw.customers):null))};
- const composedCsvRows=[...composeAnalyticsDailyRows([key]).values()].filter(x=>isCsvActualRow(x)||numericProvided(x.sales)||numericProvided(x.customers));
+ // CSV実績として扱うのは、本当にCSV由来と確認できる日だけ。
+ // 旧実装の「売上/客数があるだけでCSV扱い」は、Airメイト/PDFまでCSV扱いにして
+ // 6・7月などの実際の読込元表示を誤らせるため廃止。
+ const composedCsvRows=[...composeAnalyticsDailyRows([key]).values()].filter(x=>isCsvActualRow(x));
  const csvRows=composedCsvRows,nonPdfRows=dataRows.filter(x=>!['airmate_pdf','generic_pdf_meta'].includes(String(x.sourceType||'')));
  const customerActualRows=csvRows.filter(x=>numericProvided(x.customers));
  const detailSales=sum('sales'),detailCustomers=sum('customers'),target=sum('target'),lastYear=sum('lastYearSales'),lunch=sum('lunchSales'),dinner=sum('dinnerSales'),labor=sum('labor'),fl=sum('flCost');
@@ -2823,8 +2826,14 @@ function analyticsSourcePriority(row){
  return 350
 }
 function isCsvActualRow(row){
- const s=String(row?.sourceType||'').toLowerCase(),f=String(row?.sourceFile||'').toLowerCase();
- return s==='sales_export'||s==='airregi_sales'||s==='airregi_detail'||s.includes('csv')||f.endsWith('.csv')
+ const types=[
+  row?.sourceType,row?.salesSourceType,row?.customersSourceType,row?.ticketSourceType,row?.groupsSourceType
+ ].map(v=>String(v||'').toLowerCase());
+ const files=[
+  row?.sourceFile,row?.salesSourceFile,row?.customersSourceFile,row?.ticketSourceFile,row?.groupsSourceFile
+ ].map(v=>String(v||'').toLowerCase());
+ return types.some(s=>s==='sales_export'||s==='airregi_sales'||s==='airregi_detail'||s==='accounting_csv'||s.includes('csv'))
+   || files.some(f=>f.endsWith('.csv'));
 }
 function dailyActualSource(row){
  if(isCsvActualRow(row))return 'CSV';
