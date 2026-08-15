@@ -3362,7 +3362,7 @@ function v42SetupUi(){
  gate.classList.add('hidden');gate.classList.remove('needs-setup');if(safeLocalGet('doraimon_cloud_setup_done')==='1'){setTimeout(()=>cloudInit().catch(()=>{}),300)}
 }
 
-function boot(){v42SetupUi();ensureTemporalMonths();state.selected=latestAvailableMonthKey();bind();renderAll();setReportFlow('idle');mpInstallDiagButton();mpStartCsvProtectionWatcher();mpDiagSnapshot('起動直後');cloudInit();setTimeout(()=>{mpApplyCsvProtection();mpDiagSnapshot('起動後クラウド初期化待ち')},1800);if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('/sw.js').catch(()=>{})}
+function boot(){v42SetupUi();ensureTemporalMonths();state.selected=latestAvailableMonthKey();bind();renderAll();setReportFlow('idle');mpStartCsvProtectionWatcher();mpDiagSnapshot('起動直後');cloudInit();setTimeout(()=>{mpApplyCsvProtection();mpDiagSnapshot('起動後クラウド初期化待ち')},1800);if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('/sw.js').catch(()=>{})}
 boot();
 })();
 
