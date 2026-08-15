@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.16.13</title>
+<title>土雷門 経営管理 Manager Pro Ver 5.16.14</title>
 <style>
 :root{
   --green-950:#052f24;--green-900:#083f30;--green-850:#0b4937;--green-800:#0f5a43;--green-700:#18684f;
@@ -2000,17 +2000,36 @@ function flexibleHeaderIndex(row,aliases){
 }
 function parseAggregateCsv(rows,file){
  const period=filePeriodFromName(file.name),name=String(file.name||'');
- // Airレジ「売上集計」: 集計期間が YYYYMMDD なら日次、YYYYMM なら月次。
- for(let i=0;i<Math.min(rows.length,40);i++){
-  const r=rows[i]||[],pc=exactHeaderIndex(r,['集計期間']),sc=exactHeaderIndex(r,['売上']);
-  if(pc>=0&&sc>=0){
+ const inferDateFromPeriod=(raw)=>{
+  const direct=isoDate(raw);if(direct)return direct;
+  // AirレジCSVは環境によって「6/1」「06/01(火)」のように年が省略されることがある。
+  // ファイル名から対象月を一意に特定できる場合だけ年を補完する（推測で別月へ入れない）。
+  if(period&&period.start===period.end){
+   let s=String(raw??'').normalize('NFKC').trim().replace(/\([^)]*\)|（[^）]*）/g,'').replace(/[年月.\-]/g,'/').replace(/日/g,'').replace(/\s+/g,'');
+   const md=s.match(/^(\d{1,2})\/(\d{1,2})$/),dOnly=s.match(/^(\d{1,2})$/);
+   const [y,mo]=period.start.split('-').map(Number);let m=md?Number(md[1]):mo,d=md?Number(md[2]):dOnly?Number(dOnly[1]):null;
+   if(d!=null&&m===mo){const dt=new Date(y,m-1,d);if(dt.getFullYear()===y&&dt.getMonth()+1===m&&dt.getDate()===d)return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
+  }
+  return '';
+ };
+ // Airレジ「売上集計」: 日付列名・売上列名の表記揺れを許容し、月内の日別行を確実に保持する。
+ for(let i=0;i<Math.min(rows.length,60);i++){
+  const r=rows[i]||[],pc=flexibleHeaderIndex(r,['集計期間','日付','営業日','対象日','会計日']),sc=flexibleHeaderIndex(r,['売上','売上高','売上合計','税込売上','売上（税込）','売上(税込)']);
+  if(pc>=0&&sc>=0&&pc!==sc){
    const daily=[],monthly=[];
    for(const row of rows.slice(i+1)){
     const raw=String(row[pc]??'').normalize('NFKC').trim(),sales=csvNum(row[sc]);if(sales==null)continue;
-    const date=isoDate(raw);if(date){daily.push({date,month:date.slice(0,7),sales:Number(sales),store:'',sourceFile:file.name,sourceType:'airregi_sales_csv'});continue}
+    const date=inferDateFromPeriod(raw);if(date){daily.push({date,month:date.slice(0,7),sales:Number(sales),store:'',sourceFile:file.name,sourceType:'airregi_sales_csv'});continue}
     const key=isoMonth(raw);if(key)monthly.push({key,sales:Number(sales)})
    }
-   if(daily.length||monthly.length)return {daily,monthly,kind:'airregi_sales'}
+   // 同一日が複数行ある形式では、日次として1日1行へ統合する。
+   // 「合計/総計」行は日付に変換できないためここには入らない。
+   if(daily.length){
+    const byDate=new Map();for(const x of daily){const old=byDate.get(x.date);if(!old)byDate.set(x.date,{...x});else old.sales+=Number(x.sales)}
+    const merged=[...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date));
+    return {daily:merged,monthly,kind:'airregi_sales'}
+   }
+   if(monthly.length)return {daily:[],monthly,kind:'airregi_sales'}
   }
  }
  // Airレジ「会計明細」: 取引先頭行だけに会計日/合計/人数が入るため、その行だけを取引として集計。
@@ -2110,6 +2129,21 @@ function mpInstallDiagButton(){
  b.onclick=mpShowDiag;document.body.appendChild(b)
 }
 
+function mpBackfillCsvDailyCache(rows){
+ // PDF/会議資料が見る日次キャッシュへ、CSV実績を必ず1日1行で残す。
+ // 旧版で analyticsDaily だけに残ったデータも、次回CSV読込時に state.daily へ同期する。
+ state.daily=state.daily||[];
+ for(const n of rows||[]){
+  if(!n?.date||!isValidIsoDate(n.date))continue;
+  let d=state.daily.find(x=>x.date===n.date);if(!d){d={date:n.date,source:'CSV実績'};state.daily.push(d)}
+  if(numericProvided(n.sales))d.sales=Number(n.sales);
+  if(numericProvided(n.customers))d.customers=Number(n.customers);
+  d.source='CSV実績';d.csvSourceFile=n.sourceFile||d.csvSourceFile||'';d.csvSourceType=n.sourceType||d.csvSourceType||'';
+ }
+ state.daily.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+ state.daily=state.daily.slice(0,5000);
+}
+
 async function importAggregateCsv(file,rows){
  const parsed=parseAggregateCsv(rows,file);if(!parsed)return false;
  if(parsed.daily?.length){
@@ -2117,6 +2151,7 @@ async function importAggregateCsv(file,rows){
   const importStamp=stamp();
   parsed.daily=parsed.daily.map(x=>({...x,importedAt:importStamp,updatedAt:importStamp}));
   assertCloudDateUniqueness(parsed.daily);
+  mpBackfillCsvDailyCache(parsed.daily);
   // Ver5.16.7: 同じ期間のCSV再読込は、帳票ごとの担当項目を最新値へ明示置換する。
   // 売上集計=売上、会計明細=客数/組数/客単価。LINEや別帳票の担当項目は保持する。
   replaceAggregatePeriodFields(parsed.daily,parsed.kind);
@@ -2131,6 +2166,7 @@ async function importAggregateCsv(file,rows){
    mergeAnalyticsDaily(parsed.daily);
    mpProtectCsvRows(parsed.daily,parsed.kind);
    mpApplyCsvProtection();
+   mpBackfillCsvDailyCache(parsed.daily);
    save();
    mpDiagSnapshot('cloudUpsert直後',{file:file.name,kind:parsed.kind})
   }
