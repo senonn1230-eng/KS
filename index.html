@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.16.11</title>
+<title>土雷門 経営管理 Manager Pro Ver 5.16.12</title>
 <style>
 :root{
   --green-950:#052f24;--green-900:#083f30;--green-850:#0b4937;--green-800:#0f5a43;--green-700:#18684f;
@@ -1129,46 +1129,27 @@ function mpCsvProtectLoad(){try{return JSON.parse(localStorage.getItem(MP_CSV_PR
 function mpCsvProtectSave(x){try{localStorage.setItem(MP_CSV_PROTECT_KEY,JSON.stringify(x||{}))}catch(e){}}
 function mpProtectCsvRows(rows,kind){
  const p=mpCsvProtectLoad(),now=Date.now(),ttl=15*60*1000;
+ const isSales=kind==='airregi_sales'||kind==='sales_export',isDetail=kind==='airregi_detail'||kind==='accounting';
  (rows||[]).forEach(r=>{
-   if(!r.date)return;
-   const key=`${String(r.store||'')}|${r.date}`;
-   p[key]={until:now+ttl,kind,fields:{
-     sales:r.sales,customers:r.customers,ticket:r.ticket,groups:r.groups
-   },meta:{
-     salesSourceType:r.salesSourceType||r.sourceType||'',
-     salesSourceFile:r.salesSourceFile||r.sourceFile||'',
-     sourceType:r.sourceType||'',sourceFile:r.sourceFile||'',
-     updatedAt:r.updatedAt||stamp(),importedAt:r.importedAt||stamp()
-   }};
- });
- mpCsvProtectSave(p)
+  if(!r.date)return;const key=`${String(r.store||'')}|${r.date}`,prev=p[key]&&p[key].until>=now?p[key]:null,fields={};
+  if(isSales&&numericProvided(r.sales))fields.sales=Number(r.sales);
+  if(isDetail)for(const k of ['customers','ticket','groups'])if(numericProvided(r[k]))fields[k]=Number(r[k]);
+  p[key]={until:now+ttl,kind:'aggregate_fields',fields:{...(prev?.fields||{}),...fields},meta:{...(prev?.meta||{}),
+   ...(fields.sales!==undefined?{salesSourceType:r.sourceType||'airregi_sales_csv',salesSourceFile:r.sourceFile||'',salesUpdatedAt:r.updatedAt||r.importedAt||stamp()}:{}),
+   ...(fields.customers!==undefined?{customersSourceType:r.sourceType||'airregi_detail_csv',customersSourceFile:r.sourceFile||'',customersUpdatedAt:r.updatedAt||r.importedAt||stamp()}:{}),
+   sourceType:r.sourceType||'',sourceFile:r.sourceFile||'',updatedAt:r.updatedAt||stamp(),importedAt:r.importedAt||stamp()}};
+ });mpCsvProtectSave(p)
 }
 function mpApplyCsvProtection(){
  const p=mpCsvProtectLoad(),now=Date.now();let changed=false;
  Object.keys(p).forEach(key=>{
-   const q=p[key];if(!q||q.until<now){delete p[key];return}
-   const [store,date]=key.split('|');
-   let row=(state.analyticsDaily||[]).find(x=>x.date===date&&String(x.store||'')===store);
-   if(!row)row=(state.analyticsDaily||[]).find(x=>x.date===date);
-   if(!row)return;
-   const f=q.fields||{},m=q.meta||{};
-   // 売上CSV保護中は最新売上を古いRealtimeスナップショットに戻させない。
-   if(f.sales!==undefined&&f.sales!==null&&f.sales!==''){
-     row.sales=f.sales;row.salesSourceType=m.salesSourceType||'airregi_sales_csv';
-     row.salesSourceFile=m.salesSourceFile||m.sourceFile||'';
-     row.salesUpdatedAt=m.updatedAt||stamp();changed=true;
-   }
-   // 会計明細再読込時は、その担当項目も同様に保護。
-   if(q.kind==='accounting'||q.kind==='airregi_detail'){
-     for(const k of ['customers','ticket','groups']){
-       if(f[k]!==undefined&&f[k]!==null&&f[k]!=='')row[k]=f[k];
-     }
-   }
-   row.updatedAt=m.updatedAt||row.updatedAt;row.importedAt=m.importedAt||row.importedAt;
- });
- mpCsvProtectSave(p);
- if(changed){rebuildPdfReportsFromAnalytics();save()}
- return changed
+  const q=p[key];if(!q||q.until<now){delete p[key];return}const [store,date]=key.split('|');
+  let row=(state.analyticsDaily||[]).find(x=>x.date===date&&String(x.store||'')===store);if(!row)row=(state.analyticsDaily||[]).find(x=>x.date===date);if(!row)return;
+  const f=q.fields||{},m=q.meta||{};
+  if(numericProvided(f.sales)){row.sales=Number(f.sales);row.salesSourceType=m.salesSourceType||'airregi_sales_csv';row.salesSourceFile=m.salesSourceFile||'';row.salesUpdatedAt=m.salesUpdatedAt||m.updatedAt||stamp();changed=true}
+  for(const k of ['customers','ticket','groups'])if(numericProvided(f[k])){row[k]=Number(f[k]);row[`${k}SourceType`]=m[`${k}SourceType`]||'airregi_detail_csv';row[`${k}SourceFile`]=m[`${k}SourceFile`]||m.sourceFile||'';row[`${k}UpdatedAt`]=m[`${k}UpdatedAt`]||m.updatedAt||stamp();changed=true}
+  row.updatedAt=m.updatedAt||row.updatedAt;row.importedAt=m.importedAt||row.importedAt;
+ });mpCsvProtectSave(p);if(changed){rebuildPdfReportsFromAnalytics();save()}
 }
 function mpStartCsvProtectionWatcher(){
  if(window.__mpCsvProtectTimer)return;
