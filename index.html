@@ -926,14 +926,16 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
 }
 </style>
 
-<style id="v51642A4TrueWidthNoRightClip">
-/* ===== Ver 5.16.42: A4 true-width print fix =====
-   Safari/Chrome on iPhone can clip the right edge when an element is wider than
-   the physical A4 content box and relies on CSS zoom to shrink it.
-   Therefore the logical sheet itself is now kept inside the real printable width.
-   Data, page composition, charts and signal logic are unchanged. */
+<style id="v51644CompactA4Print">
+/* ===== Ver 5.16.45 =====
+   A4 compact layout:
+   - no whole-page zoom
+   - no transform scaling
+   - no over-wide 230-290mm sheet
+   - fit by real A4 width + compact spacing/typography
+*/
 @media print{
-  @page{size:A4 portrait;margin:5mm!important;}
+  @page{size:A4 portrait;margin:4mm!important;}
 
   html,body,
   body.printing-report,
@@ -947,109 +949,249 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
   }
 
   #printReport{
-    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
   }
 
-  /* A4 = 210mm. With 5mm left/right margins, 200mm is available.
-     Use 196mm to keep a reliable safety reserve on iPhone Safari/Chrome. */
-  #printReport .pr-page.pr-sheet{
-    width:196mm!important;
-    max-width:196mm!important;
-    min-width:0!important;
-    margin:0 auto!important;
-    zoom:1!important;
-    transform:none!important;
-    overflow:visible!important;
-    box-sizing:border-box!important;
-  }
-
-  /* Dense pages are compressed through typography/spacing rather than an over-wide
-     page + zoom combination. This prevents right-edge clipping. */
+  /* A4 210mm - 8mm page margins = 202mm printable.
+     Keep a small renderer reserve. */
+  #printReport .pr-page.pr-sheet,
   #printReport .pr-page.pr-sheet[data-print-density="dense"],
   #printReport .pr-page.pr-sheet[data-print-density="very-dense"],
   #printReport .pr-page.pr-sheet.pr-sales-sheet.pr-long-range,
   #printReport .pr-page.pr-sheet.pr-abc-sheet,
   #printReport .pr-page.pr-sheet.pr-airmate-page,
   #printReport .pr-page.pr-sheet.pr-longtrend-sheet{
-    width:196mm!important;
-    max-width:196mm!important;
+    width:198mm!important;
+    max-width:198mm!important;
+    min-width:0!important;
+    margin:0 auto!important;
+    padding:0!important;
     zoom:1!important;
     transform:none!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+    break-after:page!important;
+    page-break-after:always!important;
   }
 
-  #printReport .pr-page.pr-sheet *,
-  #printReport .pr-kpis,
-  #printReport .pr-data-quality,
+  #printReport .pr-page.pr-sheet:last-child{
+    break-after:auto!important;
+    page-break-after:auto!important;
+  }
+
+  /* Compact vertical rhythm instead of shrinking entire page. */
+  #printReport .pr-head{
+    padding:4mm 4.5mm!important;
+    margin:0 0 1.3mm!important;
+  }
+  #printReport .pr-head h1,
+  #printReport .pr-head h2{
+    margin-top:1mm!important;
+    margin-bottom:.7mm!important;
+    line-height:1.15!important;
+  }
+
+  #printReport .pr-section{
+    margin-top:1.15mm!important;
+    padding:1.35mm 1.7mm!important;
+    border-radius:2.2mm!important;
+  }
+  #printReport .pr-section h2,
+  #printReport .pr-section h3{
+    margin-top:0!important;
+    margin-bottom:.8mm!important;
+    line-height:1.15!important;
+  }
+
+  #printReport .pr-kpis{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:1.2mm!important;
+    margin:1.1mm 0!important;
+  }
+  #printReport .pr-kpi{
+    min-width:0!important;
+    min-height:13mm!important;
+    padding:1.35mm 1.55mm!important;
+  }
+  #printReport .pr-kpi strong{
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    font-size:13pt!important;
+    line-height:1.05!important;
+  }
+  #printReport .pr-kpi span,
+  #printReport .pr-kpi small{
+    line-height:1.1!important;
+  }
+
   #printReport .pr-two,
   #printReport .pr-diagnosis-grid,
   #printReport .pr-quadrant,
-  #printReport .pr-mini-grid,
-  #printReport .pr-forecast-note{
+  #printReport .pr-forecast-note,
+  #printReport .pr-data-quality{
+    gap:1.2mm!important;
     min-width:0!important;
-    max-width:100%;
-    box-sizing:border-box!important;
+  }
+  #printReport .pr-two{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  }
+  #printReport .pr-data-quality{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
   }
 
-  #printReport .pr-kpi,
   #printReport .pr-mini,
-  #printReport .pr-section,
   #printReport .pr-diagnosis-card,
   #printReport .pr-quadrant>div{
     min-width:0!important;
-    max-width:100%!important;
+    padding:1.15mm 1.35mm!important;
   }
 
   #printReport .pr-table{
     width:100%!important;
     max-width:100%!important;
     table-layout:fixed!important;
+    font-size:6.55pt!important;
+    line-height:1.12!important;
   }
   #printReport .pr-table th,
   #printReport .pr-table td{
     min-width:0!important;
+    padding:.55mm .8mm!important;
+    white-space:normal!important;
     overflow-wrap:anywhere!important;
     word-break:normal!important;
   }
 
-  #printReport .pr-kpi strong,
-  #printReport .pr-mini strong{
-    max-width:100%!important;
-    overflow:visible!important;
-    text-overflow:clip!important;
-    white-space:normal!important;
-    overflow-wrap:anywhere!important;
+  #printReport .pr-bars,
+  #printReport .pr-hbars{
+    margin-top:.8mm!important;
+    margin-bottom:.8mm!important;
+  }
+  #printReport .pr-hbar{
+    margin:.35mm 0!important;
   }
 
-  /* Keep numeric cells readable while allowing long labels/actions to wrap. */
-  #printReport .pr-table td:nth-child(n+2),
-  #printReport .pr-table th:nth-child(n+2){
-    white-space:normal!important;
-  }
-
-  #printReport .pr-action-table td,
-  #printReport .pr-action-table th,
-  #printReport .pr-page-note,
   #printReport .pr-callout,
+  #printReport .pr-page-note,
   #printReport .pr-foot{
-    overflow-wrap:anywhere!important;
     white-space:normal!important;
+    overflow-wrap:anywhere!important;
+    line-height:1.15!important;
+  }
+  #printReport .pr-page-note,
+  #printReport .pr-callout{
+    padding:1mm 1.25mm!important;
+    margin-top:.75mm!important;
+  }
+  #printReport .pr-foot{
+    margin-top:1mm!important;
+    padding-top:.7mm!important;
+    font-size:6.4pt!important;
   }
 
-  /* Slight compacting only where necessary to preserve one logical page = one A4 page. */
-  #printReport .pr-sales-sheet.pr-long-range .pr-section,
-  #printReport .pr-abc-sheet .pr-section,
-  #printReport .pr-airmate-page .pr-section,
-  #printReport .pr-longtrend-sheet .pr-section{
-    padding-left:1.7mm!important;
-    padding-right:1.7mm!important;
+  #printReport ul,
+  #printReport ol{
+    margin-top:.65mm!important;
+    margin-bottom:.65mm!important;
   }
-  #printReport .pr-sales-sheet.pr-long-range .pr-table{font-size:5.55pt!important;}
-  #printReport .pr-abc-sheet .pr-table{font-size:6.0pt!important;}
-  #printReport .pr-airmate-page .pr-table{font-size:6.0pt!important;}
-  #printReport .pr-longtrend-sheet .pr-table{font-size:5.9pt!important;}
-  #printReport .pr-longtrend-sheet .pr-section{margin-top:1.25mm!important;padding-top:1.45mm!important;padding-bottom:1.45mm!important;}
-  #printReport .pr-longtrend-sheet .pr-diagnosis-card,
-  #printReport .pr-longtrend-sheet .pr-quadrant>div{padding:1.25mm!important;}
+  #printReport li{
+    margin:.25mm 0!important;
+    line-height:1.22!important;
+  }
+
+  /* Dense report pages */
+  #printReport .pr-sales-sheet.pr-long-range .pr-table{font-size:5.7pt!important;}
+  #printReport .pr-sales-sheet.pr-long-range .pr-section{padding-top:1.05mm!important;padding-bottom:1.05mm!important;}
+  #printReport .pr-sales-sheet.pr-long-range .pr-hbar{margin:.25mm 0!important;}
+
+  #printReport .pr-abc-sheet .pr-table{font-size:5.9pt!important;}
+  #printReport .pr-abc-sheet .pr-section{padding-top:1.05mm!important;padding-bottom:1.05mm!important;}
+  #printReport .pr-abc-sheet .pr-hbar{margin:.25mm 0!important;}
+
+  #printReport .pr-airmate-page .pr-table{font-size:5.8pt!important;}
+  #printReport .pr-airmate-page .pr-section{padding-top:1.05mm!important;padding-bottom:1.05mm!important;}
+
+  #printReport .pr-longtrend-sheet .pr-table{font-size:5.7pt!important;}
+  #printReport .pr-longtrend-sheet .pr-section{margin-top:.8mm!important;padding-top:1mm!important;padding-bottom:1mm!important;}
+
+  /* Avoid isolated fragments/blank continuation pages. */
+  #printReport .pr-section,
+  #printReport .pr-kpis,
+  #printReport .pr-data-quality,
+  #printReport .pr-topbottom,
+  #printReport .pr-two,
+  #printReport .pr-diagnosis-grid,
+  #printReport .pr-quadrant,
+  #printReport .pr-big-conclusion{
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+
+  /* Everything must be shrinkable horizontally. */
+  #printReport .pr-page.pr-sheet *,
+  #printReport .pr-kpis,
+  #printReport .pr-kpi,
+  #printReport .pr-section,
+  #printReport .pr-two,
+  #printReport .pr-mini,
+  #printReport .pr-data-quality,
+  #printReport .pr-diagnosis-grid,
+  #printReport .pr-quadrant{
+    min-width:0!important;
+    max-width:100%;
+    box-sizing:border-box!important;
+  }
+}
+</style>
+
+
+<style id="v51645OnePageSummaryMode">
+@media print{
+  body.print-onepage-summary #printReport .pr-page.pr-sheet{
+    display:none!important;
+  }
+  body.print-onepage-summary #printReport .pr-page.pr-sheet.pr-summary-sheet{
+    display:block!important;
+    width:198mm!important;
+    max-width:198mm!important;
+    margin:0 auto!important;
+    zoom:.72!important;
+    transform:none!important;
+    overflow:hidden!important;
+    break-after:auto!important;
+    page-break-after:auto!important;
+  }
+  body.print-onepage-summary #printReport .pr-page.pr-sheet.pr-summary-sheet .pr-section{
+    margin-top:.8mm!important;
+    padding:1mm 1.25mm!important;
+  }
+  body.print-onepage-summary #printReport .pr-page.pr-sheet.pr-summary-sheet .pr-kpis{
+    gap:.8mm!important;
+  }
+  body.print-onepage-summary #printReport .pr-page.pr-sheet.pr-summary-sheet .pr-kpi{
+    min-height:10.5mm!important;
+    padding:1mm 1.2mm!important;
+  }
+  body.print-onepage-summary #printReport .pr-page.pr-sheet.pr-summary-sheet .pr-kpi strong{
+    font-size:11pt!important;
+  }
+  body.print-onepage-summary #printReport .pr-page.pr-sheet.pr-summary-sheet .pr-table{
+    font-size:5.1pt!important;
+    line-height:1.05!important;
+  }
+  body.print-onepage-summary #printReport .pr-page.pr-sheet.pr-summary-sheet .pr-table th,
+  body.print-onepage-summary #printReport .pr-page.pr-sheet.pr-summary-sheet .pr-table td{
+    padding:.35mm .5mm!important;
+  }
+  body.print-onepage-summary #printReport .pr-page.pr-sheet.pr-summary-sheet .pr-foot{
+    font-size:5.7pt!important;
+    margin-top:.5mm!important;
+    padding-top:.4mm!important;
+  }
 }
 </style>
 
@@ -3613,7 +3755,42 @@ function mpStandaloneReportHtml(report){
  const styles=[...document.querySelectorAll('style')].map(s=>s.outerHTML).join('\n');
  const title='土雷門 Manager Pro 月次会議資料';
  return `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${title}</title>${styles}<style>
- html,body{background:#fff!important;margin:0!important;padding:0!important;overflow:auto!important;height:auto!important}body{min-height:100vh!important}.mp-ios-print-toolbar{position:sticky;top:0;z-index:2147483647;display:flex;gap:10px;align-items:center;justify-content:center;padding:12px calc(12px + env(safe-area-inset-right)) 12px calc(12px + env(safe-area-inset-left));background:#0a4f3f;color:#fff;box-shadow:0 2px 10px #0003}.mp-ios-print-toolbar button{font:inherit;font-weight:800;border:0;border-radius:999px;padding:12px 18px;background:#fff;color:#0a4f3f}.mp-ios-print-toolbar small{opacity:.9}#printReport{display:block!important;visibility:visible!important;opacity:1!important;position:static!important;width:auto!important;height:auto!important;overflow:visible!important}#printReport[aria-hidden="true"]{display:block!important}.cause-track-fab,.meeting-preview-modal{display:none!important}@media print{.mp-ios-print-toolbar{display:none!important}html,body{margin:0!important;padding:0!important}.pr-page,.pr-sheet{break-after:page;page-break-after:always}.pr-sheet.pr-join-next,.pr-sheet.pr-join-prev{break-before:auto!important;page-break-before:auto!important;break-after:page!important;page-break-after:always!important;margin-top:0!important;margin-bottom:0!important}.pr-sheet.pr-join-next:last-child,.pr-sheet.pr-join-prev:last-child{break-after:auto!important;page-break-after:auto!important}.pr-head,.pr-sec-head,.pr-section h2,.pr-section h3{break-after:avoid-page!important;page-break-after:avoid!important}.pr-page:last-child,.pr-sheet:last-child{break-after:auto;page-break-after:auto}}</style></head><body><div class="mp-ios-print-toolbar"><button id="mpIosPrintButton" type="button">印刷・PDF保存を開く</button><small>開かない場合はSafariの共有 → プリント</small></div><div id="printReport" aria-hidden="false" data-report-design="${report.dataset.reportDesign||''}">${report.innerHTML}</div><script>(function(){var b=document.getElementById('mpIosPrintButton');if(b)b.onclick=function(){try{window.print()}catch(e){alert('印刷画面を開けませんでした。Safariの共有メニューから「プリント」を選んでください。')}};setTimeout(function(){try{window.print()}catch(e){}},350)})();<\/script></body></html>`
+ html,body{background:#fff!important;margin:0!important;padding:0!important;overflow:auto!important;height:auto!important}body{min-height:100vh!important}.mp-ios-print-toolbar{position:sticky;top:0;z-index:2147483647;display:flex;gap:10px;align-items:center;justify-content:center;padding:12px calc(12px + env(safe-area-inset-right)) 12px calc(12px + env(safe-area-inset-left));background:#0a4f3f;color:#fff;box-shadow:0 2px 10px #0003}.mp-ios-print-toolbar button{font:inherit;font-weight:800;border:0;border-radius:999px;padding:12px 18px;background:#fff;color:#0a4f3f}.mp-ios-print-toolbar small{opacity:.9}#printReport{display:block!important;visibility:visible!important;opacity:1!important;position:static!important;width:auto!important;height:auto!important;overflow:visible!important}#printReport[aria-hidden="true"]{display:block!important}.cause-track-fab,.meeting-preview-modal{display:none!important}@media print{.mp-ios-print-toolbar{display:none!important}html,body{margin:0!important;padding:0!important}.pr-page,.pr-sheet{break-after:page;page-break-after:always}.pr-sheet.pr-join-next,.pr-sheet.pr-join-prev{break-before:auto!important;page-break-before:auto!important;break-after:page!important;page-break-after:always!important;margin-top:0!important;margin-bottom:0!important}.pr-sheet.pr-join-next:last-child,.pr-sheet.pr-join-prev:last-child{break-after:auto!important;page-break-after:auto!important}.pr-head,.pr-sec-head,.pr-section h2,.pr-section h3{break-after:avoid-page!important;page-break-after:avoid!important}.pr-page:last-child,.pr-sheet:last-child{break-after:auto;page-break-after:auto}}</style></head><body><div class="mp-ios-print-toolbar"><button id="mpIosPrintButton" type="button">印刷・PDF保存を開く</button><small>開かない場合はSafariの共有 → プリント</small></div><div id="printReport" aria-hidden="false" data-report-design="${report.dataset.reportDesign||''}">${report.innerHTML}</div><script>(function(){var b=document.getElementById('mpIosPrintButton');if(b)b.onclick=function(){try{window.print()}catch(e){alert('印刷画面を開けませんでした。Safariの共有メニューから「プリント」を選んでください。')}};setTimeout(function(){try{window.print()}catch(e){}},350)})();<\/script>
+<script id="v51645OnePageSummaryHelper">
+(function(){
+  function markSummarySheet(){
+    const root=document.getElementById('printReport');
+    if(!root) return;
+    const first=root.querySelector('.pr-page.pr-sheet');
+    if(first) first.classList.add('pr-summary-sheet');
+  }
+  window.ManagerProPrintMode = {
+    setOnePageSummary(on){
+      document.body.classList.toggle('print-onepage-summary', !!on);
+      markSummarySheet();
+    },
+    printOnePageSummary(){
+      this.setOnePageSummary(true);
+      setTimeout(()=>window.print(),80);
+    },
+    printNormal(){
+      this.setOnePageSummary(false);
+      setTimeout(()=>window.print(),80);
+    }
+  };
+  document.addEventListener('DOMContentLoaded', markSummarySheet);
+  const mo=new MutationObserver(markSummarySheet);
+  mo.observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+
+
+<div id="v51645PrintChoice" style="position:fixed;right:12px;bottom:92px;z-index:9998;display:flex;gap:8px;flex-direction:column;">
+  <button type="button" onclick="ManagerProPrintMode.printNormal()" style="border:none;border-radius:999px;padding:10px 14px;background:#0b5a45;color:#fff;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.18);">PDF 通常版</button>
+  <button type="button" onclick="ManagerProPrintMode.printOnePageSummary()" style="border:none;border-radius:999px;padding:10px 14px;background:#b78312;color:#fff;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.18);">PDF 1枚要約</button>
+</div>
+
+</body></html>`
 }
 function mpOpenIosReportWindow(report){
  // iOS/PWA は window.print() が無反応になる場合があるため、ユーザー操作中に印刷専用ページを先に確保する。
@@ -3822,7 +3999,7 @@ function buildRangeMeetingReport(){
    <section class="pr-section"><h2>月別PL比較</h2><table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>原価</th><th>原価率</th><th>人件費</th><th>人件費率</th><th>営業利益</th><th>利益率</th></tr></thead><tbody>${plRowsOnly}</tbody></table></section>
    <section class="pr-section"><h2>利益率推移</h2>${confirmedRows.length?meetingBars(confirmedRows.map(x=>{const rr=ratios(x.m);return {label:x.key,margin:rr.margin}}),'label','margin',v=>pct(v)):'<p>確定PLデータがないため利益率推移は表示しません。</p>'}</section>
    <section class="pr-section"><h2>PLで確認するポイント</h2><ul class="pr-compact"><li>上部KPI・利益率はすべて確定PL期間だけで統一しています。</li><li>未確定月のCSV売上は参考値として別枠表示し、確定PLへ混ぜません。</li><li>原価率：仕入・ロス・商品構成の変化を確認。</li><li>人件費率：売上に対する配置と総労働時間を確認。</li><li>営業利益率：売上増だけでなく原価・人件費・販管費を合わせて判断。</li></ul></section>
-   <div class="pr-foot">Manager Pro Ver 5.16.42 / ${stamp()} / PL専用資料 / 確定PL基準</div></div>`;
+   <div class="pr-foot">Manager Pro Ver 5.16.45 / ${stamp()} / PL専用資料 / 確定PL基準</div></div>`;
   $('#printReport').innerHTML=page;triggerReportPrint();return
  }
  if(mode==='simple'){
@@ -3835,7 +4012,7 @@ function buildRangeMeetingReport(){
   if(sections.line)simpleBlocks.push(`<section class="pr-section"><h2>LINE日報</h2><p>${cur.lineCount}/${cur.calendarDays}日読込 / ${lineRate.toFixed(1)}%。未読込 ${Math.max(0,cur.calendarDays-cur.lineCount)}日。</p></section>`);
   if(sections.forecast)simpleBlocks.push(`<section class="pr-section"><h2>着地予測</h2>${forecastHtml}</section>`);
   if(sections.actions)simpleBlocks.push(`<section class="pr-section"><h2>次の行動</h2><ol class="pr-compact">${decisions.slice(0,5).map(x=>`<li><b>${x.theme}</b>：${x.action}</li>`).join('')}</ol></section>`);
-  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Manager Pro Ver 5.16.42 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
+  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Manager Pro Ver 5.16.45 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
   $('#printReport').innerHTML=body;triggerReportPrint();return
  }
  const includeExecutive=(kind==='executive'||kind==='meeting')&&selectedNames.length>1;
@@ -3877,7 +4054,7 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>残り期間の判断指標</h2>${forecast?`<div class="pr-forecast-note"><div><span>${forecast.partialToday?'現在ペース（当日途中含む）':'現在ペース（暦日平均）'}</span><strong>${yen(forecast.avg)}</strong></div><div><span>確定日平均売上</span><strong>${forecast.completeAvg!=null?yen(forecast.completeAvg):'-'}</strong></div><div><span>予算達成に必要な日商</span><strong>${forecast.neededDaily!=null?yen(forecast.neededDaily):'-'}</strong></div><div><span>現在平均との比較</span><strong>${forecast.neededDaily!=null?((forecast.completeAvg??forecast.avg)>=forecast.neededDaily?`必要日商を ${yen((forecast.completeAvg??forecast.avg)-forecast.neededDaily)} 上回る`:`必要日商を ${yen(forecast.neededDaily-(forecast.completeAvg??forecast.avg))} 下回る`):'-'}</strong></div></div>`:''}<ul class="pr-compact"><li>必要日商は暦日ベースの目安。休業日は実営業日で再配分。</li><li>好調曜日は再現、不調曜日は人件費・販促・商品訴求を分けて検証。</li><li>客数不足と客単価不足は分けて対策。</li></ul></section>
     ${sections.actions?`<section class="pr-section pr-actions-compact"><h2>改善アクション</h2><table class="pr-table"><thead><tr><th>優先</th><th>テーマ</th><th>実行内容</th></tr></thead><tbody>${decisions.slice(0,4).map(x=>`<tr><td>${x.priority}</td><td>${x.theme}</td><td>${x.action}</td></tr>`).join('')}</tbody></table><h3>次回まで</h3><ul class="pr-compact"><li>LINE日報の未読込日を補完</li><li>月締め後に確定PLへ差替</li><li>施策実施日を日報へ記録</li></ul></section>`:''}
   </div>
-  <div class="pr-foot">Manager Pro Ver 5.16.42 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.45 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
  const actionRows=decisions.map((x,i)=>`<tr><td>${i+1}</td><td>${x.priority}</td><td>${x.theme}</td><td>${x.reason}</td><td>${x.action}</td><td>次回会議</td></tr>`).join('');
  // AirメイトPDFのランチ/ディナー月次データを会議資料へ反映。未取得値は推測しない。
  const segmentReports=r.keys.map(key=>state.airmatePdfReports?.[key]).filter(x=>x&&numericProvided(x.lunchSales)&&numericProvided(x.dinnerSales));
@@ -4040,17 +4217,17 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>改善余地 TOP3</h2><div class="pr-rank-list">${recoveries.length?recoveries.slice(0,3).map((x,i)=>`<div class="pr-rank-item"><span>${i+1}</span><b>${x.label}<small style="display:block;font-weight:400">${x.detail}</small></b><em>${yen(Math.round(x.value))}</em></div>`).join(''):'<p class="pr-note">比較データ不足</p>'}</div><p class="pr-note">前月水準への単純回復試算。効果保証ではありません。</p></section>
   </div>
   <section class="pr-section pr-airmate-note"><h2>会議で見るポイント</h2><ul class="pr-compact">${segmentNotes.slice(0,4).map(x=>`<li>${x}</li>`).join('')}<li>区分はAirメイトPDFの定義を使用。未取得値は推測しません。</li></ul></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.42 / ${stamp()} / Airメイト ランチ・ディナー詳細診断 / 取得済みデータのみで分析</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.45 / ${stamp()} / Airメイト ランチ・ディナー詳細診断 / 取得済みデータのみで分析</div></div>`:'';
  const sheet8=(rangeAgg.rows.length>=3)?`<div class="pr-page pr-sheet pr-balance-page pr-longtrend-sheet">${meetingHeader('長期トレンド・データ成熟度',periodLabel,'8/10')}
   <section class="pr-section"><h2>完了月だけで見る全店トレンド</h2><div class="pr-diagnosis-grid"><div class="pr-diagnosis-card"><span>全店診断</span><strong>${wholeQuadrant}</strong><p>${trendSignal}</p></div><div class="pr-diagnosis-card"><span>比較ルール</span><strong>途中月を混ぜない</strong><p>${isPartialCurrent?`${r.end}は途中経過。完了月比較から除外。`:'対象月は完了月として比較。'}</p></div><div class="pr-diagnosis-card"><span>取得月数</span><strong>${rangeAgg.rows.filter(x=>x.salesKnown).length}か月</strong><p>完了月 ${completedTrendRows.length}か月 / 確定PL ${confirmedPl.length}か月</p></div><div class="pr-diagnosis-card"><span>学習段階</span><strong>${completedTrendRows.length>=6?'売上の中期傾向判定可':completedTrendRows.length>=3?'売上の短期傾向判定可':'基準形成中'}</strong><p>売上は3か月で短期、6か月以上で中期傾向を強化。客数・客単価の構造判定は取得月だけで行います。</p></div></div></section>
   <section class="pr-section"><h2>データ成熟度マトリクス</h2><table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>確定PL</th><th>Airメイト売上分析</th><th>商品ABC</th><th>日次</th><th>LINE日報</th></tr></thead><tbody>${coverageRows}</tbody></table><p class="pr-note">「済」は月単位データ取得済み。商品ABCは対象月をカバーした日数を表示します。欠損項目は推測せず、分析できる範囲を自動で変えます。</p></section>
   <section class="pr-section"><h2>Manager Proが現在読めること</h2><div class="pr-callout pr-good">${maturityNotes.length?maturityNotes.map(x=>`• ${x}`).join('<br>'):'比較データを蓄積中です。'}</div></section>
   <section class="pr-section"><h2>次にデータが増えると深掘りできる分析</h2><div class="pr-quadrant"><div><b>3か月以上</b><p>売上・客数・客単価の短期トレンドと連続悪化/改善を検出。</p></div><div><b>6か月以上</b><p>曜日・季節性・PL構造の継続傾向を判定。</p></div><div><b>日報蓄積</b><p>施策実施日前後の売上・人件費・口コミ変化を比較。</p></div><div><b>Airメイト売上分析PDF蓄積</b><p>ランチ/ディナーの構造転換が一時的か継続的かを判定。</p></div></div></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.42 / ${stamp()} / 長期学習基盤 / 月途中と完了月を分離して判定</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.45 / ${stamp()} / 長期学習基盤 / 月途中と完了月を分離して判定</div></div>`:'';
  const sheet9=(plDiagnosis||anomalyRows.length)?`<div class="pr-page pr-sheet pr-balance-page pr-profit-balance">${meetingHeader('利益・異常値・構造診断',periodLabel,'9/10')}
   ${plDiagnosis?`<section class="pr-section"><h2>利益構造の変化｜${plPrev.key} → ${plNow.key}</h2><div class="pr-diagnosis-grid"><div class="pr-diagnosis-card ${plDiagnosis.margin>=0?'good':'bad'}"><span>営業利益率</span><strong>${plPrevR.margin.toFixed(1)}% → ${plNowR.margin.toFixed(1)}%（${plDiagnosis.margin>=0?'+':''}${plDiagnosis.margin.toFixed(1)}pt）</strong><p>営業利益 ${plDiagnosis.profit>=0?'+':''}${yen(plDiagnosis.profit)}。</p></div><div class="pr-diagnosis-card ${plDiagnosis.cost<=0?'good':'bad'}"><span>原価率</span><strong>${plPrevR.cost.toFixed(1)}% → ${plNowR.cost.toFixed(1)}%（${plDiagnosis.cost>=0?'+':''}${plDiagnosis.cost.toFixed(1)}pt）</strong><p>${plDiagnosis.cost>0?'原価面は利益を押し下げる方向。商品構成・仕入・ロスを優先確認。':'原価面は改善方向。'}</p></div><div class="pr-diagnosis-card ${plDiagnosis.labor<=0?'good':'bad'}"><span>人件費率</span><strong>${plPrevR.labor.toFixed(1)}% → ${plNowR.labor.toFixed(1)}%（${plDiagnosis.labor>=0?'+':''}${plDiagnosis.labor.toFixed(1)}pt）</strong><p>${plDiagnosis.labor<0?'人件費率改善が利益を下支え。':'人件費率は悪化方向。'}</p></div><div class="pr-diagnosis-card"><span>PL総合判定</span><strong>${plDiagnosis.margin>=0?'利益率は維持・改善':'利益率は悪化'}</strong><p>${plDiagnosis.cost>0&&plDiagnosis.labor<0?'原価率悪化を人件費率改善が吸収している構造。':'各率の変化を個別に確認。'}</p></div></div></section>`:''}
   <section class="pr-section"><h2>${r.end} 日次異常値検出</h2>${currentDaily.length?`<div class="pr-mini-grid"><div class="pr-mini"><span>日次平均</span><strong>${yen(dailyAvg)}</strong></div><div class="pr-mini"><span>中央値</span><strong>${yen(medianDaily)}</strong></div><div class="pr-mini"><span>分析日数</span><strong>${currentDaily.length}日</strong></div><div class="pr-mini"><span>平均比-25%以下</span><strong>${anomalyRows.length}日</strong></div></div><table class="pr-table"><thead><tr><th>日付</th><th>売上</th><th>平均差</th><th>客数</th><th>客単価</th><th>型</th></tr></thead><tbody>${anomalyRows.length?anomalyRows.map(x=>`<tr><td>${x.date}</td><td>${yen(x.sales)}</td><td>${x.dev.toFixed(1)}%</td><td>${x.cust!=null?num(x.cust)+'名':'-'}</td><td>${x.ticket!=null?yen(x.ticket):'-'}</td><td>${x.type}</td></tr>`).join(''):'<tr><td colspan="6">大きな異常低下は検出されませんでした</td></tr>'}</tbody></table>`:'<p class="pr-note">対象月の日次データ不足のため異常値判定を行いません。</p>'}<p class="pr-note">異常値は取得済み日次売上の平均比-25%以下を検出。原因型は客数・客単価が取得できる日のみ判定します。</p></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.42 / ${stamp()} / 利益・異常値診断 / 閾値は資料内に明示</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.45 / ${stamp()} / 利益・異常値診断 / 閾値は資料内に明示</div></div>`:'';
  const sheet10=(sections.summary!==false||sections.actions)?`<div class="pr-page pr-sheet">${meetingHeader('経営診断 結論・優先順位',r.end,'10/10')}
   <div class="pr-big-conclusion"><h2>経営判断サマリー</h2><p>${lunchDriver&&dinnerDriver?`前月比では、ランチは「${quadrantOf(lunchDriver)}」、ディナーは「${quadrantOf(dinnerDriver)}」。${shareShift!=null?`売上構成はディナー側へ ${Math.abs(shareShift).toFixed(1)}pt シフト。`:''}`:'ランチ／ディナー比較データは不足しています。'}${plDiagnosis?` PLでは営業利益率 ${plDiagnosis.margin>=0?'+':''}${plDiagnosis.margin.toFixed(1)}pt。${plDiagnosis.cost>0&&plDiagnosis.labor<0?'原価率悪化を人件費率改善が吸収しています。':''}`:''}</p></div>
   <section class="pr-section"><h2>最優先で見る3点</h2><div class="pr-rank-list">${rankedFindings.slice(0,3).map((x,i)=>`<div class="pr-rank-item"><span>${i+1}</span><b>${x.title}<small style="display:block;font-weight:400">${x.detail}</small></b><em>${i===0?'最優先':i===1?'次点':'監視'}</em></div>`).join('')||'<p class="pr-note">優先順位を決めるための比較データが不足しています。</p>'}</div></section>
@@ -4060,7 +4237,7 @@ function buildRangeMeetingReport(){
    <div class="pr-callout ${diagnosisConfidence>=75?'pr-good':diagnosisConfidence>=50?'':'pr-bad'}"><b>当月分析信頼度 ${diagnosisConfidence}/100</b>｜ランチ/ディナー比較 ${segmentReports.length>=2?'あり':'不足'}、確定PL比較 ${confirmedPl.length>=2?'あり':'不足'}、当月日次 ${currentDaily.length}/${confidenceExpected}日、当月LINE日報 ${confidenceEndRow?.lineCount||0}/${confidenceExpected}日。過去月の日次不足も比較力として減点します。</div>
    <div class="pr-callout ${overallCompleteness>=75?'pr-good':overallCompleteness>=50?'':'pr-bad'}" style="margin-top:2mm"><b>蓄積データ充足度 ${overallCompleteness}/100</b>｜<b>※アプリの精度ではなく、過去データの蓄積量です。</b> 対象期間 ${rangeAgg.rows.length}か月を、売上20%・確定PL20%・Airメイト売上分析10%・商品ABC5%・日次25%・LINE日報20%で評価。商品ABCは取得期間の日数割合で採点。日次取得：${completenessDailyText||'なし'}。月次CSVの売上だけを日次取得済みとは判定しません。</div>
   </section>
-  <div class="pr-foot">Manager Pro Ver 5.16.42 / ${stamp()} / 経営診断レポート / 試算は試算として明示</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.45 / ${stamp()} / 経営診断レポート / 試算は試算として明示</div></div>`:'';
  const pages=[sheet1,sheet2,sheet3,sheet4,sheet5,sheet6,sheet7,sheet8,sheet9,sheet10].filter(Boolean),total=pages.length;
  const numbered=pages.map((p,i)=>p
   .replace(/<div class="pr-month">[^<]*<small>MEETING<\/small><\/div>/,`<div class="pr-month">${i+1}/${total}<small>MEETING</small></div>`)
