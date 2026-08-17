@@ -1882,7 +1882,7 @@ async function editMonthlyBudget(monthKey=state.selected){
   if(cloud.ready){pin=await requestAdminPin(`${m.label}の月間予算をデフォルトへ戻す`);if(!pin)return;try{await cloudAdminSettings(next,pin)}catch(e){toast(e.message||'予算を変更できませんでした');return}}
   state.settings=next;save();closeModal();if(cloud.ready)await cloudPullAll({quiet:true});renderAll();toast(`${m.label}の予算をデフォルトへ戻しました`)};
 }
-function getAssessment(m){const r=ratios(m),s=state.settings;const laborOk=r.labor>=s.laborMin&&r.labor<=s.laborMax;const costOk=r.cost<=s.costTarget;const marginOk=r.margin>=s.marginTarget;let grade='B+',word='良好';let score=0;score+=(laborOk?2:r.labor<s.laborMin?1:0);score+=(costOk?2:0);score+=(marginOk?3:r.margin>=s.marginTarget-2?2:1);const monthBudget=budgetForMonth(m.key),fc=m.provisional?meetingCurrentForecast(m.key):null,budgetBasis=fc&&Number.isFinite(Number(fc.standard))?Number(fc.standard):Number(m.sales||0);score+=(budgetBasis>=monthBudget?2:budgetBasis>=monthBudget*.9?1:0);if(score>=8){grade='A';word='好調'}else if(score>=6){grade='B+';word='良好'}else if(score>=4){grade='B';word='要確認'}else{grade='C';word='改善優先'}
+function getAssessment(m){const r=ratios(m),s=state.settings;const laborOk=r.labor>=s.laborMin&&r.labor<=s.laborMax;const costOk=r.cost<=s.costTarget;const marginOk=r.margin>=s.marginTarget;let grade='B+',word='良好';let score=0;score+=(laborOk?2:r.labor<s.laborMin?1:0);score+=(costOk?2:0);score+=(marginOk?3:r.margin>=s.marginTarget-2?2:1);const monthBudget=budgetForMonth(m.key),isOpen=!!m.provisional||m.key===monthKeyFromDate(),fc=isOpen?meetingCurrentForecast(m.key):null,budgetBasis=fc&&Number.isFinite(Number(fc.standard))?Number(fc.standard):Number(m.sales||0);score+=(budgetBasis>=monthBudget?2:budgetBasis>=monthBudget*.9?1:0);if(score>=8){grade='A';word='好調'}else if(score>=6){grade='B+';word='良好'}else if(score>=4){grade='B';word='要確認'}else{grade='C';word='改善優先'}
  let headline=marginOk?'収益性は目標水準を確保しています':'概ね順調ですが、営業利益率に改善余地があります';
  let actions=[];
  if(!marginOk){const need=requiredExtraSales(m,s.marginTarget);actions.push(`営業利益率を${pct(s.marginTarget)}へ：売上を約${yen(need)}上積みする目安`)}
@@ -1927,29 +1927,38 @@ function dynamicReviewText(m,p,a){
  if(a.marginOk)parts.push(`営業利益率 ${pct(r.margin)} は目標 ${pct(s.marginTarget)} を達成しています。`);else{const need=requiredExtraSales(m,s.marginTarget);parts.push(`営業利益率 ${pct(r.margin)} は目標まで ${pct(s.marginTarget-r.margin)}pt。${need==null?'現在の費用構造では必要売上を安全に算出できません。':`現状のPL構造では売上上積み ${yen(need)} が一つの目安です。`}`)}return parts.join('')
 }
 function signalState(m,a){
- const r=a.r,s=state.settings,p=prev(),fc=m.provisional?meetingCurrentForecast(m.key):null;
+ const r=a.r,s=state.settings,p=prev(),isOpen=!!m.provisional||m.key===monthKeyFromDate(),fc=isOpen?meetingCurrentForecast(m.key):null;
  const rawSalesRate=m.sales/budgetForMonth(m.key)*100;
  const projectedSales=fc&&Number.isFinite(Number(fc.standard))?Number(fc.standard):Number(m.sales||0);
- const salesRate=m.provisional&&fc&&Number(fc.budget)>0?projectedSales/Number(fc.budget)*100:rawSalesRate;
- const salesDown=(!m.provisional&&p)?mom(m.sales,p.sales):0;
+ const forecastBudget=fc&&Number(fc.budget)>0?Number(fc.budget):budgetForMonth(m.key);
+ const salesRate=isOpen&&forecastBudget>0?projectedSales/forecastBudget*100:rawSalesRate;
+ const salesDown=(!isOpen&&p)?mom(m.sales,p.sales):0;
  let level='green',status='順調',reason='主要KPIは管理基準内です。';
  const issues=[];
  const marginGap=Math.max(0,s.marginTarget-r.margin);
- if(!a.marginOk)issues.push(`営業利益率が目標まで${pct(marginGap)}pt不足${m.provisional?'（途中月の概算）':''}`);
+
+ if(!a.marginOk)issues.push(`営業利益率が目標まで${pct(marginGap)}pt不足${isOpen?'（途中月の概算）':''}`);
  if(r.labor>s.laborMax)issues.push(`人件費率が上限を${pct(r.labor-s.laborMax)}pt超過`);
- if(r.labor<s.laborMin)issues.push(`人件費率が下限を${pct(s.laborMin-r.labor)}pt下回る${m.provisional?'（人員不足・現場負荷のみ確認）':''}`);
- if(!a.costOk)issues.push(`原価率が目標を${pct(r.cost-s.costTarget)}pt超過${m.provisional?'（途中月の概算）':''}`);
- if(salesRate<90)issues.push(`${m.provisional?'標準着地の予算比':'売上目標達成率'}が${pct(salesRate)}`);
- if(!m.provisional&&salesDown<-15)issues.push(`前月比売上が${pct(salesDown)}`);
- const critical=(!m.provisional&&((!a.marginOk&&marginGap>3)||(r.labor>s.laborMax+3)||(r.cost>s.costTarget+3)||(salesRate<80)))
-   ||(m.provisional&&((marginGap>5&&salesRate<90)||(r.cost>s.costTarget+5&&salesRate<90)||(r.labor>s.laborMax+5&&salesRate<90)||(salesRate<80)));
- if(critical){level='red';status='要改善';reason=issues[0]||'重点的な改善が必要です。'}
- else if(issues.length){
+ if(r.labor<s.laborMin)issues.push(`人件費率が下限を${pct(s.laborMin-r.labor)}pt下回る${isOpen?'（人員不足・現場負荷のみ確認）':''}`);
+ if(!a.costOk)issues.push(`原価率が目標を${pct(r.cost-s.costTarget)}pt超過${isOpen?'（途中月の概算）':''}`);
+ if(salesRate<90)issues.push(`${isOpen?'標準着地の予算比':'売上目標達成率'}が${pct(salesRate)}`);
+ if(!isOpen&&salesDown<-15)issues.push(`前月比売上が${pct(salesDown)}`);
+
+ const critical=(!isOpen&&((!a.marginOk&&marginGap>3)||(r.labor>s.laborMax+3)||(r.cost>s.costTarget+3)||(salesRate<80)))
+   ||(isOpen&&((marginGap>5&&salesRate<90)||(r.cost>s.costTarget+5&&salesRate<90)||(r.labor>s.laborMax+5&&salesRate<90)||(salesRate<80)));
+
+ if(critical){
+   level='red';status='要改善';reason=issues[0]||'重点的な改善が必要です。';
+ }else if(issues.length){
    level='amber';
-   if(m.provisional&&salesRate>=100&&marginGap<=2&&r.labor<=s.laborMax&&r.cost<=s.costTarget+3){status='概ね順調';reason=`標準着地は予算圏内。${issues[0]}`;}
-   else {status='注意';reason=issues[0];}
+   if(isOpen&&salesRate>=100&&marginGap<=2&&r.labor<=s.laborMax&&r.cost<=s.costTarget+3){
+     status='概ね順調';
+     reason=`標準着地は予算圏内（${pct(salesRate)}）。${!a.marginOk?`営業利益率は目標まで${pct(marginGap)}pt不足のため要確認。`:'主要KPIを継続確認。'}`;
+   }else{
+     status='注意';reason=issues[0];
+   }
  }
- return {level,status,reason,issues,salesRate,rawSalesRate,projectedSales,forecast:fc};
+ return {level,status,reason,issues,salesRate,rawSalesRate,projectedSales,forecast:fc,isOpen};
 }
 function renderBusinessSignal(m,a){
  const sg=signalState(m,a),box=$('#businessSignal'); if(!box)return;
@@ -1965,7 +1974,7 @@ function openSignalDetail(){
  const m=current(),a=getAssessment(m),sg=signalState(m,a),s=state.settings,r=a.r,need=requiredExtraSales(m,s.marginTarget);
  const issueHtml=(sg.issues.length?sg.issues:['重大な問題はありません']).map(x=>`<li>${x}</li>`).join('');
  const actionHtml=a.actions.slice(0,3).map((x,i)=>`<div class="signal-action"><span>${i+1}</span><p>${x}</p></div>`).join('');
- openModal(`<div class="signal-modal-head ${sg.level}"><small>${m.label} 経営信号機</small><h2>${sg.status}</h2><p>${sg.reason}</p></div><div class="signal-modal-grid"><div><span>売上目標達成率</span><b>${pct(sg.salesRate)}</b></div><div><span>人件費率</span><b>${pct(r.labor)}</b></div><div><span>原価率</span><b>${pct(r.cost)}</b></div><div><span>営業利益率</span><b>${pct(r.margin)}</b></div></div><h3>確認ポイント</h3><ul class="signal-issues">${issueHtml}</ul><h3>次にやること TOP3</h3><div class="signal-actions">${actionHtml}</div>${!a.marginOk?`<p class="signal-need">利益率${pct(s.marginTarget)}の目安：売上をあと <b>${yen(need)}</b></p>`:''}<button id="signalGoAi" class="primary-btn">AI経営診断を開く</button>`);
+ openModal(`<div class="signal-modal-head ${sg.level}"><small>${m.label} 経営信号機</small><h2>${sg.status}</h2><p>${sg.reason}</p></div><div class="signal-modal-grid"><div><span>${sg.isOpen?'標準着地予算比':'売上目標達成率'}</span><b>${pct(sg.salesRate)}</b></div><div><span>人件費率</span><b>${pct(r.labor)}</b></div><div><span>原価率</span><b>${pct(r.cost)}</b></div><div><span>営業利益率</span><b>${pct(r.margin)}</b></div></div><h3>確認ポイント</h3><ul class="signal-issues">${issueHtml}</ul><h3>次にやること TOP3</h3><div class="signal-actions">${actionHtml}</div>${!a.marginOk?`<p class="signal-need">利益率${pct(s.marginTarget)}の目安：売上をあと <b>${yen(need)}</b></p>`:''}<button id="signalGoAi" class="primary-btn">AI経営診断を開く</button>`);
  $('#signalGoAi').onclick=()=>{closeModal();nav('ai')};
 }
 function setMeetingMode(on){
@@ -3685,7 +3694,7 @@ function buildRangeMeetingReport(){
    <section class="pr-section"><h2>月別PL比較</h2><table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>原価</th><th>原価率</th><th>人件費</th><th>人件費率</th><th>営業利益</th><th>利益率</th></tr></thead><tbody>${plRowsOnly}</tbody></table></section>
    <section class="pr-section"><h2>利益率推移</h2>${confirmedRows.length?meetingBars(confirmedRows.map(x=>{const rr=ratios(x.m);return {label:x.key,margin:rr.margin}}),'label','margin',v=>pct(v)):'<p>確定PLデータがないため利益率推移は表示しません。</p>'}</section>
    <section class="pr-section"><h2>PLで確認するポイント</h2><ul class="pr-compact"><li>上部KPI・利益率はすべて確定PL期間だけで統一しています。</li><li>未確定月のCSV売上は参考値として別枠表示し、確定PLへ混ぜません。</li><li>原価率：仕入・ロス・商品構成の変化を確認。</li><li>人件費率：売上に対する配置と総労働時間を確認。</li><li>営業利益率：売上増だけでなく原価・人件費・販管費を合わせて判断。</li></ul></section>
-   <div class="pr-foot">Manager Pro Ver 5.16.40 / ${stamp()} / PL専用資料 / 確定PL基準</div></div>`;
+   <div class="pr-foot">Manager Pro Ver 5.16.41 / ${stamp()} / PL専用資料 / 確定PL基準</div></div>`;
   $('#printReport').innerHTML=page;triggerReportPrint();return
  }
  if(mode==='simple'){
@@ -3698,7 +3707,7 @@ function buildRangeMeetingReport(){
   if(sections.line)simpleBlocks.push(`<section class="pr-section"><h2>LINE日報</h2><p>${cur.lineCount}/${cur.calendarDays}日読込 / ${lineRate.toFixed(1)}%。未読込 ${Math.max(0,cur.calendarDays-cur.lineCount)}日。</p></section>`);
   if(sections.forecast)simpleBlocks.push(`<section class="pr-section"><h2>着地予測</h2>${forecastHtml}</section>`);
   if(sections.actions)simpleBlocks.push(`<section class="pr-section"><h2>次の行動</h2><ol class="pr-compact">${decisions.slice(0,5).map(x=>`<li><b>${x.theme}</b>：${x.action}</li>`).join('')}</ol></section>`);
-  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Manager Pro Ver 5.16.40 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
+  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Manager Pro Ver 5.16.41 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
   $('#printReport').innerHTML=body;triggerReportPrint();return
  }
  const includeExecutive=(kind==='executive'||kind==='meeting')&&selectedNames.length>1;
@@ -3740,7 +3749,7 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>残り期間の判断指標</h2>${forecast?`<div class="pr-forecast-note"><div><span>${forecast.partialToday?'現在ペース（当日途中含む）':'現在ペース（暦日平均）'}</span><strong>${yen(forecast.avg)}</strong></div><div><span>確定日平均売上</span><strong>${forecast.completeAvg!=null?yen(forecast.completeAvg):'-'}</strong></div><div><span>予算達成に必要な日商</span><strong>${forecast.neededDaily!=null?yen(forecast.neededDaily):'-'}</strong></div><div><span>現在平均との比較</span><strong>${forecast.neededDaily!=null?((forecast.completeAvg??forecast.avg)>=forecast.neededDaily?`必要日商を ${yen((forecast.completeAvg??forecast.avg)-forecast.neededDaily)} 上回る`:`必要日商を ${yen(forecast.neededDaily-(forecast.completeAvg??forecast.avg))} 下回る`):'-'}</strong></div></div>`:''}<ul class="pr-compact"><li>必要日商は暦日ベースの目安。休業日は実営業日で再配分。</li><li>好調曜日は再現、不調曜日は人件費・販促・商品訴求を分けて検証。</li><li>客数不足と客単価不足は分けて対策。</li></ul></section>
     ${sections.actions?`<section class="pr-section pr-actions-compact"><h2>改善アクション</h2><table class="pr-table"><thead><tr><th>優先</th><th>テーマ</th><th>実行内容</th></tr></thead><tbody>${decisions.slice(0,4).map(x=>`<tr><td>${x.priority}</td><td>${x.theme}</td><td>${x.action}</td></tr>`).join('')}</tbody></table><h3>次回まで</h3><ul class="pr-compact"><li>LINE日報の未読込日を補完</li><li>月締め後に確定PLへ差替</li><li>施策実施日を日報へ記録</li></ul></section>`:''}
   </div>
-  <div class="pr-foot">Manager Pro Ver 5.16.40 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.41 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
  const actionRows=decisions.map((x,i)=>`<tr><td>${i+1}</td><td>${x.priority}</td><td>${x.theme}</td><td>${x.reason}</td><td>${x.action}</td><td>次回会議</td></tr>`).join('');
  // AirメイトPDFのランチ/ディナー月次データを会議資料へ反映。未取得値は推測しない。
  const segmentReports=r.keys.map(key=>state.airmatePdfReports?.[key]).filter(x=>x&&numericProvided(x.lunchSales)&&numericProvided(x.dinnerSales));
@@ -3903,17 +3912,17 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>改善余地 TOP3</h2><div class="pr-rank-list">${recoveries.length?recoveries.slice(0,3).map((x,i)=>`<div class="pr-rank-item"><span>${i+1}</span><b>${x.label}<small style="display:block;font-weight:400">${x.detail}</small></b><em>${yen(Math.round(x.value))}</em></div>`).join(''):'<p class="pr-note">比較データ不足</p>'}</div><p class="pr-note">前月水準への単純回復試算。効果保証ではありません。</p></section>
   </div>
   <section class="pr-section pr-airmate-note"><h2>会議で見るポイント</h2><ul class="pr-compact">${segmentNotes.slice(0,4).map(x=>`<li>${x}</li>`).join('')}<li>区分はAirメイトPDFの定義を使用。未取得値は推測しません。</li></ul></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.40 / ${stamp()} / Airメイト ランチ・ディナー詳細診断 / 取得済みデータのみで分析</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.41 / ${stamp()} / Airメイト ランチ・ディナー詳細診断 / 取得済みデータのみで分析</div></div>`:'';
  const sheet8=(rangeAgg.rows.length>=3)?`<div class="pr-page pr-sheet pr-balance-page pr-longtrend-sheet">${meetingHeader('長期トレンド・データ成熟度',periodLabel,'8/10')}
   <section class="pr-section"><h2>完了月だけで見る全店トレンド</h2><div class="pr-diagnosis-grid"><div class="pr-diagnosis-card"><span>全店診断</span><strong>${wholeQuadrant}</strong><p>${trendSignal}</p></div><div class="pr-diagnosis-card"><span>比較ルール</span><strong>途中月を混ぜない</strong><p>${isPartialCurrent?`${r.end}は途中経過。完了月比較から除外。`:'対象月は完了月として比較。'}</p></div><div class="pr-diagnosis-card"><span>取得月数</span><strong>${rangeAgg.rows.filter(x=>x.salesKnown).length}か月</strong><p>完了月 ${completedTrendRows.length}か月 / 確定PL ${confirmedPl.length}か月</p></div><div class="pr-diagnosis-card"><span>学習段階</span><strong>${completedTrendRows.length>=6?'売上の中期傾向判定可':completedTrendRows.length>=3?'売上の短期傾向判定可':'基準形成中'}</strong><p>売上は3か月で短期、6か月以上で中期傾向を強化。客数・客単価の構造判定は取得月だけで行います。</p></div></div></section>
   <section class="pr-section"><h2>データ成熟度マトリクス</h2><table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>確定PL</th><th>Airメイト売上分析</th><th>商品ABC</th><th>日次</th><th>LINE日報</th></tr></thead><tbody>${coverageRows}</tbody></table><p class="pr-note">「済」は月単位データ取得済み。商品ABCは対象月をカバーした日数を表示します。欠損項目は推測せず、分析できる範囲を自動で変えます。</p></section>
   <section class="pr-section"><h2>Manager Proが現在読めること</h2><div class="pr-callout pr-good">${maturityNotes.length?maturityNotes.map(x=>`• ${x}`).join('<br>'):'比較データを蓄積中です。'}</div></section>
   <section class="pr-section"><h2>次にデータが増えると深掘りできる分析</h2><div class="pr-quadrant"><div><b>3か月以上</b><p>売上・客数・客単価の短期トレンドと連続悪化/改善を検出。</p></div><div><b>6か月以上</b><p>曜日・季節性・PL構造の継続傾向を判定。</p></div><div><b>日報蓄積</b><p>施策実施日前後の売上・人件費・口コミ変化を比較。</p></div><div><b>Airメイト売上分析PDF蓄積</b><p>ランチ/ディナーの構造転換が一時的か継続的かを判定。</p></div></div></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.40 / ${stamp()} / 長期学習基盤 / 月途中と完了月を分離して判定</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.41 / ${stamp()} / 長期学習基盤 / 月途中と完了月を分離して判定</div></div>`:'';
  const sheet9=(plDiagnosis||anomalyRows.length)?`<div class="pr-page pr-sheet pr-balance-page pr-profit-balance">${meetingHeader('利益・異常値・構造診断',periodLabel,'9/10')}
   ${plDiagnosis?`<section class="pr-section"><h2>利益構造の変化｜${plPrev.key} → ${plNow.key}</h2><div class="pr-diagnosis-grid"><div class="pr-diagnosis-card ${plDiagnosis.margin>=0?'good':'bad'}"><span>営業利益率</span><strong>${plPrevR.margin.toFixed(1)}% → ${plNowR.margin.toFixed(1)}%（${plDiagnosis.margin>=0?'+':''}${plDiagnosis.margin.toFixed(1)}pt）</strong><p>営業利益 ${plDiagnosis.profit>=0?'+':''}${yen(plDiagnosis.profit)}。</p></div><div class="pr-diagnosis-card ${plDiagnosis.cost<=0?'good':'bad'}"><span>原価率</span><strong>${plPrevR.cost.toFixed(1)}% → ${plNowR.cost.toFixed(1)}%（${plDiagnosis.cost>=0?'+':''}${plDiagnosis.cost.toFixed(1)}pt）</strong><p>${plDiagnosis.cost>0?'原価面は利益を押し下げる方向。商品構成・仕入・ロスを優先確認。':'原価面は改善方向。'}</p></div><div class="pr-diagnosis-card ${plDiagnosis.labor<=0?'good':'bad'}"><span>人件費率</span><strong>${plPrevR.labor.toFixed(1)}% → ${plNowR.labor.toFixed(1)}%（${plDiagnosis.labor>=0?'+':''}${plDiagnosis.labor.toFixed(1)}pt）</strong><p>${plDiagnosis.labor<0?'人件費率改善が利益を下支え。':'人件費率は悪化方向。'}</p></div><div class="pr-diagnosis-card"><span>PL総合判定</span><strong>${plDiagnosis.margin>=0?'利益率は維持・改善':'利益率は悪化'}</strong><p>${plDiagnosis.cost>0&&plDiagnosis.labor<0?'原価率悪化を人件費率改善が吸収している構造。':'各率の変化を個別に確認。'}</p></div></div></section>`:''}
   <section class="pr-section"><h2>${r.end} 日次異常値検出</h2>${currentDaily.length?`<div class="pr-mini-grid"><div class="pr-mini"><span>日次平均</span><strong>${yen(dailyAvg)}</strong></div><div class="pr-mini"><span>中央値</span><strong>${yen(medianDaily)}</strong></div><div class="pr-mini"><span>分析日数</span><strong>${currentDaily.length}日</strong></div><div class="pr-mini"><span>平均比-25%以下</span><strong>${anomalyRows.length}日</strong></div></div><table class="pr-table"><thead><tr><th>日付</th><th>売上</th><th>平均差</th><th>客数</th><th>客単価</th><th>型</th></tr></thead><tbody>${anomalyRows.length?anomalyRows.map(x=>`<tr><td>${x.date}</td><td>${yen(x.sales)}</td><td>${x.dev.toFixed(1)}%</td><td>${x.cust!=null?num(x.cust)+'名':'-'}</td><td>${x.ticket!=null?yen(x.ticket):'-'}</td><td>${x.type}</td></tr>`).join(''):'<tr><td colspan="6">大きな異常低下は検出されませんでした</td></tr>'}</tbody></table>`:'<p class="pr-note">対象月の日次データ不足のため異常値判定を行いません。</p>'}<p class="pr-note">異常値は取得済み日次売上の平均比-25%以下を検出。原因型は客数・客単価が取得できる日のみ判定します。</p></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.40 / ${stamp()} / 利益・異常値診断 / 閾値は資料内に明示</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.41 / ${stamp()} / 利益・異常値診断 / 閾値は資料内に明示</div></div>`:'';
  const sheet10=(sections.summary!==false||sections.actions)?`<div class="pr-page pr-sheet">${meetingHeader('経営診断 結論・優先順位',r.end,'10/10')}
   <div class="pr-big-conclusion"><h2>経営判断サマリー</h2><p>${lunchDriver&&dinnerDriver?`前月比では、ランチは「${quadrantOf(lunchDriver)}」、ディナーは「${quadrantOf(dinnerDriver)}」。${shareShift!=null?`売上構成はディナー側へ ${Math.abs(shareShift).toFixed(1)}pt シフト。`:''}`:'ランチ／ディナー比較データは不足しています。'}${plDiagnosis?` PLでは営業利益率 ${plDiagnosis.margin>=0?'+':''}${plDiagnosis.margin.toFixed(1)}pt。${plDiagnosis.cost>0&&plDiagnosis.labor<0?'原価率悪化を人件費率改善が吸収しています。':''}`:''}</p></div>
   <section class="pr-section"><h2>最優先で見る3点</h2><div class="pr-rank-list">${rankedFindings.slice(0,3).map((x,i)=>`<div class="pr-rank-item"><span>${i+1}</span><b>${x.title}<small style="display:block;font-weight:400">${x.detail}</small></b><em>${i===0?'最優先':i===1?'次点':'監視'}</em></div>`).join('')||'<p class="pr-note">優先順位を決めるための比較データが不足しています。</p>'}</div></section>
@@ -3923,7 +3932,7 @@ function buildRangeMeetingReport(){
    <div class="pr-callout ${diagnosisConfidence>=75?'pr-good':diagnosisConfidence>=50?'':'pr-bad'}"><b>当月分析信頼度 ${diagnosisConfidence}/100</b>｜ランチ/ディナー比較 ${segmentReports.length>=2?'あり':'不足'}、確定PL比較 ${confirmedPl.length>=2?'あり':'不足'}、当月日次 ${currentDaily.length}/${confidenceExpected}日、当月LINE日報 ${confidenceEndRow?.lineCount||0}/${confidenceExpected}日。過去月の日次不足も比較力として減点します。</div>
    <div class="pr-callout ${overallCompleteness>=75?'pr-good':overallCompleteness>=50?'':'pr-bad'}" style="margin-top:2mm"><b>蓄積データ充足度 ${overallCompleteness}/100</b>｜<b>※アプリの精度ではなく、過去データの蓄積量です。</b> 対象期間 ${rangeAgg.rows.length}か月を、売上20%・確定PL20%・Airメイト売上分析10%・商品ABC5%・日次25%・LINE日報20%で評価。商品ABCは取得期間の日数割合で採点。日次取得：${completenessDailyText||'なし'}。月次CSVの売上だけを日次取得済みとは判定しません。</div>
   </section>
-  <div class="pr-foot">Manager Pro Ver 5.16.40 / ${stamp()} / 経営診断レポート / 試算は試算として明示</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.41 / ${stamp()} / 経営診断レポート / 試算は試算として明示</div></div>`:'';
  const pages=[sheet1,sheet2,sheet3,sheet4,sheet5,sheet6,sheet7,sheet8,sheet9,sheet10].filter(Boolean),total=pages.length;
  const numbered=pages.map((p,i)=>p
   .replace(/<div class="pr-month">[^<]*<small>MEETING<\/small><\/div>/,`<div class="pr-month">${i+1}/${total}<small>MEETING</small></div>`)
