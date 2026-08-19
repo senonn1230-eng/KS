@@ -12,9 +12,8 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.16.82</title>
-<!-- Ver5.16.82 iPhone print architecture: each logical report page is wrapped in a conservative fixed printable frame and scaled inside that frame, preventing Safari page-fragmentation spill/blank pages. -->
-<!-- Ver5.16.81 print final: compact ABC/drink page; separate current-day partial point from confirmed line. -->
+<title>土雷門 経営管理 Manager Pro Ver 5.16.83</title>
+<!-- Ver5.16.83 dynamic print pagination: content-driven page count; remove fixed 297mm iPhone contract; measured semantic splitting. -->
 <!-- Ver5.16.30 final audit: official sales source separation, stale manual flag display isolation, ABC raw/analyzed count consistency -->
 <!-- Ver5.16.32 final polish: rename overall completeness to accumulated-data completeness and clarify that the score is data coverage, not app accuracy. -->
 <style>
@@ -1199,58 +1198,40 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
 }
 </style>
 
-<style id="v51651OneLogicalOnePhysicalFinal">
-/* Ver 5.16.51 final print contract:
-   1 generated .pr-sheet = exactly 1 physical A4 page.
-   Page COUNT remains data-driven; pages are never fixed to 10. */
+<style id="v51683ContentDrivenIosPrintFinal">
+/* Ver 5.16.83: iPhone/Safari print is CONTENT DRIVEN.
+   No 297mm fixed sheet height, no one-logical-page=one-physical-page contract.
+   Manager Pro pre-splits oversized semantic blocks; Safari may flow the remainder naturally. */
 #printReport .pr-page.pr-sheet{box-sizing:border-box!important;}
 #printReport .pr-keep{white-space:nowrap!important;word-break:keep-all!important;}
 @media print{
-  @page{size:A4 portrait;margin:0!important;}
-  html,body{margin:0!important;padding:0!important;width:210mm!important;background:#fff!important;}
-  #printReport{margin:0!important;padding:0!important;width:210mm!important;max-width:210mm!important;}
+  @page{size:A4 portrait;margin:5mm 5mm 9mm 5mm!important;}
+  html,body{margin:0!important;padding:0!important;width:auto!important;min-height:0!important;height:auto!important;background:#fff!important;}
+  #printReport{margin:0!important;padding:0!important;width:auto!important;max-width:none!important;height:auto!important;overflow:visible!important;}
   #printReport .pr-page.pr-sheet{
-    width:210mm!important;
-    max-width:210mm!important;
-    height:297mm!important;
-    min-height:297mm!important;
-    max-height:297mm!important;
-    margin:0!important;
-    padding:4mm 5mm 6mm 5mm!important;
-    zoom:1!important;
-    transform:none!important;
-    transform-origin:top left!important;
-    overflow:hidden!important;
-    break-before:auto!important;
-    page-break-before:auto!important;
-    break-after:page!important;
-    page-break-after:always!important;
-    break-inside:avoid!important;
-    page-break-inside:avoid!important;
+    width:100%!important;max-width:none!important;min-width:0!important;
+    height:auto!important;min-height:0!important;max-height:none!important;
+    margin:0 auto!important;padding:0!important;
+    zoom:1!important;transform:none!important;overflow:visible!important;
+    break-inside:auto!important;page-break-inside:auto!important;
+    break-before:auto!important;page-break-before:auto!important;
+    break-after:page!important;page-break-after:always!important;
   }
   #printReport .pr-page.pr-sheet:last-child{break-after:auto!important;page-break-after:auto!important;}
-  #printReport .pr-page.pr-sheet[data-fit="compact"]{font-size:97%!important;}
-  #printReport .pr-page.pr-sheet[data-fit="tight"]{font-size:94%!important;}
-  #printReport .pr-page.pr-sheet[data-fit="very-tight"]{font-size:91%!important;}
-  #printReport .pr-page.pr-sheet[data-fit="emergency"]{font-size:88%!important;}
-  #printReport .pr-page.pr-sheet[data-fit="compact"] .pr-section{padding:2.7mm!important;margin-top:2mm!important;}
-  #printReport .pr-page.pr-sheet[data-fit="tight"] .pr-section{padding:2.3mm!important;margin-top:1.7mm!important;}
-  #printReport .pr-page.pr-sheet[data-fit="very-tight"] .pr-section,
-  #printReport .pr-page.pr-sheet[data-fit="emergency"] .pr-section{padding:2mm!important;margin-top:1.4mm!important;}
-  #printReport .pr-page.pr-sheet[data-fit="tight"] .pr-table,
-  #printReport .pr-page.pr-sheet[data-fit="very-tight"] .pr-table,
-  #printReport .pr-page.pr-sheet[data-fit="emergency"] .pr-table{line-height:1.18!important;}
-  #printReport .pr-page.pr-sheet[data-fit="very-tight"] .pr-table th,
-  #printReport .pr-page.pr-sheet[data-fit="very-tight"] .pr-table td,
-  #printReport .pr-page.pr-sheet[data-fit="emergency"] .pr-table th,
-  #printReport .pr-page.pr-sheet[data-fit="emergency"] .pr-table td{padding:.75mm 1mm!important;}
+  /* Large semantic sections are allowed to flow; small atomic units stay together. */
+  #printReport .pr-section{break-inside:auto!important;page-break-inside:auto!important;}
+  #printReport .pr-kpis,#printReport .pr-mini-grid,#printReport .pr-data-quality,
+  #printReport .pr-callout,#printReport .pr-diagnosis-card,#printReport .pr-rank-item,
+  #printReport .pr-head,#printReport .pr-foot{break-inside:avoid!important;page-break-inside:avoid!important;}
+  #printReport .pr-section h2,#printReport .pr-section h3,#printReport .pr-sec-head{break-after:avoid-page!important;page-break-after:avoid!important;}
+  #printReport tr{break-inside:avoid!important;page-break-inside:avoid!important;}
+  #printReport thead{display:table-header-group!important;}
+  #printReport tfoot{display:table-footer-group!important;}
+  #printReport .mp-a4-body{width:100%!important;transform:none!important;}
+  #printReport .pr-table{width:100%!important;max-width:100%!important;table-layout:fixed!important;}
   #printReport td,#printReport th,#printReport p,#printReport li,#printReport strong,#printReport small{
     overflow-wrap:break-word!important;word-break:normal!important;line-break:strict!important;
   }
-  #printReport .pr-note,#printReport .pr-page-note{overflow-wrap:anywhere!important;}
-  #printReport .pr-actions-compact .pr-table th:nth-child(1),#printReport .pr-actions-compact .pr-table td:nth-child(1){width:10%!important;}
-  #printReport .pr-actions-compact .pr-table th:nth-child(2),#printReport .pr-actions-compact .pr-table td:nth-child(2){width:24%!important;}
-  #printReport .pr-actions-compact .pr-table th:nth-child(3),#printReport .pr-actions-compact .pr-table td:nth-child(3){width:66%!important;}
 }
 </style>
 
@@ -1685,7 +1666,7 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
 </style>
 
 <style id="v51681AbcPrintFitFinal">
-/* ===== Ver 5.16.81: ABC/drink page final A4 fit =====
+/* ===== Ver 5.16.83: ABC/drink page final A4 fit =====
    Keep all colored charts, but compact only the product/drink sheet so the drink chart and notes never clip. */
 @media print{
   #printReport .pr-page.pr-sheet.pr-abc-sheet{
@@ -1720,6 +1701,16 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
 /* Preview mirrors print density so clipping is visible before printing. */
 .meeting-preview-canvas .pr-abc-sheet .pr-pie{width:34mm!important;height:34mm!important}
 .meeting-preview-canvas .pr-abc-sheet .pr-section{margin-top:1.1mm!important;padding:1.8mm!important}
+</style>
+
+<style id="v51683UltimateDynamicPrintOverride">
+/* LAST print rule wins. Content decides page count; never lock a sheet to 297mm. */
+@media print{
+ @page{size:A4 portrait;margin:5mm 5mm 9mm 5mm!important;}
+ #printReport .pr-page.pr-sheet{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;break-inside:auto!important;page-break-inside:auto!important;}
+ #printReport .pr-section{break-inside:auto!important;page-break-inside:auto!important;}
+ #printReport .pr-head,#printReport .pr-foot,#printReport .pr-kpis,#printReport .pr-mini-grid,#printReport .pr-callout,#printReport tr{break-inside:avoid!important;page-break-inside:avoid!important;}
+}
 </style>
 </head>
 <body>
@@ -4321,81 +4312,69 @@ function mpIsStandaloneMode(){return !!(window.matchMedia?.('(display-mode: stan
 function mpStandaloneReportHtml(report){
  const styles=[...document.querySelectorAll('style')].map(s=>s.outerHTML).join('\n');
  const title='土雷門 Manager Pro 月次会議資料';
- const design=report.dataset.reportDesign||'';
- return `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${title}</title>${styles}
-<style id="v51682IosPrintArchitecture">
-/* Ver 5.16.82 — iPhone/Safari print architecture.
-   Do NOT make .pr-sheet itself a 297mm paged-media box.
-   Safari adds its own printable-area/header-footer calculation, so an exact 297mm
-   logical sheet can spill by a fraction and create a second blank physical page.
-   Instead each logical page is placed inside one conservative fixed frame.
-   The report content is scaled *inside* the frame and clipped, so Safari has only
-   one indivisible outer frame to paginate. */
-html,body{background:#fff!important;margin:0!important;padding:0!important;overflow:auto!important;height:auto!important}
-body{min-height:100vh!important}
-.mp-ios-print-toolbar{position:sticky;top:0;z-index:2147483647;display:flex;gap:10px;align-items:center;justify-content:center;padding:12px calc(12px + env(safe-area-inset-right)) 12px calc(12px + env(safe-area-inset-left));background:#0a4f3f;color:#fff;box-shadow:0 2px 10px #0003}
-.mp-ios-print-toolbar button{font:inherit;font-weight:800;border:0;border-radius:999px;padding:12px 18px;background:#fff;color:#0a4f3f}
-.mp-ios-print-toolbar small{opacity:.9}
-#mpIosPages{display:block;width:100%;background:#fff}
-.mp-ios-page-frame{box-sizing:border-box;position:relative;margin:0 auto 10px;background:#fff;overflow:hidden}
-.mp-ios-page-frame>.pr-page.pr-sheet{display:block!important;position:absolute!important;left:50%!important;top:0!important;margin:0!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;break-before:auto!important;break-after:auto!important;page-break-before:auto!important;page-break-after:auto!important;break-inside:auto!important;page-break-inside:auto!important;transform-origin:top center!important;}
-.mp-ios-page-frame .pr-section,.mp-ios-page-frame .pr-kpi,.mp-ios-page-frame .pr-two,.mp-ios-page-frame table{break-inside:auto!important;page-break-inside:auto!important}
-.cause-track-fab,.meeting-preview-modal,#printReport{display:none!important}
+ return `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${title}</title>${styles}<style>
+ html,body{background:#fff!important;margin:0!important;padding:0!important;overflow:auto!important;height:auto!important}body{min-height:100vh!important}.mp-ios-print-toolbar{position:sticky;top:0;z-index:2147483647;display:flex;gap:10px;align-items:center;justify-content:center;padding:12px calc(12px + env(safe-area-inset-right)) 12px calc(12px + env(safe-area-inset-left));background:#0a4f3f;color:#fff;box-shadow:0 2px 10px #0003}.mp-ios-print-toolbar button{font:inherit;font-weight:800;border:0;border-radius:999px;padding:12px 18px;background:#fff;color:#0a4f3f}.mp-ios-print-toolbar small{opacity:.9}#printReport{display:block!important;visibility:visible!important;opacity:1!important;position:static!important;width:auto!important;height:auto!important;overflow:visible!important}#printReport[aria-hidden="true"]{display:block!important}.cause-track-fab,.meeting-preview-modal{display:none!important}@media print{.mp-ios-print-toolbar{display:none!important}html,body{margin:0!important;padding:0!important}.pr-page,.pr-sheet{break-after:page;page-break-after:always}.pr-sheet.pr-join-next,.pr-sheet.pr-join-prev{break-before:auto!important;page-break-before:auto!important;break-after:page!important;page-break-after:always!important;margin-top:0!important;margin-bottom:0!important}.pr-sheet.pr-join-next:last-child,.pr-sheet.pr-join-prev:last-child{break-after:auto!important;page-break-after:auto!important}.pr-head,.pr-sec-head,.pr-section h2,.pr-section h3{break-after:avoid-page!important;page-break-after:avoid!important}.pr-page:last-child,.pr-sheet:last-child{break-after:auto;page-break-after:auto}}</style>
+<style id="v51650CrossPlatformVariablePrintFinal">
+/* Ver 5.16.50: iPhone/Android cross-platform final print guard.
+   Page count stays content-driven: no fixed 10-page rule and no maximum page count. */
 @media print{
- @page{size:A4 portrait;margin:8mm 6mm 11mm 6mm!important}
- html,body{width:auto!important;margin:0!important;padding:0!important;background:#fff!important}
- .mp-ios-print-toolbar{display:none!important}
- #mpIosPages{width:100%!important;margin:0!important;padding:0!important}
- .mp-ios-page-frame{
-   width:196mm!important;
-   height:270mm!important;
-   min-height:270mm!important;
-   max-height:270mm!important;
-   margin:0 auto!important;
-   padding:0!important;
-   overflow:hidden!important;
-   break-before:auto!important;
-   page-break-before:auto!important;
-   break-after:page!important;
-   page-break-after:always!important;
-   break-inside:avoid!important;
-   page-break-inside:avoid!important;
+ @page{size:A4 portrait;margin:4mm 5mm 6mm 5mm!important;}
+ #printReport .pr-page.pr-sheet{
+   width:200mm!important;max-width:200mm!important;min-width:0!important;
+   zoom:.97!important;margin:0 auto!important;overflow:visible!important;
+   break-after:page!important;page-break-after:always!important;
+   break-inside:avoid-page!important;page-break-inside:avoid!important;
  }
- .mp-ios-page-frame:last-child{break-after:auto!important;page-break-after:auto!important}
- .mp-ios-page-frame>.pr-page.pr-sheet{
-   width:196mm!important;
-   max-width:196mm!important;
-   padding:0!important;
-   transform:translateX(-50%) scale(var(--mp-ios-scale,1))!important;
-   zoom:1!important;
- }
+ #printReport .pr-page.pr-sheet[data-print-density="dense"]{width:204mm!important;max-width:204mm!important;zoom:.95!important;}
+ #printReport .pr-page.pr-sheet[data-print-density="very-dense"]{width:208mm!important;max-width:208mm!important;zoom:.92!important;}
+ #printReport .pr-page.pr-sheet:last-child{break-after:auto!important;page-break-after:auto!important;}
+ #printReport,#printReport *{box-sizing:border-box!important;}
+ #printReport .pr-section,#printReport .pr-kpi,#printReport .pr-mini,#printReport .pr-callout,#printReport .pr-two,#printReport .pr-diagnosis-grid,#printReport .pr-quadrant{min-width:0!important;max-width:100%!important;}
+ #printReport .pr-table{width:100%!important;max-width:100%!important;table-layout:fixed!important;}
+ #printReport td,#printReport th,#printReport p,#printReport li,#printReport strong,#printReport small{overflow-wrap:anywhere!important;word-break:normal!important;}
 }
 </style>
-</head><body><div class="mp-ios-print-toolbar"><button id="mpIosPrintButton" type="button">印刷・PDF保存を開く</button><small id="mpIosPrintStatus">iPhone用にページを固定しています</small></div><div id="mpIosSource" style="position:absolute;left:-99999px;top:0;visibility:hidden;width:196mm" data-report-design="${design}">${report.innerHTML}</div><div id="mpIosPages" data-report-design="${design}"></div>
-<script>(function(){
- function mmPx(){var p=document.createElement('div');p.style.cssText='position:absolute;visibility:hidden;width:100mm;height:1mm;left:-9999px;top:-9999px';document.body.appendChild(p);var v=p.getBoundingClientRect().width/100;p.remove();return v||3.78}
- function prepare(){
-   var src=document.getElementById('mpIosSource'),out=document.getElementById('mpIosPages'),status=document.getElementById('mpIosPrintStatus');if(!src||!out)return;
-   var mm=mmPx(),target=270*mm,sheets=[].slice.call(src.querySelectorAll(':scope > .pr-page.pr-sheet'));
-   out.innerHTML='';
-   sheets.forEach(function(sheet,i){
-     var c=sheet.cloneNode(true);c.removeAttribute('style');c.style.cssText='display:block!important;position:relative!important;width:196mm!important;max-width:196mm!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;overflow:visible!important;transform:none!important;zoom:1!important;';
-     var measure=document.createElement('div');measure.style.cssText='position:absolute;left:-99999px;top:0;visibility:hidden;width:196mm;height:auto;overflow:visible;background:#fff';measure.appendChild(c);document.body.appendChild(measure);
-     var natural=Math.max(c.scrollHeight,c.getBoundingClientRect().height,1),scale=Math.min(1,(target-4)/natural);
-     if(scale<0.72)scale=0.72; // safety floor; structural pagination should already have split truly long pages
-     measure.remove();
-     var frame=document.createElement('div');frame.className='mp-ios-page-frame';frame.style.setProperty('--mp-ios-scale',scale.toFixed(4));
-     c=sheet.cloneNode(true);c.removeAttribute('style');c.style.setProperty('--mp-ios-scale',scale.toFixed(4));
-     frame.appendChild(c);out.appendChild(frame);
-   });
-   src.remove();
-   if(status)status.textContent=sheets.length+'論理ページをiPhone用に固定済み';
-   document.documentElement.dataset.mpIosFixedPages=String(sheets.length);
- }
- function doPrint(){prepare();setTimeout(function(){try{window.print()}catch(e){alert('印刷画面を開けませんでした。Safariの共有メニューから「プリント」を選んでください。')}},100)}
- var b=document.getElementById('mpIosPrintButton');if(b)b.onclick=doPrint;
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',prepare,{once:true});else prepare();
-})();<\/script></body></html>`
+
+<style id="v51683StandaloneDynamicPrintFinal">
+/* Final iPhone standalone override: variable physical page count, no fixed sheet height. */
+@media print{
+  @page{size:A4 portrait;margin:5mm 5mm 9mm 5mm!important;}
+  html,body{margin:0!important;padding:0!important;width:auto!important;min-width:0!important;max-width:none!important;height:auto!important;min-height:0!important;background:#fff!important;}
+  #printReport{display:block!important;visibility:visible!important;position:static!important;margin:0!important;padding:0!important;width:auto!important;min-width:0!important;max-width:none!important;height:auto!important;overflow:visible!important;}
+  #printReport .pr-page.pr-sheet,
+  #printReport .pr-page.pr-sheet.pr-sales-sheet,
+  #printReport .pr-page.pr-sheet.pr-abc-sheet,
+  #printReport .pr-page.pr-sheet.pr-airmate-page,
+  #printReport .pr-page.pr-sheet.pr-longtrend-sheet,
+  #printReport .pr-page.pr-sheet.pr-balance-page,
+  #printReport .pr-page.pr-sheet[data-print-density="dense"],
+  #printReport .pr-page.pr-sheet[data-print-density="very-dense"]{
+    width:100%!important;min-width:0!important;max-width:none!important;
+    height:auto!important;min-height:0!important;max-height:none!important;
+    margin:0!important;padding:0!important;box-sizing:border-box!important;
+    zoom:1!important;transform:none!important;overflow:visible!important;
+    break-inside:auto!important;page-break-inside:auto!important;
+    break-before:auto!important;page-break-before:auto!important;
+    break-after:page!important;page-break-after:always!important;
+  }
+  #printReport .pr-page.pr-sheet:last-child{break-after:auto!important;page-break-after:auto!important;}
+  #printReport .pr-section{break-inside:auto!important;page-break-inside:auto!important;}
+  #printReport .pr-kpis,#printReport .pr-mini-grid,#printReport .pr-data-quality,#printReport .pr-callout,
+  #printReport .pr-diagnosis-card,#printReport .pr-rank-item,#printReport .pr-head,#printReport .pr-foot,
+  #printReport tr{break-inside:avoid!important;page-break-inside:avoid!important;}
+  #printReport .pr-section h2,#printReport .pr-section h3,#printReport .pr-sec-head{break-after:avoid-page!important;page-break-after:avoid!important;}
+  #printReport thead{display:table-header-group!important;}
+  #printReport .mp-a4-body{width:100%!important;transform:none!important;}
+}
+</style>
+
+<style id="v51662PrintIsolationFinal">
+@media print{
+ #phoneStartHint{display:none!important;visibility:hidden!important;position:absolute!important;left:-99999px!important;top:-99999px!important;}
+}
+.mp-print-measure #phoneStartHint{display:none!important;visibility:hidden!important;}
+</style>
+</head><body><div class="mp-ios-print-toolbar"><button id="mpIosPrintButton" type="button">印刷・PDF保存を開く</button><small>開かない場合はSafariの共有 → プリント</small></div><div id="printReport" aria-hidden="false" data-report-design="${report.dataset.reportDesign||''}">${report.innerHTML}</div><script>(function(){var b=document.getElementById('mpIosPrintButton');if(b)b.onclick=function(){try{window.print()}catch(e){alert('印刷画面を開けませんでした。Safariの共有メニューから「プリント」を選んでください。')}};setTimeout(function(){try{window.print()}catch(e){}},350)})();<\/script></body></html>`
 }
 function mpOpenIosReportWindow(report){
  // iOS/PWA は window.print() が無反応になる場合があるため、ユーザー操作中に印刷専用ページを先に確保する。
@@ -4414,6 +4393,12 @@ function executeReportPrint(){
  closeMeetingReportPreview();report.setAttribute('aria-hidden','false');document.body.classList.add('printing-report');
  const ios=mpIsIosDevice();
  try{
+  if(ios){
+   try{
+    const mm=mpMmPx(),geom=[...report.querySelectorAll('.pr-page.pr-sheet')].map((sheet,i)=>({page:i+1,heightMm:+(mpNaturalSheetHeight(sheet)/mm).toFixed(1),sections:sheet.querySelectorAll(':scope > .pr-section').length,rows:sheet.querySelectorAll('tr').length,continuation:sheet.dataset.continuation==='1'}));
+    mpDiagSnapshot('iPhone印刷DOM計測',{paginationMode:report.dataset.paginationMode||'',logicalPages:geom.length,geometry:geom,dynamicProfiles:window.__MP_DYNAMIC_PRINT_PROFILES__||[],dynamicWarnings:window.__MP_DYNAMIC_PRINT_WARNINGS__||[]});
+   }catch(e){console.warn('[MP iPhone geometry]',e)}
+  }
   if(ios&&mpOpenIosReportWindow(report)){
    // 印刷専用ページへ内容を渡した時点で、元アプリ側は必ず通常表示へ復元する。
    try{window.mpV51664ReleasePrint?.()}catch(e){window.mpV51657ReleasePrint?.()}
@@ -4703,6 +4688,72 @@ function mpFinalOnePagePagination(reportEl){
  }
 }
 
+
+function mpDynamicContentPagination(reportEl){
+ try{
+  if(!reportEl)return {pages:0,splits:0,profiles:[],warnings:['report missing']};
+  const warnings=[],profiles=[];let splits=0,guard=0;
+  const mm=mpMmPx();
+  /* Safari adds its own print header/footer in many iPhone flows. 258mm is deliberately
+     below the physical 297mm page so a measured page is never designed to the edge. */
+  const target=258*mm;
+  const stage=document.createElement('div');
+  stage.id='mpDynamicPageMeasureStage';stage.setAttribute('aria-hidden','true');
+  stage.style.cssText='position:absolute;left:-12000px;top:0;width:200mm;display:block;visibility:hidden;pointer-events:none;background:#fff;z-index:-1;';
+  document.body.appendChild(stage);
+
+  const naturalHeight=(sheet)=>{
+   const c=sheet.cloneNode(true);
+   c.querySelectorAll('.mp-a4-body').forEach(body=>{while(body.firstChild)body.parentNode.insertBefore(body.firstChild,body);body.remove()});
+   c.style.cssText='display:block;position:relative;visibility:hidden;width:200mm;max-width:200mm;height:auto;min-height:0;max-height:none;margin:0;padding:0;overflow:visible;zoom:1;transform:none;box-sizing:border-box;';
+   stage.appendChild(c);
+   const h=Math.max(c.scrollHeight||0,c.getBoundingClientRect().height||0);
+   c.remove();return h;
+  };
+  const continuation=(sheet)=>{
+   const c=sheet.cloneNode(false);c.dataset.continuation='1';delete c.dataset.pageFill;delete c.dataset.fit;delete c.dataset.visualFill;delete c.dataset.visualScale;
+   const head=sheet.querySelector(':scope > .pr-head'),foot=sheet.querySelector(':scope > .pr-foot');
+   if(head){const h=head.cloneNode(true),t=h.querySelector('h1');if(t&&!/続き/.test(t.textContent||''))t.textContent+='（続き）';c.appendChild(h)}
+   if(foot)c.appendChild(foot.cloneNode(true));
+   return c;
+  };
+  const movable=(sheet)=>[...sheet.children].filter(el=>!el.classList.contains('pr-head')&&!el.classList.contains('pr-foot'));
+
+  let sheets=[...reportEl.querySelectorAll(':scope > .pr-page.pr-sheet')];
+  for(let i=0;i<sheets.length&&guard++<180;i++){
+   const sheet=sheets[i];
+   let h=naturalHeight(sheet),m=movable(sheet);
+   if(h<=target){profiles.push({page:i+1,heightMm:+(h/mm).toFixed(1),status:'fit',blocks:m.length});continue}
+   if(m.length<=1){
+    warnings.push(`page ${i+1} 単一ブロックが ${(h/mm).toFixed(1)}mm。ブラウザ自然分割へ委任`);
+    profiles.push({page:i+1,heightMm:+(h/mm).toFixed(1),status:'single-overflow',blocks:m.length});continue
+   }
+   const cont=continuation(sheet),foot=cont.querySelector(':scope > .pr-foot');
+   sheet.after(cont);
+   let moved=0;
+   /* Move semantic blocks from the bottom until the first page is safely inside the envelope.
+      This avoids orphan headings and keeps charts/tables with their section when possible. */
+   while(naturalHeight(sheet)>target){
+    m=movable(sheet);if(m.length<=1)break;
+    const block=m[m.length-1];cont.insertBefore(block,foot);moved++;
+   }
+   if(!moved){cont.remove();warnings.push(`page ${i+1} 分割候補なし`);continue}
+   splits++;
+   sheets=[...reportEl.querySelectorAll(':scope > .pr-page.pr-sheet')];
+   profiles.push({page:i+1,heightMm:+(naturalHeight(sheet)/mm).toFixed(1),status:'split',moved});
+   i--; // re-evaluate the current sheet and then its continuation
+  }
+  stage.remove();
+  const pages=mpRenumberReportPages(reportEl);
+  reportEl.dataset.paginationMode='content-measured-dynamic-v51683';
+  window.__MP_DYNAMIC_PRINT_PROFILES__=profiles;window.__MP_DYNAMIC_PRINT_WARNINGS__=warnings;
+  return {pages,splits,profiles,warnings,targetMm:258};
+ }catch(e){
+  document.getElementById('mpDynamicPageMeasureStage')?.remove();
+  console.warn('[ManagerPro dynamic content pagination]',e);
+  return {pages:reportEl?.querySelectorAll?.('.pr-page.pr-sheet')?.length||0,splits:0,profiles:[],warnings:[String(e)]};
+ }
+}
 
 function mpBalanceA4PageFill(reportEl){
  try{
@@ -5026,7 +5077,7 @@ function buildRangeMeetingReport(){
    <section class="pr-section"><h2>月別PL比較</h2><table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>原価</th><th>原価率</th><th>人件費</th><th>人件費率</th><th>営業利益</th><th>利益率</th></tr></thead><tbody>${plRowsOnly}</tbody></table></section>
    <section class="pr-section"><h2>利益率推移</h2>${confirmedRows.length?meetingBars(confirmedRows.map(x=>{const rr=ratios(x.m);return {label:x.key,margin:rr.margin}}),'label','margin',v=>pct(v)):'<p>確定PLデータがないため利益率推移は表示しません。</p>'}</section>
    <section class="pr-section"><h2>PLで確認するポイント</h2><ul class="pr-compact"><li>上部KPI・利益率はすべて確定PL期間だけで統一しています。</li><li>未確定月のCSV売上は参考値として別枠表示し、確定PLへ混ぜません。</li><li>原価率：仕入・ロス・商品構成の変化を確認。</li><li>人件費率：売上に対する配置と総労働時間を確認。</li><li>営業利益率：売上増だけでなく原価・人件費・販管費を合わせて判断。</li></ul></section>
-   <div class="pr-foot">Manager Pro Ver 5.16.82 / ${stamp()} / PL専用資料 / 確定PL基準</div></div>`;
+   <div class="pr-foot">Manager Pro Ver 5.16.83 / ${stamp()} / PL専用資料 / 確定PL基準</div></div>`;
   $('#printReport').innerHTML=page;triggerReportPrint();return
  }
  if(mode==='simple'){
@@ -5039,7 +5090,7 @@ function buildRangeMeetingReport(){
   if(sections.line)simpleBlocks.push(cur.calendarDays?`<section class="pr-section"><h2>LINE日報</h2><p>読み込み開始月だけで ${cur.lineCount}/${cur.calendarDays}日読込 / ${lineRate.toFixed(1)}%。未読込 ${Math.max(0,cur.calendarDays-cur.lineCount)}日。未投入月は0日扱いしません。</p></section>`:`<section class="pr-section"><h2>LINE日報</h2><p>対象期間は未読込です。未読込月は0日・0%として扱わず、品質スコアの採点対象外とします。</p></section>`);
   if(sections.forecast)simpleBlocks.push(`<section class="pr-section"><h2>着地予測</h2>${forecastHtml}</section>`);
   if(sections.actions)simpleBlocks.push(`<section class="pr-section"><h2>次の行動</h2><ol class="pr-compact">${decisions.slice(0,5).map(x=>`<li><b>${x.theme}</b>：${x.action}</li>`).join('')}</ol></section>`);
-  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Manager Pro Ver 5.16.82 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
+  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Manager Pro Ver 5.16.83 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
   $('#printReport').innerHTML=body;triggerReportPrint();return
  }
  const includeExecutive=(kind==='executive'||kind==='meeting')&&selectedNames.length>1;
@@ -5082,7 +5133,7 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>残り期間の判断指標</h2>${forecast?`<div class="pr-forecast-note"><div><span>${forecast.partialToday?'現在ペース（当日途中含む）':'現在ペース（暦日平均）'}</span><strong>${yen(forecast.avg)}</strong></div><div><span>確定日平均売上</span><strong>${forecast.completeAvg!=null?yen(forecast.completeAvg):'-'}</strong></div><div><span>予算達成に必要な日商</span><strong>${forecast.neededDaily!=null?yen(forecast.neededDaily):'-'}</strong></div><div><span>現在平均との比較</span><strong>${forecast.neededDaily!=null?((forecast.completeAvg??forecast.avg)>=forecast.neededDaily?`<span class="pr-keep-group">必要日商を ${yen((forecast.completeAvg??forecast.avg)-forecast.neededDaily)} 上回る</span>`:`<span class="pr-keep-group">必要日商を ${yen(forecast.neededDaily-(forecast.completeAvg??forecast.avg))} 下回る</span>`):'-'}</strong></div></div>`:''}${forecast&&forecast.neededDaily!=null&&forecast.completeAvg!=null&&forecast.completeAvg>=forecast.neededDaily&&forecast.standard<forecast.budget?`<p class="pr-note pr-forecast-clarify"><b>補足：</b>確定日平均は必要日商を上回っていますが、標準着地は未達です。これは着地予測が暦日進捗・残日数を含めて計算されるためです。残り営業日の売上を必要日商以上で維持できるかを優先して確認してください。</p>`:''}<ul class="pr-compact"><li>必要日商は暦日ベースの目安。休業日は実営業日で再配分。</li><li>好調曜日は再現、不調曜日は人件費・販促・商品訴求を分けて<span class="pr-keep">検証。</span></li><li>客数不足と客単価不足は分けて対策。</li></ul></section>
     ${sections.actions?`<section class="pr-section pr-actions-compact"><h2>改善アクション</h2><table class="pr-table"><thead><tr><th>優先</th><th>テーマ</th><th>実行内容</th></tr></thead><tbody>${decisions.slice(0,4).map(x=>`<tr><td>${x.priority}</td><td>${x.theme}</td><td>${x.action}</td></tr>`).join('')}</tbody></table><h3>次回まで</h3><ul class="pr-compact">${rangeAgg.calendarDays?'<li>読み込みを開始したLINE日報の未読込日を補完</li>':''}<li>月締め後に確定PLへ差替</li><li>施策実施日を日報へ記録</li></ul></section>`:''}
   </div>
-  <div class="pr-foot">Manager Pro Ver 5.16.82 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.83 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
  const actionRows=decisions.map((x,i)=>`<tr><td>${i+1}</td><td>${x.priority}</td><td>${x.theme}</td><td>${x.reason}</td><td>${x.action}</td><td>次回会議</td></tr>`).join('');
  // AirメイトPDFのランチ/ディナー月次データを会議資料へ反映。未取得値は推測しない。
  const segmentReports=r.keys.map(key=>state.airmatePdfReports?.[key]).filter(x=>x&&numericProvided(x.lunchSales)&&numericProvided(x.dinnerSales));
@@ -5261,17 +5312,17 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>改善余地 TOP3</h2><div class="pr-rank-list">${recoveries.length?recoveries.slice(0,3).map((x,i)=>`<div class="pr-rank-item"><span>${i+1}</span><b>${x.label}<small style="display:block;font-weight:400">${x.detail}</small></b><em>${yen(Math.round(x.value))}</em></div>`).join(''):'<p class="pr-note">比較データ不足</p>'}</div><p class="pr-note">前月水準への単純回復試算。効果保証ではありません。</p></section>
   </div>
   <section class="pr-section pr-airmate-note"><h2>会議で見るポイント</h2><ul class="pr-compact">${segmentNotes.slice(0,4).map(x=>`<li>${x}</li>`).join('')}<li>区分はAirメイトPDFの定義を使用。未取得値は推測しません。</li></ul></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.82 / ${stamp()} / Airメイト ランチ・ディナー詳細診断 / 取得済みデータのみで分析</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.83 / ${stamp()} / Airメイト ランチ・ディナー詳細診断 / 取得済みデータのみで分析</div></div>`:'';
  const sheet8=(rangeAgg.rows.length>=3)?`<div class="pr-page pr-sheet pr-balance-page pr-longtrend-sheet">${meetingHeader('長期トレンド・データ成熟度',periodLabel,'8/10')}
   <section class="pr-section"><h2>完了月だけで見る全店トレンド</h2><div class="pr-diagnosis-grid"><div class="pr-diagnosis-card"><span>全店診断</span><strong>${wholeQuadrant}</strong><p>${trendSignal}</p></div><div class="pr-diagnosis-card"><span>比較ルール</span><strong>途中月を混ぜない</strong><p>${isPartialCurrent?`${r.end}は途中経過。完了月比較から除外。`:'対象月は完了月として比較。'}</p></div><div class="pr-diagnosis-card"><span>取得月数</span><strong>${rangeAgg.rows.filter(x=>x.salesKnown).length}か月</strong><p>完了月 ${completedTrendRows.length}か月 / 確定PL ${confirmedPl.length}か月</p></div><div class="pr-diagnosis-card"><span>学習段階</span><strong>${completedTrendRows.length>=6?'売上の中期傾向判定可':completedTrendRows.length>=3?'売上の短期傾向判定可':'基準形成中'}</strong><p>売上は3か月で短期、6か月以上で中期傾向を強化。客数・客単価の構造判定は取得月だけで行います。</p></div></div></section>
   <section class="pr-section"><h2>データ成熟度マトリクス</h2><table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>確定PL</th><th>Airメイト売上分析</th><th>商品ABC</th><th>日次</th><th>LINE日報</th></tr></thead><tbody>${coverageRows}</tbody></table><p class="pr-note">「済」は月単位データ取得済み。「途中」は月締め前のため確定PL評価から除外します。商品ABCは対象月をカバーした日数を表示します。欠損項目は推測せず、分析できる範囲を自動で変えます。</p></section>
   <section class="pr-section"><h2>Manager Proが現在読めること</h2><div class="pr-callout pr-good">${maturityNotes.length?maturityNotes.map(x=>`• ${x}`).join('<br>'):'比較データを蓄積中です。'}</div></section>
   <section class="pr-section"><h2>次にデータが増えると深掘りできる分析</h2><div class="pr-quadrant"><div><b>3か月以上</b><p>売上・客数・客単価の短期トレンドと連続悪化/改善を検出。</p></div><div><b>6か月以上</b><p>曜日・季節性・PL構造の継続傾向を判定。</p></div><div><b>日報蓄積</b><p>施策実施日前後の売上・人件費・口コミ変化を比較。</p></div><div><b>Airメイト売上分析PDF蓄積</b><p>ランチ/ディナーの構造転換が一時的か継続的かを判定。</p></div></div></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.82 / ${stamp()} / 長期学習基盤 / 月途中と完了月を分離して判定</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.83 / ${stamp()} / 長期学習基盤 / 月途中と完了月を分離して判定</div></div>`:'';
  const sheet9=(plDiagnosis||anomalyRows.length)?`<div class="pr-page pr-sheet pr-balance-page pr-profit-balance">${meetingHeader('利益・異常値・構造診断',periodLabel,'9/10')}
   ${plDiagnosis?`<section class="pr-section"><h2>利益構造の変化｜${plPrev.key} → ${plNow.key}</h2><div class="pr-diagnosis-grid"><div class="pr-diagnosis-card ${plDiagnosis.margin>=0?'good':'bad'}"><span>営業利益率</span><strong>${plPrevR.margin.toFixed(1)}% → ${plNowR.margin.toFixed(1)}%（${plDiagnosis.margin>=0?'+':''}${plDiagnosis.margin.toFixed(1)}pt）</strong><p>営業利益 ${plDiagnosis.profit>=0?'+':''}${yen(plDiagnosis.profit)}。</p></div><div class="pr-diagnosis-card ${plDiagnosis.cost<=0?'good':'bad'}"><span>原価率</span><strong>${plPrevR.cost.toFixed(1)}% → ${plNowR.cost.toFixed(1)}%（${plDiagnosis.cost>=0?'+':''}${plDiagnosis.cost.toFixed(1)}pt）</strong><p>${plDiagnosis.cost>0?'原価面は利益を押し下げる方向。商品構成・仕入・ロスを優先確認。':'原価面は改善方向。'}</p></div><div class="pr-diagnosis-card ${plDiagnosis.labor<=0?'good':'bad'}"><span>人件費率</span><strong>${plPrevR.labor.toFixed(1)}% → ${plNowR.labor.toFixed(1)}%（${plDiagnosis.labor>=0?'+':''}${plDiagnosis.labor.toFixed(1)}pt）</strong><p>${plDiagnosis.labor<0?'人件費率改善が利益を下支え。':'人件費率は悪化方向。'}</p></div><div class="pr-diagnosis-card"><span>PL総合判定</span><strong>${plDiagnosis.margin>=0?'利益率は維持・改善':'利益率は悪化'}</strong><p>${plDiagnosis.cost>0&&plDiagnosis.labor<0?'原価率悪化を人件費率改善が吸収している構造。':'各率の変化を個別に確認。'}</p></div></div></section>`:''}
   <section class="pr-section"><h2>${r.end} 日次異常値検出</h2>${currentTodayPartial?`<p class="pr-note"><b>${todayIso} は本日途中経過として異常値判定・平均・中央値から除外しています。</b> 現在売上 ${yen(currentTodayPartial.sales)} は参考表示のみです。</p>`:''}${currentDaily.length?`<div class="pr-mini-grid"><div class="pr-mini"><span>日次平均</span><strong>${yen(dailyAvg)}</strong></div><div class="pr-mini"><span>中央値</span><strong>${yen(medianDaily)}</strong></div><div class="pr-mini"><span>分析日数</span><strong>${currentDaily.length}日</strong></div><div class="pr-mini"><span>平均比-25%以下</span><strong>${anomalyRows.length}日</strong></div></div><table class="pr-table"><thead><tr><th>日付</th><th>売上</th><th>平均差</th><th>客数</th><th>客単価</th><th>型</th></tr></thead><tbody>${anomalyRows.length?anomalyRows.map(x=>`<tr><td>${x.date}</td><td>${yen(x.sales)}</td><td>${x.dev.toFixed(1)}%</td><td>${x.cust!=null?num(x.cust)+'名':'-'}</td><td>${x.ticket!=null?yen(x.ticket):'-'}</td><td>${x.type}</td></tr>`).join(''):'<tr><td colspan="6">大きな異常低下は検出されませんでした</td></tr>'}</tbody></table>`:'<p class="pr-note">対象月の日次データ不足のため異常値判定を行いません。</p>'}<p class="pr-note">異常値は取得済み日次売上の平均比-25%以下を検出。原因型は客数・客単価が取得できる日のみ判定します。</p></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.82 / ${stamp()} / 利益・異常値診断 / 閾値は資料内に明示</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.83 / ${stamp()} / 利益・異常値診断 / 閾値は資料内に明示</div></div>`:'';
  const sheet10=(sections.summary!==false||sections.actions)?`<div class="pr-page pr-sheet">${meetingHeader('経営診断 結論・優先順位',r.end,'10/10')}
   <div class="pr-big-conclusion"><h2>経営判断サマリー</h2><p>${lunchDriver&&dinnerDriver?`前月比では、ランチは「${quadrantOf(lunchDriver)}」、ディナーは「${quadrantOf(dinnerDriver)}」。${shareShift!=null?`売上構成はディナー側へ ${Math.abs(shareShift).toFixed(1)}pt シフト。`:''}`:'ランチ／ディナー比較データは不足しています。'}${plDiagnosis?` PLでは営業利益率 ${plDiagnosis.margin>=0?'+':''}${plDiagnosis.margin.toFixed(1)}pt。${plDiagnosis.cost>0&&plDiagnosis.labor<0?'<span class="pr-keep-summary">原価率悪化を人件費率改善が吸収しています。</span>':''}`:''}</p></div>
   <section class="pr-section"><h2>最優先で見る3点</h2><div class="pr-rank-list">${rankedFindings.slice(0,3).map((x,i)=>`<div class="pr-rank-item"><span>${i+1}</span><b>${x.title}<small style="display:block;font-weight:400">${x.detail}</small></b><em>${i===0?'最優先':i===1?'次点':'監視'}</em></div>`).join('')||'<p class="pr-note">優先順位を決めるための比較データが不足しています。</p>'}</div></section>
@@ -5281,11 +5332,12 @@ function buildRangeMeetingReport(){
    <div class="pr-callout ${diagnosisConfidence>=75?'pr-good':diagnosisConfidence>=50?'':'pr-bad'}"><b>当月分析信頼度 ${diagnosisConfidence}/100</b>｜当月ランチ/ディナー比較 ${segmentHasComparableCurrent?'あり':segmentHasCurrent?'当月のみ':'不足'}、当月確定PL比較 ${plHasComparableCurrent?'あり':plHasCurrent?'当月のみ':'不足'}、当月日次 ${currentDaily.length}/${confidenceExpected}日、当月LINE日報 ${confidenceLineLoaded?`${confidenceEndRow?.lineCount||0}/${confidenceExpected}日`:'未読込（採点対象外）'}。過去月だけの比較資料は参考情報とし、当月信頼度へ満点加算しません。</div>
    <div class="pr-callout ${overallCompleteness>=75?'pr-good':overallCompleteness>=50?'':'pr-bad'}" style="margin-top:2mm"><b>蓄積データ充足度 ${overallCompleteness}/100</b>｜<b>※アプリの精度ではなく、過去データの蓄積量です。</b> 対象期間 ${rangeAgg.rows.length}か月を、売上20%・確定PL20%・Airメイト売上分析10%・商品ABC5%・日次25%・LINE日報20%で評価。LINE日報が未読込の月はLINE項目の採点対象外。商品ABCは取得期間の日数割合で採点。日次取得：${completenessDailyText||'なし'}。月次CSVの売上だけを日次取得済みとは判定しません。</div>
   </section>
-  <div class="pr-foot">Manager Pro Ver 5.16.82 / ${stamp()} / 経営診断レポート / 試算は試算として明示</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.83 / ${stamp()} / 経営診断レポート / 試算は試算として明示</div></div>`:'';
  const pages=[sheet1,sheet2,sheet3,sheet4,sheet5,sheet6,sheet7,sheet8,sheet9,sheet10].filter(Boolean);let total=pages.length;
  const reportEl=$('#printReport');reportEl.innerHTML=pages.join('');
  const sparseMerge=mpCompactSparseReport(reportEl,r.keys.length);
  const finalPagination=mpFinalOnePagePagination(reportEl);
+ const dynamicPagination=mpDynamicContentPagination(reportEl);
  const adaptivePagination=mpApplyAdaptivePagination(reportEl);
  const a4Visual=mpApplySafePageFill(reportEl);
  total=mpRenumberReportPages(reportEl);
@@ -5295,7 +5347,7 @@ function buildRangeMeetingReport(){
  if(abcExpected&&!abcPageIncluded)warnings.push(`商品ABCを${abcRawItems.length}行取得・${abcAnalyzedItems.length}商品を分析対象として認識していますが、PDF商品ABCページが生成されていません`);
  if(logicalPages!==total)warnings.push(`論理ページ数不一致：想定${total} / DOM${logicalPages}`); if(finalPagination?.warnings?.length)warnings.push(...finalPagination.warnings); if(a4Visual?.warnings?.length)warnings.push(...a4Visual.warnings); if(a4Audit?.warnings?.length)warnings.push(...a4Audit.warnings);
  if(total&&[...reportEl.querySelectorAll('.pr-month')].some((x,i)=>!String(x.textContent||'').includes(`${i+1}/${total}`)))warnings.push('ページ番号ラベルに不一致があります');
- mpDiagSnapshot('PDF構成確定直後',{pdfBuild:{logicalPages,total,abcPageIncluded,abcExpected,abcDataAvailable,abcRawCount:abcRawItems.length,abcAnalyzedCount:abcAnalyzedItems.length,salesPageIncluded,adaptiveJoined:adaptivePagination.joined,physicalPagesMode:'content-driven-one-sheet-one-a4-v51658',longTrendZoom:adaptivePagination.pageProfiles?.find(x=>x.page===([sheet1,sheet2,sheet3,sheet4,sheet5,sheet6,sheet7,sheet8].filter(Boolean).length))?.zoom??null,pageProfiles:adaptivePagination.pageProfiles,a4VisualProfiles:a4Visual?.profiles||[],a4SelfAudit:a4Audit,printStability:'v5.16.75-partial-pl-forecast-clarify',buildVersion:'5.16.75',sections:{...sections},warnings}});
+ mpDiagSnapshot('PDF構成確定直後',{pdfBuild:{logicalPages,total,abcPageIncluded,abcExpected,abcDataAvailable,abcRawCount:abcRawItems.length,abcAnalyzedCount:abcAnalyzedItems.length,salesPageIncluded,adaptiveJoined:adaptivePagination.joined,dynamicPagination,physicalPagesMode:'content-measured-dynamic-v51683',longTrendZoom:adaptivePagination.pageProfiles?.find(x=>x.page===([sheet1,sheet2,sheet3,sheet4,sheet5,sheet6,sheet7,sheet8].filter(Boolean).length))?.zoom??null,pageProfiles:adaptivePagination.pageProfiles,a4VisualProfiles:a4Visual?.profiles||[],a4SelfAudit:a4Audit,printStability:'v5.16.75-partial-pl-forecast-clarify',buildVersion:'5.16.75',sections:{...sections},warnings}});
  if(warnings.length)console.warn('[ManagerPro PDF preflight]',warnings);
  triggerReportPrint()
 }
