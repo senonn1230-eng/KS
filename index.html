@@ -12,8 +12,8 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.16.92</title>
-<!-- Ver5.16.92: ランチ/ディナー月次比較を直近3か月まで拡張。選択月は必ず優先し、途中月は期間を明示。未取得は推測しない。 -->
+<title>土雷門 経営管理 Manager Pro Ver 5.16.93</title>
+<!-- Ver5.16.93: ランチ/ディナー月次比較を直近3か月まで拡張。選択月は必ず優先し、途中月は期間を明示。未取得は推測しない。 -->
 <!-- Ver5.16.91: ランチ/ディナーは選択月を優先し、日別セグメントが揃う場合は前月同期間比較。未取得は推測しない。 -->
 <!-- Ver5.16.91 lunch/dinner current-month same-period comparison; preserves previous/current sales overlay + 7-day moving average + partial isolation. -->
 <!-- Ver5.16.85 print final: compact ABC/drink page; separate current-day partial point from confirmed line. -->
@@ -5158,7 +5158,7 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>残り期間の判断指標</h2>${forecast?`<div class="pr-forecast-note"><div><span>${forecast.partialToday?'現在ペース（当日途中含む）':'現在ペース（暦日平均）'}</span><strong>${yen(forecast.avg)}</strong></div><div><span>確定日平均売上</span><strong>${forecast.completeAvg!=null?yen(forecast.completeAvg):'-'}</strong></div><div><span>予算達成に必要な日商</span><strong>${forecast.neededDaily!=null?yen(forecast.neededDaily):'-'}</strong></div><div><span>現在平均との比較</span><strong>${forecast.neededDaily!=null?((forecast.completeAvg??forecast.avg)>=forecast.neededDaily?`<span class="pr-keep-group">必要日商を ${yen((forecast.completeAvg??forecast.avg)-forecast.neededDaily)} 上回る</span>`:`<span class="pr-keep-group">必要日商を ${yen(forecast.neededDaily-(forecast.completeAvg??forecast.avg))} 下回る</span>`):'-'}</strong></div></div>`:''}${forecast&&forecast.neededDaily!=null&&forecast.completeAvg!=null&&forecast.completeAvg>=forecast.neededDaily&&forecast.standard<forecast.budget?`<p class="pr-note pr-forecast-clarify"><b>補足：</b>確定日平均は必要日商を上回っていますが、標準着地は未達です。これは着地予測が暦日進捗・残日数を含めて計算されるためです。残り営業日の売上を必要日商以上で維持できるかを優先して確認してください。</p>`:''}<ul class="pr-compact"><li>必要日商は暦日ベースの目安。休業日は実営業日で再配分。</li><li>好調曜日は再現、不調曜日は人件費・販促・商品訴求を分けて<span class="pr-keep">検証。</span></li><li>客数不足と客単価不足は分けて対策。</li></ul></section>
     ${sections.actions?`<section class="pr-section pr-actions-compact"><h2>改善アクション</h2><table class="pr-table"><thead><tr><th>優先</th><th>テーマ</th><th>実行内容</th></tr></thead><tbody>${decisions.slice(0,4).map(x=>`<tr><td>${x.priority}</td><td>${x.theme}</td><td>${x.action}</td></tr>`).join('')}</tbody></table><h3>次回まで</h3><ul class="pr-compact">${rangeAgg.calendarDays?'<li>読み込みを開始したLINE日報の未読込日を補完</li>':''}<li>月締め後に確定PLへ差替</li><li>施策実施日を日報へ記録</li></ul></section>`:''}
   </div>
-  <div class="pr-foot">Manager Pro Ver 5.16.92 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.93 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
  const actionRows=decisions.map((x,i)=>`<tr><td>${i+1}</td><td>${x.priority}</td><td>${x.theme}</td><td>${x.reason}</td><td>${x.action}</td><td>次回会議</td></tr>`).join('');
  // ランチ/ディナーは AirメイトPDF を最優先。無い月は、取込済み分析データにランチ/ディナー実績がある場合だけ補完する。
  // 推測や売上構成比からの逆算はしない。
@@ -5365,7 +5365,7 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>改善余地 TOP3</h2><div class="pr-rank-list">${recoveries.length?recoveries.slice(0,3).map((x,i)=>`<div class="pr-rank-item"><span>${i+1}</span><b>${x.label}<small style="display:block;font-weight:400">${x.detail}</small></b><em>${yen(Math.round(x.value))}</em></div>`).join(''):'<p class="pr-note">比較データ不足</p>'}</div><p class="pr-note">前月水準への単純回復試算。効果保証ではありません。</p></section>
   </div>
   <section class="pr-section pr-airmate-note"><h2>会議で見るポイント</h2><ul class="pr-compact">${segmentNotes.slice(0,4).map(x=>`<li>${x}</li>`).join('')}<li>区分はAirメイトPDFの定義を使用。未取得値は推測しません。</li></ul></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.92 / ${stamp()} / Airメイト ランチ・ディナー詳細診断 / 取得済みデータのみで分析</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.93 / ${stamp()} / Airメイト ランチ・ディナー詳細診断 / 取得済みデータのみで分析</div></div>`:'';
  const sheet8=(rangeAgg.rows.length>=3)?`<div class="pr-page pr-sheet pr-balance-page pr-longtrend-sheet">${meetingHeader('長期トレンド・データ成熟度',periodLabel,'8/10')}
   <section class="pr-section"><h2>完了月だけで見る全店トレンド</h2><div class="pr-diagnosis-grid"><div class="pr-diagnosis-card"><span>全店診断</span><strong>${wholeQuadrant}</strong><p>${trendSignal}</p></div><div class="pr-diagnosis-card"><span>比較ルール</span><strong>途中月を混ぜない</strong><p>${isPartialCurrent?`${r.end}は途中経過。完了月比較から除外。`:'対象月は完了月として比較。'}</p></div><div class="pr-diagnosis-card"><span>取得月数</span><strong>${rangeAgg.rows.filter(x=>x.salesKnown).length}か月</strong><p>完了月 ${completedTrendRows.length}か月 / 確定PL ${confirmedPl.length}か月</p></div><div class="pr-diagnosis-card"><span>学習段階</span><strong>${completedTrendRows.length>=6?'売上の中期傾向判定可':completedTrendRows.length>=3?'売上の短期傾向判定可':'基準形成中'}</strong><p>売上は3か月で短期、6か月以上で中期傾向を強化。客数・客単価の構造判定は取得月だけで行います。</p></div></div></section>
   <section class="pr-section"><h2>データ成熟度マトリクス</h2><table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>確定PL</th><th>Airメイト売上分析</th><th>商品ABC</th><th>日次</th><th>LINE日報</th></tr></thead><tbody>${coverageRows}</tbody></table><p class="pr-note">「済」は月単位データ取得済み。「途中」は月締め前のため確定PL評価から除外します。商品ABCは対象月をカバーした日数を表示します。欠損項目は推測せず、分析できる範囲を自動で変えます。</p></section>
