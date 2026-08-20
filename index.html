@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.16.85</title>
+<title>土雷門 経営管理 Manager Pro Ver 5.16.87</title>
 <!-- Ver5.16.85 print final: compact ABC/drink page; separate current-day partial point from confirmed line. -->
 <!-- Ver5.16.30 final audit: official sales source separation, stale manual flag display isolation, ABC raw/analyzed count consistency -->
 <!-- Ver5.16.32 final polish: rename overall completeness to accumulated-data completeness and clarify that the score is data coverage, not app accuracy. -->
@@ -1684,7 +1684,7 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
 </style>
 
 <style id="v51681AbcPrintFitFinal">
-/* ===== Ver 5.16.85: ABC/drink page final A4 fit =====
+/* ===== Ver 5.16.87: ABC/drink page final A4 fit =====
    Keep all colored charts, but compact only the product/drink sheet so the drink chart and notes never clip. */
 @media print{
   #printReport .pr-page.pr-sheet.pr-abc-sheet{
@@ -2192,9 +2192,15 @@ function mpCloudABCHistoryFromFieldRows(rows){
  return out.sort((a,b)=>String(a.periodEnd||'').localeCompare(String(b.periodEnd||''))||String(a.cloudUpdatedAt||'').localeCompare(String(b.cloudUpdatedAt||'')));
 }
 function mpABCForMonth(key){
+ // 商品ABC CSVは「対象期間の商品別集計」で、日別内訳を持たない。
+ // そのため月またぎCSVを月別に按分・推測分割することは禁止する。
+ // 選択月の月内だけで完結しているABCデータだけを採用する。
  const all=[...(state.airmateMenuABCHistory||[])];if(state.airmateMenuABC?.items?.length)all.push(state.airmateMenuABC);
  const uniq=[];const seen=new Set();for(const x of all){const k=`${x.periodStart||''}|${x.periodEnd||''}|${x.sourceFile||''}`;if(!seen.has(k)){seen.add(k);uniq.push(x)}}
- const hit=uniq.filter(x=>{const s=String(x.periodStart||'').slice(0,7),e=String(x.periodEnd||'').slice(0,7);return key&&s&&e&&s<=key&&key<=e}).sort((a,b)=>String(b.periodEnd||'').localeCompare(String(a.periodEnd||''))||String(b.cloudUpdatedAt||'').localeCompare(String(a.cloudUpdatedAt||'')))[0];
+ const hit=uniq.filter(x=>{
+  const s=String(x.periodStart||'').slice(0,7),e=String(x.periodEnd||'').slice(0,7);
+  return !!(key&&s===key&&e===key);
+ }).sort((a,b)=>String(b.periodEnd||'').localeCompare(String(a.periodEnd||''))||String(b.cloudUpdatedAt||'').localeCompare(String(a.cloudUpdatedAt||'')))[0];
  return hit||null;
 }
 function mpABCMonthCoverage(key,expectedDays){
@@ -3182,7 +3188,7 @@ function mpProductDataForMonth(key){
  const a=key?mpABCForMonth(key):(state.airmateMenuABC||null);
  if(a?.items?.length){
    const end=String(a.periodEnd||'').slice(0,7),start=String(a.periodStart||'').slice(0,7);
-   if(!key||(start&&end&&start<=key&&key<=end))return {...a,month:key||end||start,sourceType:'airmate_menu_abc'};
+   if(!key||(start===key&&end===key))return {...a,month:key||end||start,sourceType:'airmate_menu_abc'};
  }
  return null;
 }
@@ -4466,18 +4472,43 @@ function localDateKey(d=new Date()){
  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
  return `${y}-${m}-${day}`
 }
+
+function meetingDailyProvisionalInfo(rows){
+ const all=(rows||[]).filter(x=>x&&x.date&&numericProvided(x.sales)&&Number(x.sales)>=0).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+ if(!all.length)return {rows:all,provisional:[]};
+ const today=localDateKey(),todayMs=new Date(today+'T00:00:00').getTime(),oneDay=86400000;
+ const hasToday=all.some(x=>String(x.date)===today);
+ const provisional=[];
+ all.forEach((x,i)=>{
+  const d=String(x.date),ms=new Date(d+'T00:00:00').getTime();
+  if(d===today){x._meetingProvisional=true;x._meetingProvisionalReason='本日途中経過';provisional.push(x);return}
+  // 前日で、まだ本日の日次売上が入っておらず、直前の通常水準から大きく乖離する低い値は
+  // 「確定」と断定せず保留する。次の日次実績が入れば自動的に通常の確定日へ戻る。
+  if(!hasToday && Number.isFinite(ms) && todayMs-ms===oneDay){
+   const prev=all.slice(Math.max(0,i-7),i).map(z=>Number(z.sales)).filter(v=>Number.isFinite(v)&&v>0).sort((a,b)=>a-b);
+   const med=prev.length ? (prev.length%2 ? prev[(prev.length-1)/2] : (prev[prev.length/2-1]+prev[prev.length/2])/2) : null;
+   if(med!=null && Number(x.sales)<med*0.5){
+    x._meetingProvisional=true;x._meetingProvisionalReason='前日データ未確定の可能性';provisional.push(x);
+   }
+  }
+ });
+ return {rows:all,provisional}
+}
+function meetingConfirmedDailyRows(rows){
+ return meetingDailyProvisionalInfo(rows).rows.filter(x=>!x._meetingProvisional)
+}
 function meetingCurrentForecast(key){
- const a=monthAnalytics(key),rows=meetingDailyRows([key]).filter(x=>numericProvided(x.sales)&&Number(x.sales)>=0),totalDays=monthDaysCount(key),todayDate=localDateKey(),todayKey=todayDate.slice(0,7);
+ const a=monthAnalytics(key),rawRows=meetingDailyRows([key]).filter(x=>numericProvided(x.sales)&&Number(x.sales)>=0),classified=meetingDailyProvisionalInfo(rawRows),rows=classified.rows,totalDays=monthDaysCount(key),todayDate=localDateKey(),todayKey=todayDate.slice(0,7);
  if(!rows.length||!numericProvided(a.sales)||!totalDays)return null;
  const observed=Math.max(...rows.map(x=>+String(x.date).slice(8,10)).filter(Number.isFinite),0)||rows.length;
  const isCurrent=key===todayKey,elapsed=isCurrent?Math.min(totalDays,new Date().getDate()):Math.min(totalDays,observed||totalDays);
  const sales=Number(a.sales),paceDays=Math.max(1,elapsed),avg=sales/paceDays,budget=budgetForMonth(key);
- const todayRow=isCurrent?rows.find(x=>x.date===todayDate):null,partialToday=!!todayRow;
- const completedRows=isCurrent?rows.filter(x=>x.date<todayDate):rows;
+ const partialRow=isCurrent?rows.find(x=>x._meetingProvisional)||null:null,partialToday=!!partialRow;
+ const completedRows=isCurrent?rows.filter(x=>!x._meetingProvisional&&x.date<todayDate):rows.filter(x=>!x._meetingProvisional);
  const completeSales=completedRows.reduce((z,x)=>z+Number(x.sales||0),0),completeDays=completedRows.length,completeAvg=completeDays?completeSales/completeDays:null;
  const standard=(partialToday&&completeAvg!=null)?completeAvg*totalDays:avg*totalDays;
  const remain=Math.max(0,budget-sales),remainDays=Math.max(0,totalDays-elapsed);
- return {key,sales,elapsed,expected:totalDays,avg,completeAvg,completeDays,partialToday,todaySales:todayRow?Number(todayRow.sales):null,budget,remain,remainDays,neededDaily:remainDays?remain/remainDays:null,standard,cautious:standard*.9,optimistic:standard*1.1}
+ return {key,sales,elapsed,expected:totalDays,avg,completeAvg,completeDays,partialToday,todaySales:partialRow?Number(partialRow.sales):null,provisionalDate:partialRow?.date||null,provisionalReason:partialRow?._meetingProvisionalReason||null,budget,remain,remainDays,neededDaily:remainDays?remain/remainDays:null,standard,cautious:standard*.9,optimistic:standard*1.1}
 }
 function meetingDecisionItems(cur,rangeAgg,daily,weekday,forecast){
  const items=[];
@@ -4993,7 +5024,8 @@ function buildRangeMeetingReport(){
  const dailyTable=(arr)=>arr.map(x=>`<tr><td>${x.date}</td><td>${yen(x.sales)}</td><td>${numericProvided(x.customers)?num(x.customers)+'名':'-'}</td><td>${numericProvided(x.customers)&&Number(x.customers)>0?yen(x.sales/x.customers):'-'}</td></tr>`).join('')||'<tr><td colspan="4">日次データなし</td></tr>';
  const decisions=meetingDecisionItems(currentMonthAgg,rangeAgg,daily,weekday,forecast);
  const detailProductMeta=mpProductDataForMonth(r.end),rangeABC=mpABCForMonth(r.end),airmateProductMeta=(rangeABC?.items||[]).length?rangeABC:null;
- const abcMeta=airmateProductMeta||detailProductMeta||{},abcPeriodNote=abcMeta.periodStart&&abcMeta.periodEnd?`対象期間 ${escHtml(abcMeta.periodStart)} ～ ${escHtml(abcMeta.periodEnd)}`:(detailProductMeta?`対象月 ${escHtml(r.end)} / 会計明細の商品集計`:'対象期間はファイルから特定できません'),abcSourceNote=airmateProductMeta?`Airメイト商品ABC：${escHtml(abcMeta.sourceFile||'-')}`:(detailProductMeta?`会計明細商品集計：${escHtml(detailProductMeta.sourceFile||'-')}`:'商品データなし'),abcRawCount=(abcMeta.items||[]).length,abcAll=mpAnalyzableProductItems(abcMeta).slice().sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0)),abc=abcAll.slice(0,12),abcTotal=abcAll.reduce((z,x)=>z+(Number(x.sales)||0),0),abcTop3=abc.slice(0,3).reduce((z,x)=>z+(Number(x.sales)||0),0);
+ const latestABC=state.airmateMenuABC||null,latestABCStart=String(latestABC?.periodStart||'').slice(0,7),latestABCEnd=String(latestABC?.periodEnd||'').slice(0,7),crossMonthABC=!!(latestABC?.items?.length&&latestABCStart&&latestABCEnd&&latestABCStart!==latestABCEnd&&latestABCStart<=r.end&&r.end<=latestABCEnd);
+ const abcMeta=airmateProductMeta||detailProductMeta||{},abcPeriodNote=abcMeta.periodStart&&abcMeta.periodEnd?`対象期間 ${escHtml(abcMeta.periodStart)} ～ ${escHtml(abcMeta.periodEnd)}`:(detailProductMeta?`対象月 ${escHtml(r.end)} / 会計明細の商品集計`:(crossMonthABC?`対象月 ${escHtml(r.end)} / 月またぎ商品ABCは集計対象外`:'対象期間はファイルから特定できません')),abcSourceNote=airmateProductMeta?`Airメイト商品ABC：${escHtml(abcMeta.sourceFile||'-')}`:(detailProductMeta?`会計明細商品集計：${escHtml(detailProductMeta.sourceFile||'-')}`:(crossMonthABC?`月またぎABC「${escHtml(latestABC.sourceFile||'-')}」は月別内訳がないため不採用`:'商品データなし')),abcRawCount=(abcMeta.items||[]).length,abcAll=mpAnalyzableProductItems(abcMeta).slice().sort((a,b)=>(Number(b.sales)||0)-(Number(a.sales)||0)),abc=abcAll.slice(0,12),abcTotal=abcAll.reduce((z,x)=>z+(Number(x.sales)||0),0),abcTop3=abc.slice(0,3).reduce((z,x)=>z+(Number(x.sales)||0),0);
  const abcRows=abc.map(x=>`<tr><td>${numericProvided(x.rank)?num(x.rank):'-'}</td><td>${escHtml(x.name||'-')}</td><td>${escHtml(x.salesClass||'-')}</td><td>${numericProvided(x.sales)?yen(x.sales):'-'}</td><td>${abcTotal?((Number(x.sales)||0)/abcTotal*100).toFixed(1)+'%':'-'}</td><td>${numericProvided(x.count)?num(x.count):'-'}</td></tr>`).join('')||'<tr><td colspan="6">商品ABCデータなし</td></tr>';
  const drinkItems=mpMeetingDrinkItems(abcMeta),drinkTotal=drinkItems.reduce((z,x)=>z+(Number(x.sales)||0),0),drinkTop=drinkItems.slice(0,8);
  const cmpSmall=salesComp?.rate!=null?`${samePeriod?.usable?'同日比':'比較期間比'} ${salesComp.rate>=0?'+':''}${salesComp.rate.toFixed(1)}%`:(isPartialCurrent?'同日比較データ不足':'比較データなし');
@@ -5002,7 +5034,7 @@ function buildRangeMeetingReport(){
  if(kind==='pl')kpiItems=[kpiCard('PL売上',cur.plConfirmedMonths?yen(cur.plSales):'-',`${cur.plConfirmedMonths}か月確定`,true),kpiCard('原価率',cur.costRate!=null?pct(cur.costRate):'-',cur.plConfirmedMonths?'確定PLのみ':'未登録'),kpiCard('人件費率',cur.labor>0&&cur.laborRate!=null?pct(cur.laborRate):'-',`目標 ${pct(state.settings.laborTarget)}`),kpiCard('確定PL営業利益',cur.plConfirmedMonths?yen(cur.profit):'-',cur.margin!=null?pct(cur.margin):'-')];
  else if(kind==='sales')kpiItems=[kpiCard('売上',numericProvided(cur.sales)?yen(cur.sales):'-',cmpSmall,true),kpiCard('予算達成',cur.budgetRate!=null?pct(cur.budgetRate):'-',yen(cur.budget)),kpiCard('客数',cur.customersKnown?`${num(cur.customers)}名`:'-',cur.customersKnown?'取得済み':'未登録'),kpiCard('客単価',cur.ticket!=null?yen(cur.ticket):'-','取得日の売上÷客数')];
  else if(kind==='labor')kpiItems=[kpiCard('売上',numericProvided(cur.sales)?yen(cur.sales):'-',cmpSmall,true),kpiCard('PL人件費',cur.labor>0?yen(cur.labor):'-',cur.labor>0?'確定PL':'未登録'),kpiCard('PL人件費率',cur.labor>0&&cur.laborRate!=null?pct(cur.laborRate):'-',`目標 ${pct(state.settings.laborTarget)}`),kpiCard('LINE日報',cur.calendarDays?`${cur.lineCount}日`:'未読込',cur.calendarDays?`読込率 ${lineRate.toFixed(0)}%`:'採点対象外')];
- else if(kind==='menu')kpiItems=[kpiCard('商品売上合計',abcTotal?yen(abcTotal):'-',abcAll.length?`${abcAll.length}商品`:'未登録',true),kpiCard('上位3商品比率',abcTotal?pct(abcTop3/abcTotal*100):'-','売上集中度'),kpiCard('分析対象商品数',`${abcAll.length}商品`,abcRawCount!==abcAll.length?`取得${abcRawCount}行（合計行等を除外）`:'商品ABC'),kpiCard('資料期間',abcMeta.periodStart&&abcMeta.periodEnd?`${abcMeta.periodStart.slice(5)}〜${abcMeta.periodEnd.slice(5)}`:'-','Airメイト')];
+ else if(kind==='menu')kpiItems=[kpiCard('ABC対象商品 売上合計',abcTotal?yen(abcTotal):'-',abcAll.length?`${abcAll.length}商品の合計`:'未登録',true),kpiCard('上位3商品比率',abcTotal?pct(abcTop3/abcTotal*100):'-','売上集中度'),kpiCard('分析対象商品数',`${abcAll.length}商品`,abcRawCount!==abcAll.length?`取得${abcRawCount}行（合計行等を除外）`:'商品ABC'),kpiCard('資料期間',abcMeta.periodStart&&abcMeta.periodEnd?`${abcMeta.periodStart.slice(5)}〜${abcMeta.periodEnd.slice(5)}`:'-','Airメイト')];
  else if(kind==='line')kpiItems=cur.calendarDays?[kpiCard('LINE日報',`${cur.lineCount}日`,`確認対象 ${cur.calendarDays}日`,true),kpiCard('読込率',`${lineRate.toFixed(0)}%`,'読み込み開始月のみ評価'),kpiCard('日次分析',`${daily.length}日`,'取得済み'),kpiCard('未読込',`${Math.max(0,cur.calendarDays-cur.lineCount)}日`,'読み込み開始月の補完対象')]:[kpiCard('LINE日報','未読込','品質スコア採点対象外',true),kpiCard('読込率','－','未読込'),kpiCard('日次分析',`${daily.length}日`,'取得済み'),kpiCard('確認対象日','－','未読込')];
  else if(kind==='forecast')kpiItems=[kpiCard('現在売上',numericProvided(cur.sales)?yen(cur.sales):'-',cmpSmall,true),kpiCard('標準着地',forecast?yen(forecast.standard):'-','現在ペース'),kpiCard('予算',forecast?yen(forecast.budget):yen(cur.budget),'月間目標'),kpiCard('必要日平均',forecast?.neededDaily!=null?yen(forecast.neededDaily):'-',forecast?`残り${forecast.remainDays}日`:'データ不足')];
  else{
@@ -5035,7 +5067,7 @@ function buildRangeMeetingReport(){
    <section class="pr-section"><h2>月別PL比較</h2><table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>原価</th><th>原価率</th><th>人件費</th><th>人件費率</th><th>営業利益</th><th>利益率</th></tr></thead><tbody>${plRowsOnly}</tbody></table></section>
    <section class="pr-section"><h2>利益率推移</h2>${confirmedRows.length?meetingBars(confirmedRows.map(x=>{const rr=ratios(x.m);return {label:x.key,margin:rr.margin}}),'label','margin',v=>pct(v)):'<p>確定PLデータがないため利益率推移は表示しません。</p>'}</section>
    <section class="pr-section"><h2>PLで確認するポイント</h2><ul class="pr-compact"><li>上部KPI・利益率はすべて確定PL期間だけで統一しています。</li><li>未確定月のCSV売上は参考値として別枠表示し、確定PLへ混ぜません。</li><li>原価率：仕入・ロス・商品構成の変化を確認。</li><li>人件費率：売上に対する配置と総労働時間を確認。</li><li>営業利益率：売上増だけでなく原価・人件費・販管費を合わせて判断。</li></ul></section>
-   <div class="pr-foot">Manager Pro Ver 5.16.85 / ${stamp()} / PL専用資料 / 確定PL基準</div></div>`;
+   <div class="pr-foot">Manager Pro Ver 5.16.87 / ${stamp()} / PL専用資料 / 確定PL基準</div></div>`;
   $('#printReport').innerHTML=page;triggerReportPrint();return
  }
  if(mode==='simple'){
@@ -5048,7 +5080,7 @@ function buildRangeMeetingReport(){
   if(sections.line)simpleBlocks.push(cur.calendarDays?`<section class="pr-section"><h2>LINE日報</h2><p>読み込み開始月だけで ${cur.lineCount}/${cur.calendarDays}日読込 / ${lineRate.toFixed(1)}%。未読込 ${Math.max(0,cur.calendarDays-cur.lineCount)}日。未投入月は0日扱いしません。</p></section>`:`<section class="pr-section"><h2>LINE日報</h2><p>対象期間は未読込です。未読込月は0日・0%として扱わず、品質スコアの採点対象外とします。</p></section>`);
   if(sections.forecast)simpleBlocks.push(`<section class="pr-section"><h2>着地予測</h2>${forecastHtml}</section>`);
   if(sections.actions)simpleBlocks.push(`<section class="pr-section"><h2>次の行動</h2><ol class="pr-compact">${decisions.slice(0,5).map(x=>`<li><b>${x.theme}</b>：${x.action}</li>`).join('')}</ol></section>`);
-  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Manager Pro Ver 5.16.85 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
+  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Manager Pro Ver 5.16.87 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
   $('#printReport').innerHTML=body;triggerReportPrint();return
  }
  const includeExecutive=(kind==='executive'||kind==='meeting')&&selectedNames.length>1;
@@ -5079,8 +5111,8 @@ function buildRangeMeetingReport(){
   <section class="pr-section"><h2>データ品質の確認</h2><div class="pr-data-quality"><div class="pr-mini"><span>日次分析</span><strong>${daily.length}日</strong></div><div class="pr-mini"><span>人件費取得</span><strong>${laborKnown.length}日</strong></div><div class="pr-mini"><span>LINE日報</span><strong>${rangeAgg.calendarDays?`${rangeAgg.lineCount}日`:'未読込'}</strong></div><div class="pr-mini"><span>確定PL</span><strong>${rangeAgg.plConfirmedMonths}か月</strong></div></div></section>
   </div>`:'';
  const sheet5=sections.menu&&abcAll.length?`<div class="pr-page pr-sheet pr-abc-sheet">${meetingHeader('商品ABC・売上構成分析',abcPeriodNote,'5/7')}
-  <div class="pr-mini-grid"><div class="pr-mini"><span>商品売上合計</span><strong>${abcTotal?yen(abcTotal):'-'}</strong></div><div class="pr-mini"><span>上位3商品構成比</span><strong>${abcTotal?pct(abcTop3/abcTotal*100):'-'}</strong></div><div class="pr-mini"><span>分析対象商品数</span><strong>${abcAll.length}商品</strong><small>${abcRawCount!==abcAll.length?`取得${abcRawCount}行 / 合計行等を除外`:`取得${abcRawCount}行`}</small></div></div>
-  <p class="pr-page-note"><b>採用データ：</b>${abcSourceNote}</p>
+  <div class="pr-mini-grid"><div class="pr-mini"><span>ABC対象商品 売上合計</span><strong>${abcTotal?yen(abcTotal):'-'}</strong></div><div class="pr-mini"><span>上位3商品構成比</span><strong>${abcTotal?pct(abcTop3/abcTotal*100):'-'}</strong></div><div class="pr-mini"><span>分析対象商品数</span><strong>${abcAll.length}商品</strong><small>${abcRawCount!==abcAll.length?`取得${abcRawCount}行 / 合計行等を除外`:`取得${abcRawCount}行`}</small></div></div>
+  <p class="pr-page-note"><b>採用データ：</b>${abcSourceNote}<br><b>ABC対象商品 売上合計：</b>選択月の月内だけで完結するAirメイト商品ABCについて、合計行などを除いた分析対象商品の「売上」を合算した値です。月をまたぐABCファイルは月別に分解できないため、この集計には使用しません。店舗の月間総売上とは一致しない場合があります。</p>
   <section class="pr-section"><h2>商品別 上位・売上構成</h2>${mpMeetingColorPie(abc.slice(0,5),abcTotal)}${meetingBars(abc.slice(0,8).map(x=>({name:x.name,sales:x.sales})),'name','sales')}<table class="pr-table"><thead><tr><th>順位</th><th>商品</th><th>ABC</th><th>売上</th><th>構成比</th><th>出数</th></tr></thead><tbody>${abcRows}</tbody></table></section>
   ${drinkItems.length?`<section class="pr-section"><h2>ドリンク売上・構成</h2><div class="pr-mini-grid"><div class="pr-mini"><span>ドリンク売上</span><strong>${yen(drinkTotal)}</strong></div><div class="pr-mini"><span>抽出商品数</span><strong>${drinkItems.length}商品</strong></div></div>${mpMeetingColorPie(drinkTop,drinkTotal)}${meetingBars(drinkTop,'name','sales')}<p class="pr-drink-note">商品名からドリンク系を抽出した集計です。対象期間は商品データの取得期間に準じます。月途中・日中のデータは <span class="pr-partial-chip">途中経過</span> として扱い、確定月との単純な増減評価はしません。</p></section>`:''}
   <section class="pr-section"><h2>会議で見るポイント</h2><ul class="pr-compact"><li>A商品は欠品防止・推奨強化を優先する。</li><li>売上構成比が高い商品は、価格・提供速度・品質変動が全体売上へ与える影響が大きい。</li><li>C商品は単純廃止ではなく、粗利・役割・セット販売への貢献を確認して継続判断する。</li></ul></section></div>`:'';
@@ -5091,7 +5123,7 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>残り期間の判断指標</h2>${forecast?`<div class="pr-forecast-note"><div><span>${forecast.partialToday?'現在ペース（当日途中含む）':'現在ペース（暦日平均）'}</span><strong>${yen(forecast.avg)}</strong></div><div><span>確定日平均売上</span><strong>${forecast.completeAvg!=null?yen(forecast.completeAvg):'-'}</strong></div><div><span>予算達成に必要な日商</span><strong>${forecast.neededDaily!=null?yen(forecast.neededDaily):'-'}</strong></div><div><span>現在平均との比較</span><strong>${forecast.neededDaily!=null?((forecast.completeAvg??forecast.avg)>=forecast.neededDaily?`<span class="pr-keep-group">必要日商を ${yen((forecast.completeAvg??forecast.avg)-forecast.neededDaily)} 上回る</span>`:`<span class="pr-keep-group">必要日商を ${yen(forecast.neededDaily-(forecast.completeAvg??forecast.avg))} 下回る</span>`):'-'}</strong></div></div>`:''}${forecast&&forecast.neededDaily!=null&&forecast.completeAvg!=null&&forecast.completeAvg>=forecast.neededDaily&&forecast.standard<forecast.budget?`<p class="pr-note pr-forecast-clarify"><b>補足：</b>確定日平均は必要日商を上回っていますが、標準着地は未達です。これは着地予測が暦日進捗・残日数を含めて計算されるためです。残り営業日の売上を必要日商以上で維持できるかを優先して確認してください。</p>`:''}<ul class="pr-compact"><li>必要日商は暦日ベースの目安。休業日は実営業日で再配分。</li><li>好調曜日は再現、不調曜日は人件費・販促・商品訴求を分けて<span class="pr-keep">検証。</span></li><li>客数不足と客単価不足は分けて対策。</li></ul></section>
     ${sections.actions?`<section class="pr-section pr-actions-compact"><h2>改善アクション</h2><table class="pr-table"><thead><tr><th>優先</th><th>テーマ</th><th>実行内容</th></tr></thead><tbody>${decisions.slice(0,4).map(x=>`<tr><td>${x.priority}</td><td>${x.theme}</td><td>${x.action}</td></tr>`).join('')}</tbody></table><h3>次回まで</h3><ul class="pr-compact">${rangeAgg.calendarDays?'<li>読み込みを開始したLINE日報の未読込日を補完</li>':''}<li>月締め後に確定PLへ差替</li><li>施策実施日を日報へ記録</li></ul></section>`:''}
   </div>
-  <div class="pr-foot">Manager Pro Ver 5.16.85 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.87 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
  const actionRows=decisions.map((x,i)=>`<tr><td>${i+1}</td><td>${x.priority}</td><td>${x.theme}</td><td>${x.reason}</td><td>${x.action}</td><td>次回会議</td></tr>`).join('');
  // AirメイトPDFのランチ/ディナー月次データを会議資料へ反映。未取得値は推測しない。
  const segmentReports=r.keys.map(key=>state.airmatePdfReports?.[key]).filter(x=>x&&numericProvided(x.lunchSales)&&numericProvided(x.dinnerSales));
@@ -5158,8 +5190,9 @@ function buildRangeMeetingReport(){
  const plDiagnosis=(plPrev&&plNow)?{sales:Number(plNow.m.sales)-Number(plPrev.m.sales),cost:Number(plNowR.cost)-Number(plPrevR.cost),labor:Number(plNowR.labor)-Number(plPrevR.labor),margin:Number(plNowR.margin)-Number(plPrevR.margin),profit:Number(plNow.m.profit)-Number(plPrev.m.profit)}:null;
  const nowDaily=new Date(),todayIso=`${nowDaily.getFullYear()}-${String(nowDaily.getMonth()+1).padStart(2,'0')}-${String(nowDaily.getDate()).padStart(2,'0')}`;
  const currentDailyAll=daily.filter(x=>String(x.date||'').slice(0,7)===r.end&&numericProvided(x.sales)&&Number(x.sales)>0);
- const currentDaily=currentDailyAll.filter(x=>String(x.date||'')!==todayIso);
- const currentTodayPartial=currentDailyAll.find(x=>String(x.date||'')===todayIso)||null;
+ const currentDailyClassified=meetingDailyProvisionalInfo(currentDailyAll);
+ const currentDaily=currentDailyClassified.rows.filter(x=>!x._meetingProvisional);
+ const currentTodayPartial=currentDailyClassified.provisional[0]||null;
  const dailyAvg=currentDaily.length?currentDaily.reduce((z,x)=>z+Number(x.sales),0)/currentDaily.length:null;
  const sortedDaily=[...currentDaily].sort((a,b)=>Number(a.sales)-Number(b.sales));
  const medianDaily=sortedDaily.length?(sortedDaily.length%2?Number(sortedDaily[(sortedDaily.length-1)/2].sales):(Number(sortedDaily[sortedDaily.length/2-1].sales)+Number(sortedDaily[sortedDaily.length/2].sales))/2):null;
@@ -5270,17 +5303,17 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>改善余地 TOP3</h2><div class="pr-rank-list">${recoveries.length?recoveries.slice(0,3).map((x,i)=>`<div class="pr-rank-item"><span>${i+1}</span><b>${x.label}<small style="display:block;font-weight:400">${x.detail}</small></b><em>${yen(Math.round(x.value))}</em></div>`).join(''):'<p class="pr-note">比較データ不足</p>'}</div><p class="pr-note">前月水準への単純回復試算。効果保証ではありません。</p></section>
   </div>
   <section class="pr-section pr-airmate-note"><h2>会議で見るポイント</h2><ul class="pr-compact">${segmentNotes.slice(0,4).map(x=>`<li>${x}</li>`).join('')}<li>区分はAirメイトPDFの定義を使用。未取得値は推測しません。</li></ul></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.85 / ${stamp()} / Airメイト ランチ・ディナー詳細診断 / 取得済みデータのみで分析</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.87 / ${stamp()} / Airメイト ランチ・ディナー詳細診断 / 取得済みデータのみで分析</div></div>`:'';
  const sheet8=(rangeAgg.rows.length>=3)?`<div class="pr-page pr-sheet pr-balance-page pr-longtrend-sheet">${meetingHeader('長期トレンド・データ成熟度',periodLabel,'8/10')}
   <section class="pr-section"><h2>完了月だけで見る全店トレンド</h2><div class="pr-diagnosis-grid"><div class="pr-diagnosis-card"><span>全店診断</span><strong>${wholeQuadrant}</strong><p>${trendSignal}</p></div><div class="pr-diagnosis-card"><span>比較ルール</span><strong>途中月を混ぜない</strong><p>${isPartialCurrent?`${r.end}は途中経過。完了月比較から除外。`:'対象月は完了月として比較。'}</p></div><div class="pr-diagnosis-card"><span>取得月数</span><strong>${rangeAgg.rows.filter(x=>x.salesKnown).length}か月</strong><p>完了月 ${completedTrendRows.length}か月 / 確定PL ${confirmedPl.length}か月</p></div><div class="pr-diagnosis-card"><span>学習段階</span><strong>${completedTrendRows.length>=6?'売上の中期傾向判定可':completedTrendRows.length>=3?'売上の短期傾向判定可':'基準形成中'}</strong><p>売上は3か月で短期、6か月以上で中期傾向を強化。客数・客単価の構造判定は取得月だけで行います。</p></div></div></section>
   <section class="pr-section"><h2>データ成熟度マトリクス</h2><table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>確定PL</th><th>Airメイト売上分析</th><th>商品ABC</th><th>日次</th><th>LINE日報</th></tr></thead><tbody>${coverageRows}</tbody></table><p class="pr-note">「済」は月単位データ取得済み。「途中」は月締め前のため確定PL評価から除外します。商品ABCは対象月をカバーした日数を表示します。欠損項目は推測せず、分析できる範囲を自動で変えます。</p></section>
   <section class="pr-section"><h2>Manager Proが現在読めること</h2><div class="pr-callout pr-good">${maturityNotes.length?maturityNotes.map(x=>`• ${x}`).join('<br>'):'比較データを蓄積中です。'}</div></section>
   <section class="pr-section"><h2>次にデータが増えると深掘りできる分析</h2><div class="pr-quadrant"><div><b>3か月以上</b><p>売上・客数・客単価の短期トレンドと連続悪化/改善を検出。</p></div><div><b>6か月以上</b><p>曜日・季節性・PL構造の継続傾向を判定。</p></div><div><b>日報蓄積</b><p>施策実施日前後の売上・人件費・口コミ変化を比較。</p></div><div><b>Airメイト売上分析PDF蓄積</b><p>ランチ/ディナーの構造転換が一時的か継続的かを判定。</p></div></div></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.85 / ${stamp()} / 長期学習基盤 / 月途中と完了月を分離して判定</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.87 / ${stamp()} / 長期学習基盤 / 月途中と完了月を分離して判定</div></div>`:'';
  const sheet9=(plDiagnosis||anomalyRows.length)?`<div class="pr-page pr-sheet pr-balance-page pr-profit-balance">${meetingHeader('利益・異常値・構造診断',periodLabel,'9/10')}
   ${plDiagnosis?`<section class="pr-section"><h2>利益構造の変化｜${plPrev.key} → ${plNow.key}</h2><div class="pr-diagnosis-grid"><div class="pr-diagnosis-card ${plDiagnosis.margin>=0?'good':'bad'}"><span>営業利益率</span><strong>${plPrevR.margin.toFixed(1)}% → ${plNowR.margin.toFixed(1)}%（${plDiagnosis.margin>=0?'+':''}${plDiagnosis.margin.toFixed(1)}pt）</strong><p>営業利益 ${plDiagnosis.profit>=0?'+':''}${yen(plDiagnosis.profit)}。</p></div><div class="pr-diagnosis-card ${plDiagnosis.cost<=0?'good':'bad'}"><span>原価率</span><strong>${plPrevR.cost.toFixed(1)}% → ${plNowR.cost.toFixed(1)}%（${plDiagnosis.cost>=0?'+':''}${plDiagnosis.cost.toFixed(1)}pt）</strong><p>${plDiagnosis.cost>0?'原価面は利益を押し下げる方向。商品構成・仕入・ロスを優先確認。':'原価面は改善方向。'}</p></div><div class="pr-diagnosis-card ${plDiagnosis.labor<=0?'good':'bad'}"><span>人件費率</span><strong>${plPrevR.labor.toFixed(1)}% → ${plNowR.labor.toFixed(1)}%（${plDiagnosis.labor>=0?'+':''}${plDiagnosis.labor.toFixed(1)}pt）</strong><p>${plDiagnosis.labor<0?'人件費率改善が利益を下支え。':'人件費率は悪化方向。'}</p></div><div class="pr-diagnosis-card"><span>PL総合判定</span><strong>${plDiagnosis.margin>=0?'利益率は維持・改善':'利益率は悪化'}</strong><p>${plDiagnosis.cost>0&&plDiagnosis.labor<0?'原価率悪化を人件費率改善が吸収している構造。':'各率の変化を個別に確認。'}</p></div></div></section>`:''}
-  <section class="pr-section"><h2>${r.end} 日次異常値検出</h2>${currentTodayPartial?`<p class="pr-note"><b>${todayIso} は本日途中経過として異常値判定・平均・中央値から除外しています。</b> 現在売上 ${yen(currentTodayPartial.sales)} は参考表示のみです。</p>`:''}${currentDaily.length?`<div class="pr-mini-grid"><div class="pr-mini"><span>日次平均</span><strong>${yen(dailyAvg)}</strong></div><div class="pr-mini"><span>中央値</span><strong>${yen(medianDaily)}</strong></div><div class="pr-mini"><span>分析日数</span><strong>${currentDaily.length}日</strong></div><div class="pr-mini"><span>平均比-25%以下</span><strong>${anomalyRows.length}日</strong></div></div><table class="pr-table"><thead><tr><th>日付</th><th>売上</th><th>平均差</th><th>客数</th><th>客単価</th><th>型</th></tr></thead><tbody>${anomalyRows.length?anomalyRows.map(x=>`<tr><td>${x.date}</td><td>${yen(x.sales)}</td><td>${x.dev.toFixed(1)}%</td><td>${x.cust!=null?num(x.cust)+'名':'-'}</td><td>${x.ticket!=null?yen(x.ticket):'-'}</td><td>${x.type}</td></tr>`).join(''):'<tr><td colspan="6">大きな異常低下は検出されませんでした</td></tr>'}</tbody></table>`:'<p class="pr-note">対象月の日次データ不足のため異常値判定を行いません。</p>'}<p class="pr-note">異常値は取得済み日次売上の平均比-25%以下を検出。原因型は客数・客単価が取得できる日のみ判定します。</p></section>
-  <div class="pr-foot">Manager Pro Ver 5.16.85 / ${stamp()} / 利益・異常値診断 / 閾値は資料内に明示</div></div>`:'';
+  <section class="pr-section"><h2>${r.end} 日次異常値検出</h2>${currentTodayPartial?`<p class="pr-note"><b>${currentTodayPartial.date} は「${currentTodayPartial._meetingProvisionalReason||'途中経過'}」として異常値判定・平均・中央値から除外しています。</b> 売上 ${yen(currentTodayPartial.sales)} は参考表示のみです。</p>`:''}${currentDaily.length?`<div class="pr-mini-grid"><div class="pr-mini"><span>日次平均</span><strong>${yen(dailyAvg)}</strong></div><div class="pr-mini"><span>中央値</span><strong>${yen(medianDaily)}</strong></div><div class="pr-mini"><span>分析日数</span><strong>${currentDaily.length}日</strong></div><div class="pr-mini"><span>平均比-25%以下</span><strong>${anomalyRows.length}日</strong></div></div><table class="pr-table"><thead><tr><th>日付</th><th>売上</th><th>平均差</th><th>客数</th><th>客単価</th><th>型</th></tr></thead><tbody>${anomalyRows.length?anomalyRows.map(x=>`<tr><td>${x.date}</td><td>${yen(x.sales)}</td><td>${x.dev.toFixed(1)}%</td><td>${x.cust!=null?num(x.cust)+'名':'-'}</td><td>${x.ticket!=null?yen(x.ticket):'-'}</td><td>${x.type}</td></tr>`).join(''):'<tr><td colspan="6">大きな異常低下は検出されませんでした</td></tr>'}</tbody></table>`:'<p class="pr-note">対象月の日次データ不足のため異常値判定を行いません。</p>'}<p class="pr-note">異常値は取得済み日次売上の平均比-25%以下を検出。原因型は客数・客単価が取得できる日のみ判定します。</p></section>
+  <div class="pr-foot">Manager Pro Ver 5.16.87 / ${stamp()} / 利益・異常値診断 / 閾値は資料内に明示</div></div>`:'';
  const sheet10=(sections.summary!==false||sections.actions)?`<div class="pr-page pr-sheet">${meetingHeader('経営診断 結論・優先順位',r.end,'10/10')}
   <div class="pr-big-conclusion"><h2>経営判断サマリー</h2><p>${lunchDriver&&dinnerDriver?`前月比では、ランチは「${quadrantOf(lunchDriver)}」、ディナーは「${quadrantOf(dinnerDriver)}」。${shareShift!=null?`売上構成はディナー側へ ${Math.abs(shareShift).toFixed(1)}pt シフト。`:''}`:'ランチ／ディナー比較データは不足しています。'}${plDiagnosis?` PLでは営業利益率 ${plDiagnosis.margin>=0?'+':''}${plDiagnosis.margin.toFixed(1)}pt。${plDiagnosis.cost>0&&plDiagnosis.labor<0?'<span class="pr-keep-summary">原価率悪化を人件費率改善が吸収しています。</span>':''}`:''}</p></div>
   <section class="pr-section"><h2>最優先で見る3点</h2><div class="pr-rank-list">${rankedFindings.slice(0,3).map((x,i)=>`<div class="pr-rank-item"><span>${i+1}</span><b>${x.title}<small style="display:block;font-weight:400">${x.detail}</small></b><em>${i===0?'最優先':i===1?'次点':'監視'}</em></div>`).join('')||'<p class="pr-note">優先順位を決めるための比較データが不足しています。</p>'}</div></section>
@@ -5290,7 +5323,7 @@ function buildRangeMeetingReport(){
    <div class="pr-callout ${diagnosisConfidence>=75?'pr-good':diagnosisConfidence>=50?'':'pr-bad'}"><b>当月分析信頼度 ${diagnosisConfidence}/100</b>｜当月ランチ/ディナー比較 ${segmentHasComparableCurrent?'あり':segmentHasCurrent?'当月のみ':'不足'}、当月確定PL比較 ${plHasComparableCurrent?'あり':plHasCurrent?'当月のみ':'不足'}、当月日次 ${currentDaily.length}/${confidenceExpected}日、当月LINE日報 ${confidenceLineLoaded?`${confidenceEndRow?.lineCount||0}/${confidenceExpected}日`:'未読込（採点対象外）'}。過去月だけの比較資料は参考情報とし、当月信頼度へ満点加算しません。</div>
    <div class="pr-callout ${overallCompleteness>=75?'pr-good':overallCompleteness>=50?'':'pr-bad'}" style="margin-top:2mm"><b>蓄積データ充足度 ${overallCompleteness}/100</b>｜<b>※アプリの精度ではなく、過去データの蓄積量です。</b> 対象期間 ${rangeAgg.rows.length}か月を、売上20%・確定PL20%・Airメイト売上分析10%・商品ABC5%・日次25%・LINE日報20%で評価。LINE日報が未読込の月はLINE項目の採点対象外。商品ABCは取得期間の日数割合で採点。日次取得：${completenessDailyText||'なし'}。月次CSVの売上だけを日次取得済みとは判定しません。</div>
   </section>
-  <div class="pr-foot">Manager Pro Ver 5.16.85 / ${stamp()} / 経営診断レポート / 試算は試算として明示</div></div>`:'';
+  <div class="pr-foot">Manager Pro Ver 5.16.87 / ${stamp()} / 経営診断レポート / 試算は試算として明示</div></div>`:'';
  const pages=[sheet1,sheet2,sheet3,sheet4,sheet5,sheet6,sheet7,sheet8,sheet9,sheet10].filter(Boolean);let total=pages.length;
  const reportEl=$('#printReport');reportEl.innerHTML=pages.join('');
  const sparseMerge=mpCompactSparseReport(reportEl,r.keys.length);
@@ -5300,7 +5333,7 @@ function buildRangeMeetingReport(){
  total=mpRenumberReportPages(reportEl);
  const a4Audit=mpA4SelfAudit(reportEl);
  const logicalPages=reportEl.querySelectorAll('.pr-page.pr-sheet').length,abcPageIncluded=!!reportEl.querySelector('.pr-abc-sheet'),salesPageIncluded=!!reportEl.querySelector('.pr-sales-sheet'),warnings=[];
- const preflightABC=mpABCForMonth(r.end)||state.airmateMenuABC||{},abcRawItems=(preflightABC.items||[]),abcAnalyzedItems=mpAnalyzableProductItems(preflightABC),abcDataAvailable=!!abcAnalyzedItems.length,abcExpected=!!sections.menu&&abcDataAvailable;
+ const preflightABC=mpABCForMonth(r.end)||{},abcRawItems=(preflightABC.items||[]),abcAnalyzedItems=mpAnalyzableProductItems(preflightABC),abcDataAvailable=!!abcAnalyzedItems.length,abcExpected=!!sections.menu&&abcDataAvailable;
  if(abcExpected&&!abcPageIncluded)warnings.push(`商品ABCを${abcRawItems.length}行取得・${abcAnalyzedItems.length}商品を分析対象として認識していますが、PDF商品ABCページが生成されていません`);
  if(logicalPages!==total)warnings.push(`論理ページ数不一致：想定${total} / DOM${logicalPages}`); if(finalPagination?.warnings?.length)warnings.push(...finalPagination.warnings); if(a4Visual?.warnings?.length)warnings.push(...a4Visual.warnings); if(a4Audit?.warnings?.length)warnings.push(...a4Audit.warnings);
  if(total&&[...reportEl.querySelectorAll('.pr-month')].some((x,i)=>!String(x.textContent||'').includes(`${i+1}/${total}`)))warnings.push('ページ番号ラベルに不一致があります');
@@ -5551,7 +5584,7 @@ window.addEventListener('afterprint',()=>{
 </script>
 
 
-<!-- ===== Ver 5.16.85: iPhone print isolation. Android/desktop keep the 5.16.81 print path unchanged. ===== -->
+<!-- ===== Ver 5.16.87: iPhone print isolation. Android/desktop keep the 5.16.81 print path unchanged. ===== -->
 <style id="v51684IOSPrintIsolationCSS">
 @media print{
   /* This entire override is gated by a runtime iOS class. Android/Chrome never matches it. */
@@ -5700,7 +5733,7 @@ window.addEventListener('afterprint',()=>{
 </script>
 
 
-<!-- ===== Ver 5.16.85: iPhone standalone print DOM rebuild. Android path untouched. ===== -->
+<!-- ===== Ver 5.16.87: iPhone standalone print DOM rebuild. Android path untouched. ===== -->
 <script id="v51685IOSStandaloneFlow">
 (()=>{
   if(typeof mpStandaloneReportHtml!=='function')return;
