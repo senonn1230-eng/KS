@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Nexa Pro Ver 1.06</title>
+<title>土雷門 経営管理 Nexa Pro Ver 1.07</title>
 <!-- Ver1.0: Android印刷経路は5.17.04から変更しない。iPhoneはBlob PDFの自動window.openを廃止し、生成した7ページをアプリ内で即時プレビュー。実PDFはWeb Share APIのFile共有を第一経路、Safari同一タブ表示・octet-stream保存を補助経路にする。 -->
 <!-- Ver1.0: Androidの全面86%縮小を廃止。7ページを維持しつつ、過密ページの末尾セクションを既存の空きページへ再配置。残る超過だけ最大6%以内の局所縮小。iPhoneは同じ完成DOMをA4 PDFへ直接生成し、Android印刷経路とは分離。 -->
 <!-- Ver1.0: Androidは7ページ系のページ構成を復元・固定。A4超過は新規ページを作らず該当ページだけ縮小。iPhone/iPadは同じ論理ページをSafari印刷に渡さずA4 PDFへ直接生成。 -->
@@ -2611,7 +2611,7 @@ input:focus,select:focus,textarea:focus{
             <option value="custom">任意期間</option>
           </select></label>
           <label>詳しさ<select id="meetingReportMode"><option value="detail" selected>詳細版（情報量に応じて自動構成）</option><option value="simple">簡易版（要点中心）</option></select></label>
-          <label>資料デザイン<select id="meetingReportDesign"><option value="pastel" selected>Nexa Pastel 経営分析レポート</option><option value="standard">上品な会議資料</option><option value="executive">銀行・会計資料風</option><option value="simple">高級ホテル経営レポート風</option><option value="presentation">グラフ中心ダッシュボード風</option><option value="dark">黒×金の役員会資料風</option></select></label>
+          <label>資料デザイン<select id="meetingReportDesign"><option value="pastel" selected>添付PDFデザイン（採用）</option><option value="standard">上品な会議資料</option><option value="executive">銀行・会計資料風</option><option value="simple">高級ホテル経営レポート風</option><option value="presentation">グラフ中心ダッシュボード風</option><option value="dark">黒×金の役員会資料風</option></select></label>
           <label>資料の開始月<input id="meetingStartMonth" type="month"></label>
           <label>資料の終了月<input id="meetingEndMonth" type="month"></label>
           <label>日次グラフ期間<select id="meetingGraphRangePreset">
@@ -2666,7 +2666,7 @@ input:focus,select:focus,textarea:focus{
 
     <section id="page-settings" class="page">
       <div class="page-title"><div><span>SETTINGS</span><h1>目標設定・管理</h1><small>管理基準はいつでも変更できます</small></div></div>
-      <section class="settings-grid"><article class="panel"><h2>KPI目標</h2><div class="form-grid"><label>人件費率 目標（%）<input id="setLaborTarget" type="number" step="0.1"></label><label>適正下限（%）<input id="setLaborMin" type="number" step="0.1"></label><label>適正上限（%）<input id="setLaborMax" type="number" step="0.1"></label><label>原価率 目標（%）<input id="setCostTarget" type="number" step="0.1"></label><label>営業利益率 目標（%）<input id="setMarginTarget" type="number" step="0.1"></label><label>デフォルト月間予算（円）<input id="setSalesTarget" type="number" step="10000"></label><label>平均客単価（円）<input id="setTicket" type="number" step="100"></label><label>平均時給（円）<input id="setWage" type="number" step="10"></label></div><button id="saveSettingsBtn" class="primary-btn">設定を保存して全画面に反映</button></article><article class="panel"><h2>表示・データ</h2><div class="toggle-list"><label><span>アラート表示</span><input id="toggleAlerts" type="checkbox" checked></label><label><span>自動診断コメント</span><input id="toggleAi" type="checkbox" checked></label><label><span>金額を税込表示</span><input id="toggleTax" type="checkbox"></label></div><button id="resetDataBtn" class="danger-btn">すべての読込データを初期化</button><div class="version-info">土雷門 経営管理<br><b>Nexa Pro Ver 1.06</b><small>クラウド優先版 / データ成熟度整合・商品ABC永続化・正式売上CSV優先・端末容量対策 / PWA対応</small></div></article></section>
+      <section class="settings-grid"><article class="panel"><h2>KPI目標</h2><div class="form-grid"><label>人件費率 目標（%）<input id="setLaborTarget" type="number" step="0.1"></label><label>適正下限（%）<input id="setLaborMin" type="number" step="0.1"></label><label>適正上限（%）<input id="setLaborMax" type="number" step="0.1"></label><label>原価率 目標（%）<input id="setCostTarget" type="number" step="0.1"></label><label>営業利益率 目標（%）<input id="setMarginTarget" type="number" step="0.1"></label><label>デフォルト月間予算（円）<input id="setSalesTarget" type="number" step="10000"></label><label>平均客単価（円）<input id="setTicket" type="number" step="100"></label><label>平均時給（円）<input id="setWage" type="number" step="10"></label></div><button id="saveSettingsBtn" class="primary-btn">設定を保存して全画面に反映</button></article><article class="panel"><h2>表示・データ</h2><div class="toggle-list"><label><span>アラート表示</span><input id="toggleAlerts" type="checkbox" checked></label><label><span>自動診断コメント</span><input id="toggleAi" type="checkbox" checked></label><label><span>金額を税込表示</span><input id="toggleTax" type="checkbox"></label></div><button id="resetDataBtn" class="danger-btn">すべての読込データを初期化</button><div class="version-info">土雷門 経営管理<br><b>Nexa Pro Ver 1.07</b><small>クラウド優先版 / データ成熟度整合・商品ABC永続化・正式売上CSV優先・端末容量対策 / PWA対応</small></div></article></section>
       <section class="panel cloud-settings-panel"><div class="panel-head"><div><h2>クラウド同期・権限</h2><small>閲覧・日報入力はPIN不要 / 重要変更だけ管理者PIN</small></div><button id="cloudOpenSettings" class="pill-btn">クラウド状態を見る</button></div><div class="cloud-settings-copy"><p>同じNexa Proを開いている端末は、売上・日報・PL・目標設定をSupabase経由で共有します。</p><p><b>保護対象：</b>月売上、PL Excel反映、KPI目標・設定。これらを変更するときだけ管理者PINを確認し、監査ログへ記録します。</p></div></section>
       <section class="panel"><div class="panel-head"><div><h2>変更履歴・データ復元</h2><small>誤入力・削除・上書き前のデータへ戻せます</small></div><button id="openRecoverySettingsBtn" class="pill-btn">復元センター</button></div><div class="recovery-note"><b>安全設計：</b>復元前の現在データも自動保存します。数か月後に誤りへ気付いた場合でも、保存済みの世代から選んで復元できます。復元操作には管理者PINが必要です。</div><div id="recoverySettingsSummary" class="data-health"></div></section>
     </section>
@@ -4795,7 +4795,7 @@ function buildPrintReport(options={sales:true,rates:true,labor:true,ai:true}){
    ${options.labor?`<section class="pr-section"><div class="pr-sec-head"><h2>人件費チェック</h2></div><div class="pr-labor-box"><div><span>実績</span><strong>${yen(m.labor)}</strong></div><div><span>${pct(s.laborTarget)}予算</span><strong>${yen(laborBudget)}</strong></div><div><span>差額</span><strong>${laborGap>=0?'+':''}${yen(laborGap)}</strong></div></div><p class="pr-note">人件費率 ${pct(r.labor)} ／ 管理範囲 ${pct(s.laborMin)}〜${pct(s.laborMax)}</p></section>`:''}
    ${options.ai?`<section class="pr-section"><div class="pr-sec-head"><h2>経営診断・次の行動</h2><span>総合 ${a.grade} / ${a.word}</span></div><ol class="pr-actions">${checks.map(x=>`<li>${x}</li>`).join('')}</ol></section>`:''}
   </div>
-  <footer class="pr-foot"><span>伏見稲荷 土雷門｜経営管理 Nexa Pro Ver 1.06</span><span>${m.label}</span></footer>
+  <footer class="pr-foot"><span>伏見稲荷 土雷門｜経営管理 Nexa Pro Ver 1.07</span><span>${m.label}</span></footer>
  </div>`;
  $('#printReport').setAttribute('aria-hidden','false');
 }
@@ -5080,7 +5080,7 @@ function renderMeetingRangeSummary(){
  $('#meetingStartMonth').value=r.start;$('#meetingEndMonth').value=r.end;const daily=meetingDailyRows(r.keys),gr=resolveMeetingGraphRange(r);if($('#meetingGraphStartMonth'))$('#meetingGraphStartMonth').value=gr.start;if($('#meetingGraphEndMonth'))$('#meetingGraphEndMonth').value=gr.end;
  document.querySelectorAll('[data-graph-preset]').forEach(x=>x.classList.toggle('active',x.dataset.graphPreset===gr.preset));
  const rangeText=r.compare?`${r.start} vs ${r.end}`:`${r.start} ～ ${r.end}`,cmp=r.comparisonType==='yoy'?'前年同月比較':r.comparisonType==='previous'?'前月比較':'期間分析';
- const designNames={pastel:'Nexa Pastel 経営分析レポート',standard:'上品な会議資料',executive:'銀行・会計資料風',simple:'高級ホテル経営レポート風',presentation:'グラフ中心ダッシュボード風',dark:'黒×金の役員会資料風'},design=meetingReportDesign();box.innerHTML=`<b>${cfg.title}</b> / ${rangeText} / ${r.compare?cmp:`${r.keys.length}か月`} / ${mode==='detail'?'詳細版':'簡易版'} / ${designNames[design]||'スタンダード'}<br>売上データ ${a.salesKnownMonths}/${r.keys.length}か月、確定PL ${a.plConfirmedMonths}か月、LINE日報 ${a.lineCount}日、日次分析 ${daily.length}日を利用できます。日次グラフは ${gr.start}～${gr.end}${gr.preset==='report'?'（資料期間と連動）':'（別指定）'}。<br><small>数値の優先順位：CSV実績 ＞ Airメイト等の分析データ ＞ PDF/Excel ＞ LINE日報。LINEはCSVにない項目だけ補完し、同じ売上・客数は二重計上しません。前年・比較月の未登録値は推測しません。</small>`
+ const designNames={pastel:'添付PDFデザイン（採用）',standard:'上品な会議資料',executive:'銀行・会計資料風',simple:'高級ホテル経営レポート風',presentation:'グラフ中心ダッシュボード風',dark:'黒×金の役員会資料風'},design=meetingReportDesign();box.innerHTML=`<b>${cfg.title}</b> / ${rangeText} / ${r.compare?cmp:`${r.keys.length}か月`} / ${mode==='detail'?'詳細版':'簡易版'} / ${designNames[design]||'スタンダード'}<br>売上データ ${a.salesKnownMonths}/${r.keys.length}か月、確定PL ${a.plConfirmedMonths}か月、LINE日報 ${a.lineCount}日、日次分析 ${daily.length}日を利用できます。日次グラフは ${gr.start}～${gr.end}${gr.preset==='report'?'（資料期間と連動）':'（別指定）'}。<br><small>数値の優先順位：CSV実績 ＞ Airメイト等の分析データ ＞ PDF/Excel ＞ LINE日報。LINEはCSVにない項目だけ補完し、同じ売上・客数は二重計上しません。前年・比較月の未登録値は推測しません。</small>`
 }
 
 
@@ -6169,7 +6169,7 @@ function buildRangeMeetingReport(){
    <section class="pr-section"><h2>月別PL比較</h2><table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>原価</th><th>原価率</th><th>人件費</th><th>人件費率</th><th>営業利益</th><th>利益率</th></tr></thead><tbody>${plRowsOnly}</tbody></table></section>
    <section class="pr-section"><h2>利益率推移</h2>${confirmedRows.length?meetingBars(confirmedRows.map(x=>{const rr=ratios(x.m);return {label:x.key,margin:rr.margin}}),'label','margin',v=>pct(v)):'<p>確定PLデータがないため利益率推移は表示しません。</p>'}</section>
    <section class="pr-section"><h2>PLで確認するポイント</h2><ul class="pr-compact"><li>上部KPI・利益率はすべて確定PL期間だけで統一しています。</li><li>未確定月のCSV売上は参考値として別枠表示し、確定PLへ混ぜません。</li><li>原価率：仕入・ロス・商品構成の変化を確認。</li><li>人件費率：売上に対する配置と総労働時間を確認。</li><li>営業利益率：売上増だけでなく原価・人件費・販管費を合わせて判断。</li></ul></section>
-   <div class="pr-foot">Nexa Pro Ver 1.06 / ${stamp()} / PL専用資料 / 確定PL基準</div></div>`;
+   <div class="pr-foot">Nexa Pro Ver 1.07 / ${stamp()} / PL専用資料 / 確定PL基準</div></div>`;
   $('#printReport').innerHTML=page;triggerReportPrint();return
  }
  if(mode==='simple'){
@@ -6182,7 +6182,7 @@ function buildRangeMeetingReport(){
   if(sections.line)simpleBlocks.push(cur.calendarDays?`<section class="pr-section"><h2>LINE日報</h2><p>読み込み開始月だけで ${cur.lineCount}/${cur.calendarDays}日読込 / ${lineRate.toFixed(1)}%。未読込 ${Math.max(0,cur.calendarDays-cur.lineCount)}日。未投入月は0日扱いしません。</p></section>`:`<section class="pr-section"><h2>LINE日報</h2><p>対象期間は未読込です。未読込月は0日・0%として扱わず、品質スコアの採点対象外とします。</p></section>`);
   if(sections.forecast)simpleBlocks.push(`<section class="pr-section"><h2>着地予測</h2>${forecastHtml}</section>`);
   if(sections.actions)simpleBlocks.push(`<section class="pr-section"><h2>次の行動</h2><ol class="pr-compact">${decisions.slice(0,5).map(x=>`<li><b>${x.theme}</b>：${x.action}</li>`).join('')}</ol></section>`);
-  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Nexa Pro Ver 1.06 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
+  const body=`<div class="pr-page">${meetingHeader(`${kindCfg.title}・簡易版`,periodLabel,`${r.keys.length}`)}<div class="pr-kind-badge">${kindCfg.title}</div>${kpis}${simpleBlocks.join('')}<div class="pr-foot">Nexa Pro Ver 1.07 / ${stamp()} / 簡易版 / 未提供・未確定データは推測しません。</div></div>`;
   $('#printReport').innerHTML=body;triggerReportPrint();return
  }
  const includeExecutive=(kind==='executive'||kind==='meeting')&&selectedNames.length>1;
@@ -6225,7 +6225,7 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>残り期間の判断指標</h2>${forecast?`<div class="pr-forecast-note"><div><span>${forecast.partialToday?'現在ペース（当日途中含む）':'現在ペース（暦日平均）'}</span><strong>${yen(forecast.avg)}</strong></div><div><span>確定日平均売上</span><strong>${forecast.completeAvg!=null?yen(forecast.completeAvg):'-'}</strong></div><div><span>予算達成に必要な日商</span><strong>${forecast.neededDaily!=null?yen(forecast.neededDaily):'-'}</strong></div><div><span>現在平均との比較</span><strong>${forecast.neededDaily!=null?((forecast.completeAvg??forecast.avg)>=forecast.neededDaily?`<span class="pr-keep-group">必要日商を ${yen((forecast.completeAvg??forecast.avg)-forecast.neededDaily)} 上回る</span>`:`<span class="pr-keep-group">必要日商を ${yen(forecast.neededDaily-(forecast.completeAvg??forecast.avg))} 下回る</span>`):'-'}</strong></div></div>`:''}${forecast&&forecast.neededDaily!=null&&forecast.completeAvg!=null&&forecast.completeAvg>=forecast.neededDaily&&forecast.standard<forecast.budget?`<p class="pr-note pr-forecast-clarify"><b>補足：</b>確定日平均は必要日商を上回っていますが、標準着地は未達です。これは着地予測が暦日進捗・残日数を含めて計算されるためです。残り営業日の売上を必要日商以上で維持できるかを優先して確認してください。</p>`:''}<ul class="pr-compact"><li>必要日商は暦日ベースの目安。休業日は実営業日で再配分。</li><li>好調曜日は再現、不調曜日は人件費・販促・商品訴求を分けて<span class="pr-keep">検証。</span></li><li>客数不足と客単価不足は分けて対策。</li></ul></section>
     ${sections.actions?`<section class="pr-section pr-actions-compact"><h2>改善アクション</h2><table class="pr-table"><thead><tr><th>優先</th><th>テーマ</th><th>実行内容</th></tr></thead><tbody>${decisions.slice(0,4).map(x=>`<tr><td>${x.priority}</td><td>${x.theme}</td><td>${x.action}</td></tr>`).join('')}</tbody></table><h3>次回まで</h3><ul class="pr-compact">${rangeAgg.calendarDays?'<li>読み込みを開始したLINE日報の未読込日を補完</li>':''}<li>月締め後に確定PLへ差替</li><li>施策実施日を日報へ記録</li></ul></section>`:''}
   </div>
-  <div class="pr-foot">Nexa Pro Ver 1.06 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
+  <div class="pr-foot">Nexa Pro Ver 1.07 / ${stamp()} / 詳細分析版 / 未提供・未確定データは推測せず「-」として扱います。</div></div>`:'';
  const actionRows=decisions.map((x,i)=>`<tr><td>${i+1}</td><td>${x.priority}</td><td>${x.theme}</td><td>${x.reason}</td><td>${x.action}</td><td>次回会議</td></tr>`).join('');
  // ランチ/ディナーは AirメイトPDF を最優先。無い月は、取込済み分析データにランチ/ディナー実績がある場合だけ補完する。
  // 推測や売上構成比からの逆算はしない。
@@ -6443,17 +6443,17 @@ function buildRangeMeetingReport(){
     <section class="pr-section"><h2>改善余地 TOP3</h2><div class="pr-rank-list">${recoveries.length?recoveries.slice(0,3).map((x,i)=>`<div class="pr-rank-item"><span>${i+1}</span><b>${x.label}<small style="display:block;font-weight:400">${x.detail}</small></b><em>${yen(Math.round(x.value))}</em></div>`).join(''):'<p class="pr-note">比較データ不足</p>'}</div><p class="pr-note">前月水準への単純回復試算。効果保証ではありません。</p></section>
   </div>
   <section class="pr-section pr-airmate-note"><h2>会議で見るポイント</h2><ul class="pr-compact">${segmentNotes.slice(0,4).map(x=>`<li>${x}</li>`).join('')}<li>区分はAirメイトPDFの定義を使用。未取得値は推測しません。</li></ul></section>
-  <div class="pr-foot">Nexa Pro Ver 1.06 / ${stamp()} / Airメイト ランチ・ディナー詳細診断 / 取得済みデータのみで分析</div></div>`:'';
+  <div class="pr-foot">Nexa Pro Ver 1.07 / ${stamp()} / Airメイト ランチ・ディナー詳細診断 / 取得済みデータのみで分析</div></div>`:'';
  const sheet8=(rangeAgg.rows.length>=3)?`<div class="pr-page pr-sheet pr-balance-page pr-longtrend-sheet">${meetingHeader('長期トレンド・データ成熟度',periodLabel,'8/10')}
   <section class="pr-section"><h2>完了月だけで見る全店トレンド</h2><div class="pr-diagnosis-grid"><div class="pr-diagnosis-card"><span>全店診断</span><strong>${wholeQuadrant}</strong><p>${trendSignal}</p></div><div class="pr-diagnosis-card"><span>比較ルール</span><strong>途中月を混ぜない</strong><p>${isPartialCurrent?`${r.end}は途中経過。完了月比較から除外。`:'対象月は完了月として比較。'}</p></div><div class="pr-diagnosis-card"><span>取得月数</span><strong>${rangeAgg.rows.filter(x=>x.salesKnown).length}か月</strong><p>完了月 ${completedTrendRows.length}か月 / 確定PL ${confirmedPl.length}か月</p></div><div class="pr-diagnosis-card"><span>学習段階</span><strong>${completedTrendRows.length>=6?'売上の中期傾向判定可':completedTrendRows.length>=3?'売上の短期傾向判定可':'基準形成中'}</strong><p>売上は3か月で短期、6か月以上で中期傾向を強化。客数・客単価の構造判定は取得月だけで行います。</p></div></div></section>
   <section class="pr-section"><h2>データ成熟度マトリクス</h2><table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>確定PL</th><th>Airメイト売上分析</th><th>商品ABC</th><th>日次</th><th>LINE日報</th></tr></thead><tbody>${coverageRows}</tbody></table><p class="pr-note">「済」は月単位データ取得済み。「途中」は月締め前のため確定PL評価から除外します。商品ABCは対象月をカバーした日数を表示します。欠損項目は推測せず、分析できる範囲を自動で変えます。</p></section>
   <section class="pr-section"><h2>Nexa Proが現在読めること</h2><div class="pr-callout pr-good">${maturityNotes.length?maturityNotes.map(x=>`• ${x}`).join('<br>'):'比較データを蓄積中です。'}</div></section>
   <section class="pr-section"><h2>次にデータが増えると深掘りできる分析</h2><div class="pr-quadrant"><div><b>3か月以上</b><p>売上・客数・客単価の短期トレンドと連続悪化/改善を検出。</p></div><div><b>6か月以上</b><p>曜日・季節性・PL構造の継続傾向を判定。</p></div><div><b>日報蓄積</b><p>施策実施日前後の売上・人件費・口コミ変化を比較。</p></div><div><b>Airメイト売上分析PDF蓄積</b><p>ランチ/ディナーの構造転換が一時的か継続的かを判定。</p></div></div></section>
-  <div class="pr-foot">Nexa Pro Ver 1.06 / ${stamp()} / 長期学習基盤 / 月途中と完了月を分離して判定</div></div>`:'';
+  <div class="pr-foot">Nexa Pro Ver 1.07 / ${stamp()} / 長期学習基盤 / 月途中と完了月を分離して判定</div></div>`:'';
  const sheet9=(plDiagnosis||anomalyRows.length)?`<div class="pr-page pr-sheet pr-balance-page pr-profit-balance">${meetingHeader('利益・異常値・構造診断',periodLabel,'9/10')}
   ${plDiagnosis?`<section class="pr-section"><h2>利益構造の変化｜${plPrev.key} → ${plNow.key}</h2><div class="pr-diagnosis-grid"><div class="pr-diagnosis-card ${plDiagnosis.margin>=0?'good':'bad'}"><span>営業利益率</span><strong>${plPrevR.margin.toFixed(1)}% → ${plNowR.margin.toFixed(1)}%（${plDiagnosis.margin>=0?'+':''}${plDiagnosis.margin.toFixed(1)}pt）</strong><p>営業利益 ${plDiagnosis.profit>=0?'+':''}${yen(plDiagnosis.profit)}。</p></div><div class="pr-diagnosis-card ${plDiagnosis.cost<=0?'good':'bad'}"><span>原価率</span><strong>${plPrevR.cost.toFixed(1)}% → ${plNowR.cost.toFixed(1)}%（${plDiagnosis.cost>=0?'+':''}${plDiagnosis.cost.toFixed(1)}pt）</strong><p>${plDiagnosis.cost>0?'原価面は利益を押し下げる方向。商品構成・仕入・ロスを優先確認。':'原価面は改善方向。'}</p></div><div class="pr-diagnosis-card ${plDiagnosis.labor<=0?'good':'bad'}"><span>人件費率</span><strong>${plPrevR.labor.toFixed(1)}% → ${plNowR.labor.toFixed(1)}%（${plDiagnosis.labor>=0?'+':''}${plDiagnosis.labor.toFixed(1)}pt）</strong><p>${plDiagnosis.labor<0?'人件費率改善が利益を下支え。':'人件費率は悪化方向。'}</p></div><div class="pr-diagnosis-card"><span>PL総合判定</span><strong>${plDiagnosis.margin>=0?'利益率は維持・改善':'利益率は悪化'}</strong><p>${plDiagnosis.cost>0&&plDiagnosis.labor<0?'原価率悪化を人件費率改善が吸収している構造。':'各率の変化を個別に確認。'}</p></div></div></section>`:''}
   <section class="pr-section"><h2>${r.end} 日次異常値検出</h2>${currentTodayPartial?`<p class="pr-note"><b>${currentTodayPartial.date} は「${currentTodayPartial._meetingProvisionalReason||'途中経過'}」として異常値判定・平均・中央値から除外しています。</b> 売上 ${yen(currentTodayPartial.sales)} は参考表示のみです。</p>`:''}${currentDaily.length?`<div class="pr-mini-grid"><div class="pr-mini"><span>日次平均</span><strong>${yen(dailyAvg)}</strong></div><div class="pr-mini"><span>中央値</span><strong>${yen(medianDaily)}</strong></div><div class="pr-mini"><span>分析日数</span><strong>${currentDaily.length}日</strong></div><div class="pr-mini"><span>平均比-25%以下</span><strong>${anomalyRows.length}日</strong></div></div><table class="pr-table"><thead><tr><th>日付</th><th>売上</th><th>平均差</th><th>客数</th><th>客単価</th><th>型</th></tr></thead><tbody>${anomalyRows.length?anomalyRows.map(x=>`<tr><td>${x.date}</td><td>${yen(x.sales)}</td><td>${x.dev.toFixed(1)}%</td><td>${x.cust!=null?num(x.cust)+'名':'-'}</td><td>${x.ticket!=null?yen(x.ticket):'-'}</td><td>${x.type}</td></tr>`).join(''):'<tr><td colspan="6">大きな異常低下は検出されませんでした</td></tr>'}</tbody></table>`:'<p class="pr-note">対象月の日次データ不足のため異常値判定を行いません。</p>'}<p class="pr-note">異常値は取得済み日次売上の平均比-25%以下を検出。原因型は客数・客単価が取得できる日のみ判定します。</p></section>
-  <div class="pr-foot">Nexa Pro Ver 1.06 / ${stamp()} / 利益・異常値診断 / 閾値は資料内に明示</div></div>`:'';
+  <div class="pr-foot">Nexa Pro Ver 1.07 / ${stamp()} / 利益・異常値診断 / 閾値は資料内に明示</div></div>`:'';
  const sheet10=(sections.summary!==false||sections.actions)?`<div class="pr-page pr-sheet">${meetingHeader('経営診断 結論・優先順位',r.end,'10/10')}
   <div class="pr-big-conclusion"><h2>経営判断サマリー</h2><p>${lunchDriver&&dinnerDriver?`前月比では、ランチは「${quadrantOf(lunchDriver)}」、ディナーは「${quadrantOf(dinnerDriver)}」。${shareShift!=null?`売上構成はディナー側へ ${Math.abs(shareShift).toFixed(1)}pt シフト。`:''}`:'ランチ／ディナー比較データは不足しています。'}${plDiagnosis?` PLでは営業利益率 ${plDiagnosis.margin>=0?'+':''}${plDiagnosis.margin.toFixed(1)}pt。${plDiagnosis.cost>0&&plDiagnosis.labor<0?'<span class="pr-keep-summary">原価率悪化を人件費率改善が吸収しています。</span>':''}`:''}</p></div>
   <section class="pr-section"><h2>最優先で見る3点</h2><div class="pr-rank-list">${rankedFindings.slice(0,3).map((x,i)=>`<div class="pr-rank-item"><span>${i+1}</span><b>${x.title}<small style="display:block;font-weight:400">${x.detail}</small></b><em>${i===0?'最優先':i===1?'次点':'監視'}</em></div>`).join('')||'<p class="pr-note">優先順位を決めるための比較データが不足しています。</p>'}</div></section>
@@ -6463,7 +6463,7 @@ function buildRangeMeetingReport(){
    <div class="pr-callout ${diagnosisConfidence>=75?'pr-good':diagnosisConfidence>=50?'':'pr-bad'}"><b>当月分析信頼度 ${diagnosisConfidence}/100</b>｜当月ランチ/ディナー比較 ${segmentHasComparableCurrent?'あり':segmentHasCurrent?'当月のみ':'不足'}、当月確定PL比較 ${plHasComparableCurrent?'あり':plHasCurrent?'当月のみ':'不足'}、当月日次 ${currentDaily.length}/${confidenceExpected}日、当月LINE日報 ${confidenceLineLoaded?`${confidenceEndRow?.lineCount||0}/${confidenceExpected}日`:'未読込（採点対象外）'}。過去月だけの比較資料は参考情報とし、当月信頼度へ満点加算しません。</div>
    <div class="pr-callout ${overallCompleteness>=75?'pr-good':overallCompleteness>=50?'':'pr-bad'}" style="margin-top:2mm"><b>蓄積データ充足度 ${overallCompleteness}/100</b>｜<b>※アプリの精度ではなく、過去データの蓄積量です。</b> 対象期間 ${rangeAgg.rows.length}か月を、売上20%・確定PL20%・Airメイト売上分析10%・商品ABC5%・日次25%・LINE日報20%で評価。LINE日報が未読込の月はLINE項目の採点対象外。商品ABCは取得期間の日数割合で採点。日次取得：${completenessDailyText||'なし'}。月次CSVの売上だけを日次取得済みとは判定しません。</div>
   </section>
-  <div class="pr-foot">Nexa Pro Ver 1.06 / ${stamp()} / 経営診断レポート / 試算は試算として明示</div></div>`:'';
+  <div class="pr-foot">Nexa Pro Ver 1.07 / ${stamp()} / 経営診断レポート / 試算は試算として明示</div></div>`:'';
  const pages=[sheet1,sheet2,sheet3,sheet4,sheet5,sheet6,sheet7,sheet8,sheet9,sheet10].filter(Boolean);let total=pages.length;
  const reportEl=$('#printReport');reportEl.innerHTML=pages.join('');
  const sparseMerge=mpCompactSparseReport(reportEl,r.keys.length);
@@ -6508,7 +6508,7 @@ async function persistReportFieldChange(snapshot,message='項目設定を保存�
 }
 function addReportField(){openModal(`<h2>売上報告の項目を追加</h2><div class="form-grid" style="grid-template-columns:1fr"><label>項目名<input id="rfLabel" placeholder="例：Uber売上"></label><label>分類<select id="rfCategory"><option>売上</option><option>人件費</option><option>集客</option><option>経費</option><option>その他</option></select></label><label>データ型<select id="rfType"><option value="currency">金額</option><option value="percent">割合（%）</option><option value="count">件数・人数</option><option value="number">数値</option></select></label><label>別名（カンマ区切り）<input id="rfAliases" placeholder="例：Uber Eats,ウーバー"></label></div><button id="rfSave" class="primary-btn" style="margin-top:12px">項目を追加</button>`);$('#rfSave').onclick=async()=>{const label=$('#rfLabel').value.trim();if(!label)return;const snapshot={fields:clone(state.reportFields||[]),log:clone(state.businessLog||[])},item={label,rawLabel:label,type:$('#rfType').value,category:$('#rfCategory').value},f=addDynamicReportField(item);f.aliases=[label,...$('#rfAliases').value.split(',').map(x=>x.trim()).filter(Boolean)];state.businessLog.unshift({date:stamp(),type:'設定',title:'売上報告項目を追加',detail:label});if(await persistReportFieldChange(snapshot,`${label}を追加しました`))closeModal()}}
 function editReportField(key){const f=reportFieldByKey(key);if(!f)return;openModal(`<h2>項目設定</h2><div class="form-grid" style="grid-template-columns:1fr"><label>表示名<input id="rfeLabel" value="${escHtml(f.label||'')}"></label><label>別名（カンマ区切り）<input id="rfeAliases" value="${escHtml((f.aliases||[]).join(','))}"></label><label>分類<select id="rfeCategory">${['売上','人件費','集客','経費','その他'].map(x=>`<option ${x===f.category?'selected':''}>${x}</option>`).join('')}</select></label></div><button id="rfeSave" class="primary-btn">保存</button>`);$('#rfeSave').onclick=async()=>{const snapshot={fields:clone(state.reportFields||[]),log:clone(state.businessLog||[])};f.label=$('#rfeLabel').value.trim()||f.label;f.aliases=$('#rfeAliases').value.split(',').map(x=>x.trim()).filter(Boolean);f.category=$('#rfeCategory').value;state.businessLog.unshift({date:stamp(),type:'設定',title:'売上報告項目を変更',detail:f.label});if(await persistReportFieldChange(snapshot,'項目設定を保存しました'))closeModal()}}
-function wireSmartReport(){const analyze=$('#reportAnalyzeBtn');if(!analyze)return;mpRestoreMeetingRangeSelection();const ds=$('#meetingReportDesign');if(ds){let saved='pastel';try{saved=localStorage.getItem('managerProReportDesign')||'pastel';const mk='nexaProReportDesignMigrated103';if(!localStorage.getItem(mk)){if(saved==='standard'){saved='pastel';localStorage.setItem('managerProReportDesign','pastel')}localStorage.setItem(mk,'1')}}catch(e){};if([...ds.options].some(o=>o.value===saved))ds.value=saved;applyMeetingReportDesign();}analyze.onclick=()=>{pendingReport=parseLineReport($('#reportPaste').value);if(!pendingReport){toast('解析できる売上報告を貼り付けてください');return}renderReportPreview(pendingReport);setReportFlow('analyzed',`${pendingReport.date} / ${pendingReport.items.length}項目を解析しました`)};$('#reportSaveBtn').onclick=saveParsedReport;$('#reportClearBtn').onclick=()=>{$('#reportPaste').value='';pendingReport=null;renderReportPreview(null);setReportFlow('idle')};$('#reportSampleBtn').onclick=()=>{$('#reportPaste').value=`【売上報告】\n\nお疲れさまです。\n8/7（金）の業務報告です。\n当日売上 :366,700円(税込)\n当日達成率 : 114.8%\n人件費 : 59,500円\n人件費率 : 16.2%\n口コミ件数：5件\n\n【経費報告】\n前日残高：47,661円\n本日使用分：920円\n経費残高：46,741円\nよろしくお願いいたします。`;pendingReport=parseLineReport($('#reportPaste').value);renderReportPreview(pendingReport);setReportFlow('analyzed',`${pendingReport.date} / ${pendingReport.items.length}項目を解析しました`)};$('#addReportFieldBtn').onclick=addReportField;$('#meetingReportKind')?.addEventListener('change',()=>{applyMeetingKind($('#meetingReportKind').value);renderMeetingRangeSummary()});$('#meetingRangePreset')?.addEventListener('change',()=>{mpSaveMeetingRangeSelection();renderMeetingRangeSummary()});$('#meetingReportMode')?.addEventListener('change',()=>{const d=$('#meetingDetailOptions');if(d)d.style.opacity=$('#meetingReportMode').value==='simple'?'.45':'1';renderMeetingRangeSummary()});$('#meetingReportDesign')?.addEventListener('change',()=>{applyMeetingReportDesign();renderMeetingRangeSummary()});$('#meetingStartMonth')?.addEventListener('change',()=>{if($('#meetingRangePreset'))$('#meetingRangePreset').value='custom';mpSaveMeetingRangeSelection();renderMeetingRangeSummary()});$('#meetingEndMonth')?.addEventListener('change',()=>{if($('#meetingRangePreset'))$('#meetingRangePreset').value='custom';mpSaveMeetingRangeSelection();renderMeetingRangeSummary()});$('#meetingGraphRangePreset')?.addEventListener('change',()=>{mpSaveMeetingRangeSelection();const gr=resolveMeetingGraphRange();if($('#meetingGraphStartMonth'))$('#meetingGraphStartMonth').value=gr.start;if($('#meetingGraphEndMonth'))$('#meetingGraphEndMonth').value=gr.end;renderMeetingRangeSummary()});$('#meetingGraphStartMonth')?.addEventListener('change',()=>{if($('#meetingGraphRangePreset'))$('#meetingGraphRangePreset').value='custom';mpSaveMeetingRangeSelection();renderMeetingRangeSummary()});$('#meetingGraphEndMonth')?.addEventListener('change',()=>{if($('#meetingGraphRangePreset'))$('#meetingGraphRangePreset').value='custom';mpSaveMeetingRangeSelection();renderMeetingRangeSummary()});document.querySelectorAll('[data-graph-preset]').forEach(btn=>btn.addEventListener('click',()=>{const p=btn.dataset.graphPreset,sel=$('#meetingGraphRangePreset');if(sel)sel.value=p;mpSaveMeetingRangeSelection();document.querySelectorAll('[data-graph-preset]').forEach(x=>x.classList.toggle('active',x===btn));const gr=resolveMeetingGraphRange();if($('#meetingGraphStartMonth'))$('#meetingGraphStartMonth').value=gr.start;if($('#meetingGraphEndMonth'))$('#meetingGraphEndMonth').value=gr.end;renderMeetingRangeSummary();}));$('#meetingGenerateRangeBtn')?.addEventListener('click',()=>{mpSaveMeetingRangeSelection();previewMeetingReport()});document.querySelectorAll('[data-report-field-edit]').forEach(x=>x.onclick=()=>editReportField(x.dataset.reportFieldEdit))}
+function wireSmartReport(){const analyze=$('#reportAnalyzeBtn');if(!analyze)return;mpRestoreMeetingRangeSelection();const ds=$('#meetingReportDesign');if(ds){let saved='pastel';try{saved=localStorage.getItem('managerProReportDesign')||'pastel';const mk='nexaProUploadedReportDesignSelected107';if(!localStorage.getItem(mk)){saved='pastel';localStorage.setItem('managerProReportDesign','pastel');localStorage.setItem(mk,'1')}}catch(e){};if([...ds.options].some(o=>o.value===saved))ds.value=saved;applyMeetingReportDesign();}analyze.onclick=()=>{pendingReport=parseLineReport($('#reportPaste').value);if(!pendingReport){toast('解析できる売上報告を貼り付けてください');return}renderReportPreview(pendingReport);setReportFlow('analyzed',`${pendingReport.date} / ${pendingReport.items.length}項目を解析しました`)};$('#reportSaveBtn').onclick=saveParsedReport;$('#reportClearBtn').onclick=()=>{$('#reportPaste').value='';pendingReport=null;renderReportPreview(null);setReportFlow('idle')};$('#reportSampleBtn').onclick=()=>{$('#reportPaste').value=`【売上報告】\n\nお疲れさまです。\n8/7（金）の業務報告です。\n当日売上 :366,700円(税込)\n当日達成率 : 114.8%\n人件費 : 59,500円\n人件費率 : 16.2%\n口コミ件数：5件\n\n【経費報告】\n前日残高：47,661円\n本日使用分：920円\n経費残高：46,741円\nよろしくお願いいたします。`;pendingReport=parseLineReport($('#reportPaste').value);renderReportPreview(pendingReport);setReportFlow('analyzed',`${pendingReport.date} / ${pendingReport.items.length}項目を解析しました`)};$('#addReportFieldBtn').onclick=addReportField;$('#meetingReportKind')?.addEventListener('change',()=>{applyMeetingKind($('#meetingReportKind').value);renderMeetingRangeSummary()});$('#meetingRangePreset')?.addEventListener('change',()=>{mpSaveMeetingRangeSelection();renderMeetingRangeSummary()});$('#meetingReportMode')?.addEventListener('change',()=>{const d=$('#meetingDetailOptions');if(d)d.style.opacity=$('#meetingReportMode').value==='simple'?'.45':'1';renderMeetingRangeSummary()});$('#meetingReportDesign')?.addEventListener('change',()=>{applyMeetingReportDesign();renderMeetingRangeSummary()});$('#meetingStartMonth')?.addEventListener('change',()=>{if($('#meetingRangePreset'))$('#meetingRangePreset').value='custom';mpSaveMeetingRangeSelection();renderMeetingRangeSummary()});$('#meetingEndMonth')?.addEventListener('change',()=>{if($('#meetingRangePreset'))$('#meetingRangePreset').value='custom';mpSaveMeetingRangeSelection();renderMeetingRangeSummary()});$('#meetingGraphRangePreset')?.addEventListener('change',()=>{mpSaveMeetingRangeSelection();const gr=resolveMeetingGraphRange();if($('#meetingGraphStartMonth'))$('#meetingGraphStartMonth').value=gr.start;if($('#meetingGraphEndMonth'))$('#meetingGraphEndMonth').value=gr.end;renderMeetingRangeSummary()});$('#meetingGraphStartMonth')?.addEventListener('change',()=>{if($('#meetingGraphRangePreset'))$('#meetingGraphRangePreset').value='custom';mpSaveMeetingRangeSelection();renderMeetingRangeSummary()});$('#meetingGraphEndMonth')?.addEventListener('change',()=>{if($('#meetingGraphRangePreset'))$('#meetingGraphRangePreset').value='custom';mpSaveMeetingRangeSelection();renderMeetingRangeSummary()});document.querySelectorAll('[data-graph-preset]').forEach(btn=>btn.addEventListener('click',()=>{const p=btn.dataset.graphPreset,sel=$('#meetingGraphRangePreset');if(sel)sel.value=p;mpSaveMeetingRangeSelection();document.querySelectorAll('[data-graph-preset]').forEach(x=>x.classList.toggle('active',x===btn));const gr=resolveMeetingGraphRange();if($('#meetingGraphStartMonth'))$('#meetingGraphStartMonth').value=gr.start;if($('#meetingGraphEndMonth'))$('#meetingGraphEndMonth').value=gr.end;renderMeetingRangeSummary();}));$('#meetingGenerateRangeBtn')?.addEventListener('click',()=>{mpSaveMeetingRangeSelection();previewMeetingReport()});document.querySelectorAll('[data-report-field-edit]').forEach(x=>x.onclick=()=>editReportField(x.dataset.reportFieldEdit))}
 
 function bind(){wireSmartReport();applyMeetingKind($('#meetingReportKind')?.value||'executive',{preserveCustom:true});$('#cloudStatusBtn')?.addEventListener('click',openCloudInfo);$('#cloudOpenSettings')?.addEventListener('click',openCloudInfo);document.addEventListener('click',e=>{if(e.target.closest('#editMonthlySalesBtn')){e.preventDefault();editMonthlySales(state.selected);return}const page=e.target.closest('[data-page]')?.dataset.page;if(page)nav(page);const tool=e.target.closest('[data-tool]')?.dataset.tool;if(tool)showTool(tool);const edit=e.target.closest('[data-edit-month]')?.dataset.editMonth;if(edit)editMonthlySales(edit);const open=e.target.closest('[data-open-month]')?.dataset.openMonth;if(open){state.selected=open;renderAll();nav('home');toast(`${current().label}を開きました`)}});document.addEventListener('change',e=>{const cb=e.target.closest('[data-calendar-index]');if(cb){const k=current().key;state.calendar[k]=state.calendar[k]||{};state.calendar[k][cb.dataset.calendarIndex]=cb.checked;save();renderManagementCalendar();}});$$('[data-kpi-page]').forEach(card=>{const go=()=>nav(card.dataset.kpiPage);card.addEventListener('click',go);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});$('#businessSignal').onclick=openSignalDetail;$('#businessSignal').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSignalDetail()}};$('#signalDetailBtn').onclick=e=>{e.stopPropagation();openSignalDetail()};$('#meetingBtn').onclick=()=>setMeetingMode(true);$('#meetingExitBtn').onclick=()=>setMeetingMode(false);$('#modalClose').onclick=closeModal;$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};['excelTopBtn','excelHomeBtn','excelPageBtn'].forEach(id=>$('#'+id).onclick=()=>$('#excelInput').click());$('#settingsTopBtn').onclick=()=>nav('settings');$('#kpiQuickBtn').onclick=()=>nav('settings');$('#excelInput').onchange=e=>{importExcel([...e.target.files]);e.target.value=''};['excelDrop','excelDrop2'].forEach(id=>{const el=$('#'+id);el.onclick=e=>{if(!e.target.closest('button'))$('#excelInput').click()};['dragover','dragenter'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.style.background='#f5edd9'}));['dragleave','drop'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.style.background=''}));el.addEventListener('drop',e=>importExcel([...e.dataTransfer.files]))});$('#homeExtraSales').addEventListener('input',renderForecast);$('#saveSettingsBtn').onclick=async()=>{const vals={laborTarget:Number($('#setLaborTarget').value),laborMin:Number($('#setLaborMin').value),laborMax:Number($('#setLaborMax').value),costTarget:Number($('#setCostTarget').value),marginTarget:Number($('#setMarginTarget').value),salesTarget:Number($('#setSalesTarget').value),ticket:Number($('#setTicket').value),wage:Number($('#setWage').value)};if(Object.values(vals).some(v=>!Number.isFinite(v))||vals.laborMin<0||vals.laborMax>100||vals.laborTarget<0||vals.laborTarget>100||vals.costTarget<0||vals.costTarget>100||vals.marginTarget<-100||vals.marginTarget>100||vals.laborMin>vals.laborMax||vals.salesTarget<=0||vals.ticket<=0||vals.wage<=0){toast('設定値を確認してください。率は範囲内、適正下限≦上限、予算・客単価・時給は0より大きくしてください');return}const next={...state.settings,...vals,alerts:$('#toggleAlerts').checked,ai:$('#toggleAi').checked,tax:$('#toggleTax').checked,monthBudgets:{...(state.settings.monthBudgets||{})}};let pin=null;if(cloud.ready){pin=await requestAdminPin('KPI目標・設定を変更');if(!pin)return;try{await cloudAdminSettings(next,pin)}catch(e){toast(e.message||'設定を更新できませんでした');return}}state.settings=next;save();if(cloud.ready)await cloudPullAll({quiet:true});renderAll();toast('設定を保存しました')};$('#resetDataBtn').onclick=()=>{if(cloud.ready){toast('クラウド接続中は誤削除防止のため一括初期化できません。復元センターをご利用ください');return}if(confirm('この端末のローカルデータを初期状態に戻しますか？')){state=clone(INITIAL);state.reportFields=clone(DEFAULT_REPORT_FIELDS);save();renderAll();toast('この端末のローカルデータを初期化しました')}};$('#clearHistoryBtn').onclick=()=>{state.history=[];save();renderExcel();renderHistory('#homeHistory',3);toast('履歴を消去しました')};$('#exportBackupBtn').onclick=exportBackup;$('#importBackupInput').onchange=e=>e.target.files[0]&&importBackup(e.target.files[0]);$('#printBtn').onclick=openPrintDialog;$('#meetingPreviewClose')?.addEventListener('click',closeMeetingReportPreview);$('#meetingPreviewBack')?.addEventListener('click',closeMeetingReportPreview);$('#meetingPreviewPrint')?.addEventListener('click',executeReportPrint);$('#meetingPrintBtn')?.addEventListener('click',()=>{const kind=$('#meetingReportKind'),mode=$('#meetingReportMode'),preset=$('#meetingRangePreset');if(kind)kind.value='meeting';if(mode)mode.value='detail';if(preset)preset.value='current';applyMeetingKind('meeting');nav('report');renderMeetingRangeSummary();setTimeout(()=>{document.querySelector('.meeting-builder')?.scrollIntoView({behavior:'smooth',block:'start'});toast('資料の種類・比較期間・詳しさを選んで「プレビューを作成」を押してください')},120)});$('#addInventoryBtn').onclick=addInventory;$('#addDailyBtn').onclick=addDaily;$('#quickEditSalesBtn').onclick=e=>{e.stopPropagation();editMonthlySales(state.selected)};$('#prevMonthBtn').onclick=()=>switchMonthBy(-1);$('#nextMonthBtn').onclick=()=>switchMonthBy(1);$('#monthCenterBtn').onclick=showMonthPicker;$('#currentMonthBtn').onclick=jumpToCurrentPeriod;$('#monthlyBudgetBtn')?.addEventListener('click',()=>editMonthlyBudget(state.selected));$('#openRecoveryBtn').onclick=showRecoveryCenter;$('#openRecoverySettingsBtn').onclick=showRecoveryCenter;$('#todayAddBtn').onclick=addDaily;$('#compareDetailBtn').onclick=()=>nav('ai');$('#copyPlBtn').onclick=()=>{const m=current(),r=ratios(m);navigator.clipboard?.writeText(`${m.label}\n売上 ${yen(m.sales)}\n原価 ${yen(m.cogs)} (${pct(r.cost)})\n人件費 ${yen(m.labor)} (${pct(r.labor)})\n営業利益 ${yen(m.profit)} (${pct(r.margin)})`);toast('PL概要をコピーしました')};$('#helpBtn').onclick=()=>openModal('<h2>使い方</h2><p>①「データ読込」からPL Excel・Airメイト CSV / PDF・新形式CSV / Excel / PDFを選択します。既知形式は自動判定し、新形式は項目対応を確認してから反映します。②読み込んだ月へ自動で切替わり、KPI・PL・人件費・売上・AI診断が更新されます。③「目標設定」で人件費率30%前後など店舗基準を変更できます。</p><p><b>補足：</b>シフト・在庫・日次入力は端末内保存です。クラウド接続時は重要データを共有し、変更・削除前の世代を自動保存します。Excelデータ管理の「復元センター」から管理者PINで過去時点へ復元できます。</p>');$('#alertListBtn').onclick=$('#allAlertsBtn').onclick=()=>openModal(`<h2>アラート一覧</h2><div class="notice-list">${$('#noticeList').innerHTML}</div>`);$('#headerMonthBtn').onclick=showMonthPicker;setInterval(updateClock,60000)}
 function showMonthPicker(){ensureTemporalMonths();sortMonths();const latest=latestAvailableMonthKey();openModal(`<h2>表示月を選択</h2><p class="muted">最新月を先頭に表示しています。</p><div class="check-grid">${state.months.slice().reverse().map(m=>`<button class="outline-gold month-choice" data-month="${m.key}">${m.label}${m.key===latest?'　現時点':''}</button>`).join('')}</div>`);$$('.month-choice').forEach(b=>b.onclick=()=>{state.selected=b.dataset.month;closeModal();renderAll();toast(`${current().label}に切り替えました`)})}
@@ -6577,7 +6577,7 @@ window.__MP_TEST__={
 function boot(){v42SetupUi();ensureTemporalMonths();state.selected=latestAvailableMonthKey();bind();renderAll();setReportFlow('idle');mpInstallDiagButton();mpStartCsvProtectionWatcher();mpDiagSnapshot('起動直後');cloudInit().finally(()=>{mpApplyCsvProtection();mpDiagSnapshot('起動後クラウド初期化待ち',{hydrated:cloud.hydrated,hydrateMs:cloud.hydrateFinishedAt&&cloud.hydrateStartedAt?cloud.hydrateFinishedAt-cloud.hydrateStartedAt:null,abcArchiveCount:(state.airmateMenuABCHistory||[]).length})});if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('/sw.js').catch(()=>{})}
 (function(){
 'use strict';
-const NEXA_VERSION='1.06';
+const NEXA_VERSION='1.07';
 function nxNum(v){const n=Number(v);return Number.isFinite(n)?n:null}
 function nxSum(obj){return Object.values(obj||{}).reduce((z,v)=>z+(Number(v)||0),0)}
 function nxPct(v,d=1){return Number.isFinite(Number(v))?`${Number(v).toFixed(d)}%`:'-'}
@@ -7092,7 +7092,7 @@ window.addEventListener('afterprint',()=>{
 </script>
 
 <style id="nexaProHighClarityV104">
-/* Nexa Pro 1.06 — deep green gold selected theme.
+/* Nexa Pro 1.07 — uploaded report design selected.
    Keep pastel as an accent; prioritize contrast, readable type and clear disabled states. */
 :root{
   --nx104-text:#172b3a;
@@ -7321,6 +7321,186 @@ html{background:#0b110d!important;color:var(--text)!important}body{background:ra
 .modal{background:rgba(3,8,6,.58)!important;backdrop-filter:blur(2px)!important}.modal-card{background:radial-gradient(circle at 85% 12%,rgba(201,160,84,.055),transparent 30%),linear-gradient(180deg,#292d26 0%,#20251f 100%)!important;color:#eee7d6!important;border:1.5px solid #8b7546!important;border-radius:22px!important;box-shadow:0 28px 80px rgba(0,0,0,.48)!important}.modal-card h1,.modal-card h2,.modal-card h3{color:#e4c276!important;font-weight:900!important}.modal-card p,.modal-card label{color:#e4dcc8!important}.modal-close{color:#d9b56b!important}.modal-card .cloud-info-grid>div{background:linear-gradient(180deg,#242a23,#1d231d)!important;border:1px solid #635a3d!important;box-shadow:none!important}.modal-card .cloud-info-grid span{color:#b9b09c!important;font-weight:800!important}.modal-card .cloud-info-grid b{color:#d6b36a!important;font-weight:900!important}.modal-card .outline-gold{background:#272c24!important;color:#cdb06e!important;-webkit-text-fill-color:#cdb06e!important;border:1px solid #65583a!important}.modal-card button:disabled{opacity:.64!important;color:#b8aa8b!important;-webkit-text-fill-color:#b8aa8b!important;background:#2a2c25!important;border-color:#53503e!important}
 .history-row .doc{color:#d7b66d!important;border-color:#796743!important}.excel-drop p,.excel-drop h2,.excel-drop h3{color:#e8dfcc!important}.excel-drop small{color:#a9a28f!important}.upload-icon{color:#c9a054!important}.cause-track-fab{background:linear-gradient(145deg,#b03a27,#7e2017)!important;color:#fff0e7!important;border-color:#c46a50!important;box-shadow:0 10px 24px rgba(0,0,0,.34)!important}
 @media(max-width:760px){.modal-card{padding:22px 16px!important}.modal-card h2{font-size:25px!important}.modal-card .primary-btn,.modal-card .outline-gold{min-height:50px!important;font-size:14.5px!important}.kpi-card{background:linear-gradient(180deg,#252a22,#1c221c)!important}}
+</style>
+
+<style id="nexa-v107-uploaded-report-design">
+/* Ver 1.07 — meeting/PDF output follows the user-selected uploaded report:
+   pale blue structure, lavender numbering/accent, mint/pink callouts,
+   four soft KPI colors, strong dark text, minimal ornament. */
+.print-report[data-report-design="pastel"] .pr-page,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-page{
+  background:#ffffff!important;
+  color:#26313f!important;
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,"Noto Sans JP",sans-serif!important;
+}
+.print-report[data-report-design="pastel"] .pr-head,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-head{
+  min-height:28mm!important;height:auto!important;
+  padding:5mm 4.5mm 4mm!important;
+  background:#e9f0fb!important;
+  color:#27313d!important;
+  border:0!important;border-bottom:.75mm solid #b9a8df!important;
+  border-radius:0!important;box-shadow:none!important;
+}
+.print-report[data-report-design="pastel"] .pr-head b,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-head b{
+  color:#3973a6!important;letter-spacing:.18em!important;font-size:7.6pt!important;font-weight:900!important;
+}
+.print-report[data-report-design="pastel"] .pr-head h1,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-head h1{
+  color:#27313d!important;font-size:17.5pt!important;font-weight:900!important;letter-spacing:.01em!important;
+}
+.print-report[data-report-design="pastel"] .pr-head p,
+.print-report[data-report-design="pastel"] .pr-month,
+.print-report[data-report-design="pastel"] .pr-month small,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-head p,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-month,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-month small{
+  color:#6d7784!important;
+}
+.print-report[data-report-design="pastel"] .pr-title,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-title{
+  border-top:.8mm solid #8fb9e2!important;
+  border-bottom:.18mm solid #d7dde7!important;
+  padding:2.6mm 1mm 1.8mm!important;margin-top:2mm!important;
+}
+.print-report[data-report-design="pastel"] .pr-title h1,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-title h1{
+  color:#2e3946!important;font-weight:900!important;
+}
+.print-report[data-report-design="pastel"] .pr-title p,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-title p{color:#6f7884!important}
+
+/* KPI cards: blue / mint / lavender / peach, like page 1 of the reference PDF. */
+.print-report[data-report-design="pastel"] .pr-kpis,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-kpis{gap:1.8mm!important}
+.print-report[data-report-design="pastel"] .pr-kpi,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-kpi{
+  min-height:18mm!important;border:.2mm solid #d9e1eb!important;border-radius:2mm!important;
+  background:#e8f2fd!important;box-shadow:none!important;color:#27313d!important;
+}
+.print-report[data-report-design="pastel"] .pr-kpi:nth-child(2),
+.meeting-preview-canvas[data-report-design="pastel"] .pr-kpi:nth-child(2){background:#e5f7ef!important}
+.print-report[data-report-design="pastel"] .pr-kpi:nth-child(3),
+.meeting-preview-canvas[data-report-design="pastel"] .pr-kpi:nth-child(3){background:#f0e9fb!important}
+.print-report[data-report-design="pastel"] .pr-kpi:nth-child(4),
+.meeting-preview-canvas[data-report-design="pastel"] .pr-kpi:nth-child(4){background:#fff0e3!important}
+.print-report[data-report-design="pastel"] .pr-kpi.primary,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-kpi.primary{background:#e8f2fd!important;border-color:#cfddea!important;color:#27313d!important}
+.print-report[data-report-design="pastel"] .pr-kpi span,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-kpi span{color:#6b7785!important;font-weight:700!important}
+.print-report[data-report-design="pastel"] .pr-kpi strong,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-kpi strong{color:#27313d!important;font-weight:900!important}
+.print-report[data-report-design="pastel"] .pr-kpi small,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-kpi small{color:#788391!important;font-weight:600!important}
+
+/* Sections are mostly white; color comes from top rule and small accents, not heavy boxes. */
+.print-report[data-report-design="pastel"] .pr-section,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-section{
+  background:#fff!important;border:.18mm solid #dde3ec!important;border-radius:0!important;
+  box-shadow:none!important;padding:2.7mm 3mm!important;margin-top:2.3mm!important;
+  border-top:.8mm solid #91cdb7!important;
+}
+.print-report[data-report-design="pastel"] .pr-section:nth-of-type(3n+2),
+.meeting-preview-canvas[data-report-design="pastel"] .pr-section:nth-of-type(3n+2){border-top-color:#8cb8e4!important}
+.print-report[data-report-design="pastel"] .pr-section:nth-of-type(3n),
+.meeting-preview-canvas[data-report-design="pastel"] .pr-section:nth-of-type(3n){border-top-color:#c7a6df!important}
+.print-report[data-report-design="pastel"] .pr-section h2,
+.print-report[data-report-design="pastel"] .pr-sec-head h2,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-section h2,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-sec-head h2{
+  color:#2d3946!important;font-weight:900!important;border:0!important;padding-left:0!important;
+}
+.print-report[data-report-design="pastel"] .pr-section h2::before,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-section h2::before{
+  content:"●";display:inline-block;margin-right:1.5mm;color:#9a79c7!important;font-size:.72em;vertical-align:.08em;
+}
+
+/* Tables */
+.print-report[data-report-design="pastel"] .pr-table,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-table{color:#384552!important}
+.print-report[data-report-design="pastel"] .pr-table th,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-table th{
+  background:#e3effb!important;color:#3d6e9e!important;font-weight:900!important;border-color:#cfddea!important;
+}
+.print-report[data-report-design="pastel"] .pr-table td,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-table td{color:#45515e!important;border-color:#e1e6ee!important}
+.print-report[data-report-design="pastel"] .pr-table td:nth-child(2),
+.meeting-preview-canvas[data-report-design="pastel"] .pr-table td:nth-child(2){color:#384552!important;font-weight:700!important}
+.print-report[data-report-design="pastel"] .pr-total-row td,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-total-row td{background:#eaf2fc!important;border-color:#99bce0!important;color:#33485d!important}
+
+/* Reference-style callouts */
+.print-report[data-report-design="pastel"] .pr-callout,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-callout{
+  background:#e9f3fc!important;color:#425161!important;border:0!important;border-left:1.2mm solid #86b9e1!important;
+  border-radius:1.3mm!important;
+}
+.print-report[data-report-design="pastel"] .pr-callout.pr-good,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-callout.pr-good,
+.print-report[data-report-design="pastel"] .pr-good,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-good{
+  background:#e5f7ef!important;color:#37594c!important;border-left-color:#78c4a6!important;
+}
+.print-report[data-report-design="pastel"] .pr-callout.pr-bad,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-callout.pr-bad,
+.print-report[data-report-design="pastel"] .pr-bad,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-bad{
+  background:#ffecef!important;color:#714551!important;border-left-color:#ef9aaa!important;
+}
+.print-report[data-report-design="pastel"] .pr-kind-badge,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-kind-badge{
+  background:#f1e9fb!important;color:#735b9d!important;border-color:#d3c3e9!important;
+}
+.print-report[data-report-design="pastel"] .pr-partial-chip,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-partial-chip{
+  background:#fff3cf!important;color:#9a721e!important;border:.18mm solid #ead28b!important;
+}
+.print-report[data-report-design="pastel"] .pr-big-conclusion,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-big-conclusion{
+  background:#e5f7ef!important;border:.2mm solid #b5decf!important;border-radius:1.5mm!important;
+}
+.print-report[data-report-design="pastel"] .pr-big-conclusion h2,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-big-conclusion h2{color:#36594b!important}
+
+/* Graphs: airy pale-blue presentation. */
+.print-report[data-report-design="pastel"] .pr-chart,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-chart{
+  background:#fff!important;border-color:#e0e5ed!important;border-radius:1mm!important;
+}
+.print-report[data-report-design="pastel"] .pr-chart-title,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-chart-title{color:#66717e!important}
+.print-report[data-report-design="pastel"] .pr-bar-track i,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-bar-track i{
+  background:linear-gradient(#a7cff2,#78aadd)!important;
+}
+.print-report[data-report-design="pastel"] .pr-bar-bg,
+.print-report[data-report-design="pastel"] .pr-hbar-track,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-bar-bg,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-hbar-track{background:#edf0f6!important}
+.print-report[data-report-design="pastel"] .pr-bar-fill,
+.print-report[data-report-design="pastel"] .pr-hbar-fill,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-bar-fill,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-hbar-fill{background:#86b5e4!important}
+.print-report[data-report-design="pastel"] .pr-bar-fill.c0,.meeting-preview-canvas[data-report-design="pastel"] .pr-bar-fill.c0{background:#7fb2e5!important}
+.print-report[data-report-design="pastel"] .pr-bar-fill.c1,.meeting-preview-canvas[data-report-design="pastel"] .pr-bar-fill.c1{background:#f3b98b!important}
+.print-report[data-report-design="pastel"] .pr-bar-fill.c2,.meeting-preview-canvas[data-report-design="pastel"] .pr-bar-fill.c2{background:#9fc0ea!important}
+.print-report[data-report-design="pastel"] .pr-bar-fill.c3,.meeting-preview-canvas[data-report-design="pastel"] .pr-bar-fill.c3{background:#c5a5e3!important}
+.print-report[data-report-design="pastel"] .pr-bar-fill.c4,.meeting-preview-canvas[data-report-design="pastel"] .pr-bar-fill.c4{background:#8fcdb3!important}
+.print-report[data-report-design="pastel"] .pr-bar-fill.c5,.meeting-preview-canvas[data-report-design="pastel"] .pr-bar-fill.c5{background:#f2a6ae!important}
+.print-report[data-report-design="pastel"] .pr-bar-fill.c6,.meeting-preview-canvas[data-report-design="pastel"] .pr-bar-fill.c6{background:#8db9e5!important}
+.print-report[data-report-design="pastel"] .pr-chart polyline,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-chart polyline{stroke:#77aadc!important}
+.print-report[data-report-design="pastel"] .pr-chart circle:not([fill="#d98212"]):not([fill="#b94736"]),
+.meeting-preview-canvas[data-report-design="pastel"] .pr-chart circle:not([fill="#d98212"]):not([fill="#b94736"]){fill:#77aadc!important}
+
+.print-report[data-report-design="pastel"] .pr-page-note,
+.print-report[data-report-design="pastel"] .pr-foot,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-page-note,
+.meeting-preview-canvas[data-report-design="pastel"] .pr-foot{color:#7c8490!important}
+
+/* Keep the report preview itself neutral so its true page colors are obvious. */
+.meeting-preview-canvas{background:#d7dce4!important}
 </style>
 </body>
 </html>
