@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.18.24</title>
+<title>土雷門 経営管理 Manager Pro Ver 5.18.30</title>
 <!-- Ver5.18.00: 会計明細CSVから時間帯・昼夜・滞在・トッピング・ドリンク・決済・返金伝票を追加集計（既存の日別集計/商品ABCは変更なし）。月次会議資料に「時間帯・商品付加・決済分析」シートを追加し、ランチ/ディナー月次比較へ会計明細の実測値を供給。フロー型資料の印刷は mp-flow スコープで自動ページ調整（1sheet=1A4系には非干渉）。 -->
 <!-- Ver5.17.04: Androidの全面86%縮小を廃止。7ページを維持しつつ、過密ページの末尾セクションを既存の空きページへ再配置。残る超過だけ最大6%以内の局所縮小。iPhoneは同じ完成DOMをA4 PDFへ直接生成し、Android印刷経路とは分離。 -->
 <!-- Ver5.17.04: Androidは7ページ系のページ構成を復元・固定。A4超過は新規ページを作らず該当ページだけ縮小。iPhone/iPadは同じ論理ページをSafari印刷に渡さずA4 PDFへ直接生成。 -->
@@ -2530,6 +2530,7 @@ function showDbSetupHelper(){
 }
 
 const MP_CLOUD_ABC_FIELD_KEY='__managerpro_airmate_menu_abc__';
+const MP_CLOUD_DETAIL_FIELD_KEY='__managerpro_detail_insights__'; // Ver5.18.30: 会計明細ディテール集計のクラウド保存キー
 function mpCloudABCFromFieldRows(rows){
  const row=(rows||[]).find(x=>String(x?.key||'')===MP_CLOUD_ABC_FIELD_KEY),cfg=row?.config;
  if(!cfg||typeof cfg!=='object'||Array.isArray(cfg))return null;
@@ -2555,6 +2556,26 @@ async function cloudUpsertAirmateMenuABC(meta){
  cloud.lastSync=new Date();return {ok:true,data:r.data,verified:true,archiveKey};
 }
 
+async function cloudUpsertDetailInsights(){
+ // Ver5.18.30: 会計明細の集計はクラウド優先端末だとローカルに残らないため、report_fields へ保存する。
+ if(!cloud.ready)return {ok:false,local:true};
+ const di=(state.detailInsights&&typeof state.detailInsights==='object'&&!Array.isArray(state.detailInsights))?state.detailInsights:null;
+ if(!di||!Object.keys(di).length)return {ok:false,empty:true};
+ const persistedAt=new Date().toISOString();
+ const payload={kind:'managerpro_detail_insights',schemaVersion:1,data:{...clone(di),cloudPersistedAt:persistedAt}};
+ const r=await cloud.client.from('report_fields').upsert([{key:MP_CLOUD_DETAIL_FIELD_KEY,config:payload,sort_order:2147479000,updated_at:persistedAt}],{onConflict:'key'}).select();
+ if(r.error)throw r.error;
+ return {ok:true};
+}
+function mpCloudDetailFromFieldRows(rows){
+ try{
+  const row=(rows||[]).find(x=>String(x?.key||'')===MP_CLOUD_DETAIL_FIELD_KEY);
+  const d=row?.config?.data;
+  if(!d||typeof d!=='object')return null;
+  const out={};for(const [k,v] of Object.entries(d)){if(/^\d{4}-\d{2}$/.test(k)&&v&&typeof v==='object')out[k]=v}
+  return Object.keys(out).length?out:null;
+ }catch(e){return null}
+}
 async function cloudPullAll(opts={}){
  if(!cloud.client)return false;
  if(cloud.pulling){while(cloud.pulling)await new Promise(r=>setTimeout(r,40));return !cloud.lastPullError}
@@ -2580,7 +2601,12 @@ async function cloudPullAll(opts={}){
   if(sr.data?.settings&&typeof sr.data.settings==='object'){state.settings={...state.settings,...sr.data.settings,monthBudgets:{...(state.settings?.monthBudgets||{}),...(sr.data.settings.monthBudgets||{})}};cloud.settingsUpdatedAt=sr.data.updated_at||null}
   const cloudABCHistory=mpCloudABCHistoryFromFieldRows(fieldRows);state.airmateMenuABCHistory=cloudABCHistory;
   const cloudABC=mpCloudABCFromFieldRows(fieldRows)||cloudABCHistory.at(-1)||null;if(cloudABC)state.airmateMenuABC=cloudABC;else if(opts.initial)delete state.airmateMenuABC;
-  const visibleFieldRows=fieldRows.filter(x=>String(x?.key||'')!==MP_CLOUD_ABC_FIELD_KEY&&!String(x?.key||'').startsWith(MP_CLOUD_ABC_ARCHIVE_PREFIX));
+  // Ver5.18.30: 会計明細ディテール集計をクラウドから復元（ローカルにあるものは残し、月単位でマージ）
+  try{const cloudDetail=mpCloudDetailFromFieldRows(fieldRows);
+   if(cloudDetail){const localDetail=(state.detailInsights&&typeof state.detailInsights==='object'&&!Array.isArray(state.detailInsights))?state.detailInsights:{};
+    state.detailInsights={...cloudDetail,...localDetail};}
+  }catch(e){console.warn('detail insights restore skipped',e)}
+  const visibleFieldRows=fieldRows.filter(x=>String(x?.key||'')!==MP_CLOUD_ABC_FIELD_KEY&&String(x?.key||'')!==MP_CLOUD_DETAIL_FIELD_KEY&&!String(x?.key||'').startsWith(MP_CLOUD_ABC_ARCHIVE_PREFIX));
   if(visibleFieldRows.length)state.reportFields=visibleFieldRows.map(x=>({...x.config,key:x.key,cloudUpdatedAt:x.updated_at||null}));
   if(lr.data?.length)state.businessLog=lr.data.map(x=>({date:cloudStamp(x.created_at),type:x.event_type||'クラウド',title:x.title||'',detail:x.detail||'',actor:x.actor||'',device:x.device_id||''}));
   if(!vr.error&&vr.data)state.restoreVersions=vr.data.map(x=>({...x,createdLabel:cloudStamp(x.created_at)}));
@@ -3713,7 +3739,9 @@ function parseAggregateCsv(rows,file){
    }
    const daily=[...by.values()].map(x=>({...x,ticket:x.customers>0?x.sales/x.customers:null}));
    const productRows=mpStoreAccountingProducts(rows.slice(i+1),r,file);
-   try{mpStoreDetailInsights(rows.slice(i+1),r,file)}catch(e){console.warn('detail insights skipped',e)}
+   try{mpStoreDetailInsights(rows.slice(i+1),r,file);
+    if(cloud.ready)cloudUpsertDetailInsights().catch(e=>console.warn('detail insights cloud save failed',e));
+   }catch(e){console.warn('detail insights skipped',e)}
    if(daily.length||productRows>0)return {daily,monthly:[],kind:'airregi_detail',productRows}
   }
  }
@@ -5072,12 +5100,34 @@ function mpIosPdfProgress(show,text){
  let el=document.getElementById('mpIosPdfProgress');if(!show){el?.remove();return}
  if(!el){el=document.createElement('div');el.id='mpIosPdfProgress';Object.assign(el.style,{position:'fixed',inset:'0',zIndex:'2147483647',background:'rgba(255,255,255,.96)',display:'flex',alignItems:'center',justifyContent:'center',textAlign:'center',padding:'24px',font:'700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',color:'#0a4f3f'});document.body.appendChild(el)}el.textContent=text||'PDFを作成しています…'
 }
+function mpShowIosPdfLink(url,fileName,pageCount,autoOpened){
+ // 生成済みPDFへの手動導線。Safariの自動遷移が塞がれても、ここから必ず開ける。
+ document.getElementById('mpIosPdfLinkBox')?.remove();
+ const box=document.createElement('div');box.id='mpIosPdfLinkBox';
+ Object.assign(box.style,{position:'fixed',left:'0',right:'0',bottom:'0',zIndex:'2147483647',background:'#fff',borderTop:'2px solid #0a4f3f',padding:'14px 16px calc(14px + env(safe-area-inset-bottom))',boxShadow:'0 -8px 24px rgba(0,0,0,.18)',font:'600 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',color:'#0a4f3f'});
+ box.innerHTML=`<div style="margin-bottom:10px">PDF ${pageCount}ページを作成しました${autoOpened?'':'（自動で開けませんでした）'}</div>`;
+ const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.textContent='PDFを開く';
+ Object.assign(a.style,{display:'block',textAlign:'center',padding:'14px',borderRadius:'12px',background:'#0a4f3f',color:'#fff',textDecoration:'none',marginBottom:'8px'});
+ const dl=document.createElement('a');dl.href=url;dl.download=fileName;dl.textContent='PDFを保存';
+ Object.assign(dl.style,{display:'block',textAlign:'center',padding:'12px',borderRadius:'12px',border:'2px solid #0a4f3f',color:'#0a4f3f',textDecoration:'none',marginBottom:'8px'});
+ const close=document.createElement('button');close.type='button';close.textContent='閉じる';
+ Object.assign(close.style,{display:'block',width:'100%',padding:'10px',borderRadius:'12px',border:'none',background:'#eef1f5',color:'#4e5663',font:'600 14px inherit'});
+ close.onclick=()=>box.remove();
+ box.appendChild(a);box.appendChild(dl);box.appendChild(close);document.body.appendChild(box);
+}
 async function mpGenerateIosPdf(report,preopened){
  const sheets=[...report.querySelectorAll(':scope > .pr-page.pr-sheet')];if(!sheets.length)throw new Error('PDFページがありません');
  const pages=[];for(let i=0;i<sheets.length;i++){mpIosPdfProgress(true,`iPhone用PDFを作成しています… ${i+1}/${sheets.length}`);pages.push(await mpRasterizeSheetToJpeg(sheets[i],i,sheets.length))}
  const blob=mpBuildJpegPdf(pages),url=URL.createObjectURL(blob);window.__mpLastIosPdfUrl&&URL.revokeObjectURL(window.__mpLastIosPdfUrl);window.__mpLastIosPdfUrl=url;
- if(preopened&&!preopened.closed){preopened.location.replace(url)}else{const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.click()}
- setTimeout(()=>mpIosPdfProgress(false),250);toast(`iPhone用PDF ${sheets.length}ページを作成しました`);return {pages:sheets.length,url}
+ // Ver5.18.30: Safariは自動で開くタブ/クリックを塞ぐことがあるため、
+ // 開けなかった場合は必ず「タップして開く」導線を画面に残す（無反応で終わらせない）。
+ const fileName=`土雷門_会議資料_${(new Date()).toISOString().slice(0,10)}.pdf`;
+ let opened=false;
+ if(preopened&&!preopened.closed){try{preopened.location.replace(url);opened=true}catch(e){console.warn('ios pdf tab replace failed',e)}}
+ if(!opened){try{const a=document.createElement('a');a.href=url;a.download=fileName;a.rel='noopener';document.body.appendChild(a);a.click();a.remove();opened=true}catch(e){console.warn('ios pdf anchor failed',e)}}
+ mpIosPdfProgress(false);
+ mpShowIosPdfLink(url,fileName,sheets.length,opened);
+ return {pages:sheets.length,url}
 }
 function mpOpenIosPdfTarget(){try{return window.open('about:blank','_blank')}catch(e){return null}}
 
@@ -5090,7 +5140,11 @@ function executeReportPrint(){
   const iosTarget=mpOpenIosPdfTarget();
   (async()=>{try{
     await mpGenerateIosPdf(report,iosTarget);
-   }catch(e){try{iosTarget?.close()}catch(_){}console.error(e);toast(`iPhone用PDF生成に失敗しました：${e?.message||e}`)}
+   }catch(e){try{iosTarget?.close()}catch(_){}console.error(e);mpIosPdfProgress(false);
+    const msg=String(e?.message||e);
+    toast(`iPhone用PDF生成に失敗しました：${msg}`);
+    if(/html2canvas|読み込め|network|Failed to fetch/i.test(msg))toast('通信状態を確認してください。PDF描画ライブラリを取得できませんでした');
+   }
    finally{try{window.mpV51664ReleasePrint?.()}catch(_){try{window.mpV51657ReleasePrint?.()}catch(__){}}mpReportPrintBusy=false}
   })();
   return;
@@ -5860,7 +5914,7 @@ function mpDetailAnalysisSheets(key){
     <p class="pr-note">時間帯別・昼夜構成・滞在時間・トッピング付加率・ドリンク付帯率・決済構成・返金伝票の各分析は、<b>Airレジの会計明細CSV</b>から作成します。${hasDetailCsv?'この月の商品データは会計明細CSVから取り込まれていますが、時間帯以降の集計はアプリ更新前の取り込みのため保存されていません。':'この月の会計明細CSVがまだ取り込まれていません。'}</p>
     <p class="pr-note"><b>対応：</b>${escHtml(key)}の会計明細CSVをもう一度読み込んでください。読み込んだ時点で本ページの分析と、ランチ/ディナー月次比較の当月行が自動で埋まります。既存の売上・商品ABC・PLのデータは上書きされません。</p>
     <p class="pr-note">数字を推測で埋めることはしません。取得できていない項目は、取得できていないものとして扱います。</p></section>
-   <div class="pr-foot">Manager Pro Ver 5.18.24 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.30 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
  }
  if(d){
   /* --- Sheet A: 時間帯・昼夜 --- */
@@ -5910,7 +5964,7 @@ function mpDetailAnalysisSheets(key){
   }
   out.push(`<div class="pr-page pr-sheet pr-pastel-sheet">${meetingHeader('時間帯・昼夜の構造',`${key} / 会計明細CSV`,'8/9')}
    <div class="pr-mini-grid">${mini.join('')}</div>${hoursBlock}${segBlock}
-   <div class="pr-foot">Manager Pro Ver 5.18.24 / ${stamp()} / 会計明細ディテール分析 / 取得済みデータのみで分析</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.30 / ${stamp()} / 会計明細ディテール分析 / 取得済みデータのみで分析</div></div>`);
 
   /* --- Sheet B: 商品付加・決済・整合性 --- */
   const b=[];
@@ -5956,7 +6010,7 @@ function mpDetailAnalysisSheets(key){
    <p class="pr-note">会計明細：${escHtml(d.sourceFile||'-')}／${num(d.days)}日分・${num(d.groups)}組を集計。${miss.length?`<b>取得できなかった項目：</b>${miss.map(escHtml).join('／')}。これらは推測せず本資料に載せていません。`:'必要項目はすべて取得できています。'}</p></section>`);
   out.push(`<div class="pr-page pr-sheet pr-pastel-sheet">${meetingHeader('商品付加・決済・データ整合性',`${key} / 会計明細CSV`,'9/9')}
    ${b.join('')}
-   <div class="pr-foot">Manager Pro Ver 5.18.24 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.30 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
  }
 
  /* --- Sheet C: 原価率のブレ・損益分岐点・感度（PLのみで作成） --- */
@@ -6014,7 +6068,7 @@ function mpDetailAnalysisSheets(key){
     </div>
     <p class="pr-note">人件費は月ごとの変動があるため固定費側に含めています。カード手数料・ロイヤリティが販管費に含まれている場合は変動費側へ寄るため、この分岐点はやや高めに出ます。<b>目安として扱ってください。</b></p></section>
    ${matrix}
-   <div class="pr-foot">Manager Pro Ver 5.18.24 / ${stamp()} / PL構造分析 / 試算は試算として明示</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.30 / ${stamp()} / PL構造分析 / 試算は試算として明示</div></div>`);
  }
  return out.filter(Boolean).join('');
 }
