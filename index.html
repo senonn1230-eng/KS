@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.18.21</title>
+<title>土雷門 経営管理 Manager Pro Ver 5.18.23</title>
 <!-- Ver5.18.00: 会計明細CSVから時間帯・昼夜・滞在・トッピング・ドリンク・決済・返金伝票を追加集計（既存の日別集計/商品ABCは変更なし）。月次会議資料に「時間帯・商品付加・決済分析」シートを追加し、ランチ/ディナー月次比較へ会計明細の実測値を供給。フロー型資料の印刷は mp-flow スコープで自動ページ調整（1sheet=1A4系には非干渉）。 -->
 <!-- Ver5.17.04: Androidの全面86%縮小を廃止。7ページを維持しつつ、過密ページの末尾セクションを既存の空きページへ再配置。残る超過だけ最大6%以内の局所縮小。iPhoneは同じ完成DOMをA4 PDFへ直接生成し、Android印刷経路とは分離。 -->
 <!-- Ver5.17.04: Androidは7ページ系のページ構成を復元・固定。A4超過は新規ページを作らず該当ページだけ縮小。iPhone/iPadは同じ論理ページをSafari印刷に渡さずA4 PDFへ直接生成。 -->
@@ -3804,6 +3804,13 @@ function mpDiagCompactText(){
  const sel=state.selected||'',pdf=state.airmatePdfReports?.[sel]||null;
  const meta=(state.analyticsDaily||[]).find(x=>String(x.month||x.date||'').slice(0,7)===sel&&(numericProvided(x.pdfMonthlyLunchSales)||numericProvided(x.pdfMonthlyDinnerSales)));
  const actualRows=(state.analyticsDaily||[]).filter(x=>String(x.month||x.date||'').slice(0,7)===sel&&(numericProvided(x.lunchSales)||numericProvided(x.dinnerSales)));
+ // Ver5.18.22: 会計明細ディテール集計の有無を診断ログに残す
+ try{
+  const di=(state.detailInsights&&typeof state.detailInsights==='object')?state.detailInsights:{};
+  const keysD=Object.keys(di).sort();
+  const cur=di[sel];
+  lines.push(`会計明細集計=${keysD.length?keysD.join(','):'なし'} / 選択月${sel}=${cur?`${cur.days}日・${cur.groups}組・${cur.sales}円 / 昼${cur.lunch?cur.lunch.sales:'-'} 夜${cur.dinner?cur.dinner.sales:'-'} / 滞在${cur.stayAvgMin!=null?cur.stayAvgMin.toFixed(1)+'分':'-'} / トッピング${cur.topping&&cur.topping.typed?cur.topping.base+'食':'なし'} / 決済${cur.payment?Object.keys(cur.payment).length+'種':'なし'} / 返金${cur.refunds?cur.refunds.length:0}件 / src=${cur.sourceFile||'-'}`:'未集計（会計明細CSV未取込）'}`);
+ }catch(e){lines.push('会計明細集計=診断失敗 '+String(e))}
  lines.push(`ランチディナー保存=${sel}: AirメイトPDF=${pdf&&numericProvided(pdf.lunchSales)&&numericProvided(pdf.dinnerSales)?`あり(${pdf.sourceFile||'-'} / L${Number(pdf.lunchSales)||0} / D${Number(pdf.dinnerSales)||0})`:'なし'} / 月次meta=${meta?`あり(L${Number(meta.pdfMonthlyLunchSales)||0} / D${Number(meta.pdfMonthlyDinnerSales)||0})`:'なし'} / 区分行=${actualRows.length}件`);
 }
   const pd=r.extra?.plVsCsv||{};if(Object.keys(pd).length)lines.push(`CSV/PL差=${JSON.stringify(pd)}`);
@@ -5853,7 +5860,7 @@ function mpDetailAnalysisSheets(key){
     <p class="pr-note">時間帯別・昼夜構成・滞在時間・トッピング付加率・ドリンク付帯率・決済構成・返金伝票の各分析は、<b>Airレジの会計明細CSV</b>から作成します。${hasDetailCsv?'この月の商品データは会計明細CSVから取り込まれていますが、時間帯以降の集計はアプリ更新前の取り込みのため保存されていません。':'この月の会計明細CSVがまだ取り込まれていません。'}</p>
     <p class="pr-note"><b>対応：</b>${escHtml(key)}の会計明細CSVをもう一度読み込んでください。読み込んだ時点で本ページの分析と、ランチ/ディナー月次比較の当月行が自動で埋まります。既存の売上・商品ABC・PLのデータは上書きされません。</p>
     <p class="pr-note">数字を推測で埋めることはしません。取得できていない項目は、取得できていないものとして扱います。</p></section>
-   <div class="pr-foot">Manager Pro Ver 5.18.21 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.23 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
  }
  if(d){
   /* --- Sheet A: 時間帯・昼夜 --- */
@@ -5903,7 +5910,7 @@ function mpDetailAnalysisSheets(key){
   }
   out.push(`<div class="pr-page pr-sheet pr-pastel-sheet">${meetingHeader('時間帯・昼夜の構造',`${key} / 会計明細CSV`,'8/9')}
    <div class="pr-mini-grid">${mini.join('')}</div>${hoursBlock}${segBlock}
-   <div class="pr-foot">Manager Pro Ver 5.18.21 / ${stamp()} / 会計明細ディテール分析 / 取得済みデータのみで分析</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.23 / ${stamp()} / 会計明細ディテール分析 / 取得済みデータのみで分析</div></div>`);
 
   /* --- Sheet B: 商品付加・決済・整合性 --- */
   const b=[];
@@ -5949,7 +5956,7 @@ function mpDetailAnalysisSheets(key){
    <p class="pr-note">会計明細：${escHtml(d.sourceFile||'-')}／${num(d.days)}日分・${num(d.groups)}組を集計。${miss.length?`<b>取得できなかった項目：</b>${miss.map(escHtml).join('／')}。これらは推測せず本資料に載せていません。`:'必要項目はすべて取得できています。'}</p></section>`);
   out.push(`<div class="pr-page pr-sheet pr-pastel-sheet">${meetingHeader('商品付加・決済・データ整合性',`${key} / 会計明細CSV`,'9/9')}
    ${b.join('')}
-   <div class="pr-foot">Manager Pro Ver 5.18.21 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.23 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
  }
 
  /* --- Sheet C: 原価率のブレ・損益分岐点・感度（PLのみで作成） --- */
@@ -5958,8 +5965,18 @@ function mpDetailAnalysisSheets(key){
  const excluded=msAll.filter(x=>x.provisional===true);
  const ms=msAll.filter(x=>x.provisional!==true);
  if(ms.length>=3){
-  const rows=ms.map(x=>({label:x.short||x.label,sales:Number(x.sales),cr:Number(x.cogs)/Number(x.sales)*100,
-    lr:Number(x.sales)>0?Number(x.labor)/Number(x.sales)*100:null,pr:Number(x.sales)>0?Number(x.profit)/Number(x.sales)*100:null}));
+  // Ver5.18.23: 売上の正はCSV。ただし原価率・利益率はPL内で分子分母を揃えて計算し、
+  // CSVとの差がある月は印を付けて明示する（比率の意味を壊さないため）。
+  const rows=ms.map(x=>{
+    let csv=null;
+    try{const a=monthAnalytics(x.key);if(numericProvided(a?.sales))csv=Number(a.sales)}catch(e){}
+    const diff=(csv!=null&&Number(csv)!==Number(x.sales))?Number(csv)-Number(x.sales):null;
+    return {label:x.short||x.label,sales:Number(x.sales),csvSales:csv,diff,
+      cr:Number(x.cogs)/Number(x.sales)*100,
+      lr:Number(x.sales)>0?Number(x.labor)/Number(x.sales)*100:null,
+      pr:Number(x.sales)>0?Number(x.profit)/Number(x.sales)*100:null};
+  });
+  const diffRows=rows.filter(x=>x.diff!=null);
   const mn=rows.slice().sort((a,b)=>a.cr-b.cr)[0],mx=rows.slice().sort((a,b)=>b.cr-a.cr)[0];
   const gap=(mx.cr-mn.cr)/100*10000000;
   const varRate=ms.reduce((z,x)=>z+Number(x.cogs),0)/ms.reduce((z,x)=>z+Number(x.sales),0);
@@ -5980,7 +5997,9 @@ function mpDetailAnalysisSheets(key){
   out.push(`<div class="pr-page pr-sheet pr-pastel-sheet">${meetingHeader('原価率のブレ・損益分岐点',`確定PL ${ms.length}か月`,'10/10')}
    <section class="pr-section pr-pastel-a"><h2>月別の原価率・人件費率・利益率</h2>
     <table class="pr-table"><thead><tr><th>月</th><th>売上</th><th>原価率</th><th>人件費率</th><th>営業利益率</th></tr></thead><tbody>
-    ${rows.map(x=>`<tr><td>${escHtml(x.label)}</td><td>${yen(x.sales)}</td><td>${P(x.cr)}</td><td>${P(x.lr)}</td><td>${P(x.pr)}</td></tr>`).join('')}</tbody></table>
+    ${rows.map(x=>`<tr><td>${escHtml(x.label)}${x.diff!=null?' <span class="pr-chip">※</span>':''}</td><td>${yen(x.sales)}</td><td>${P(x.cr)}</td><td>${P(x.lr)}</td><td>${P(x.pr)}</td></tr>`).join('')}</tbody></table>
+    <p class="pr-note">この表の売上は<b>PL原票の数値</b>です。原価率・人件費率・利益率は、分子と分母を同じ帳簿から取るためPL内で計算しています。<b>店舗の正式な売上はCSVです。</b></p>
+    ${diffRows.length?`<p class="pr-note"><b>※CSV売上との差がある月：</b>${diffRows.map(x=>`${escHtml(x.label)}（CSV ${yen(x.csvSales)} / PL ${yen(x.sales)} / 差 ${x.diff>0?'+':'−'}${yen(Math.abs(x.diff))}）`).join('、')}。<b>売上はCSVが正</b>です。PL側の原票を確認してください。上の比率はPL内の整合を保つためPL売上で計算しています。</p>`:''}
     ${excluded.length?`<p class="pr-note"><b>${excluded.map(x=>escHtml(x.short||x.label)).join('・')}は確定PLがないため、この表と損益分岐点の計算から除外しています。</b>暫定値は前月の比率を当てはめた推定で、人件費も売上と期間が揃わないため、実績と並べると誤読の原因になります。</p>`:''}
     <p class="pr-note">原価率は${P(mn.cr)}（${escHtml(mn.label)}）〜${P(mx.cr)}（${escHtml(mx.label)}）の幅があります。売上1,000万円の月に置き換えると約${yen(gap)}に相当します。仕入の巧拙だけで説明するのは難しく、<b>仕入をいつ計上したか</b>が影響している可能性があります。月末にまとめて仕入れた分が翌月に売れると、仕入れた月の原価率は上がり、売れた月は下がります。<b>月末の在庫を数えて記録に残す</b>だけでこの揺れは消え、原価率が実力を映す数字になります。</p></section>
    <section class="pr-section pr-pastel-b"><h2>損益分岐点</h2>
@@ -5991,7 +6010,7 @@ function mpDetailAnalysisSheets(key){
     </div>
     <p class="pr-note">人件費は月ごとの変動があるため固定費側に含めています。カード手数料・ロイヤリティが販管費に含まれている場合は変動費側へ寄るため、この分岐点はやや高めに出ます。<b>目安として扱ってください。</b></p></section>
    ${matrix}
-   <div class="pr-foot">Manager Pro Ver 5.18.21 / ${stamp()} / PL構造分析 / 試算は試算として明示</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.23 / ${stamp()} / PL構造分析 / 試算は試算として明示</div></div>`);
  }
  return out.filter(Boolean).join('');
 }
