@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.18.10</title>
+<title>土雷門 経営管理 Manager Pro Ver 5.18.20</title>
 <!-- Ver5.18.00: 会計明細CSVから時間帯・昼夜・滞在・トッピング・ドリンク・決済・返金伝票を追加集計（既存の日別集計/商品ABCは変更なし）。月次会議資料に「時間帯・商品付加・決済分析」シートを追加し、ランチ/ディナー月次比較へ会計明細の実測値を供給。フロー型資料の印刷は mp-flow スコープで自動ページ調整（1sheet=1A4系には非干渉）。 -->
 <!-- Ver5.17.04: Androidの全面86%縮小を廃止。7ページを維持しつつ、過密ページの末尾セクションを既存の空きページへ再配置。残る超過だけ最大6%以内の局所縮小。iPhoneは同じ完成DOMをA4 PDFへ直接生成し、Android印刷経路とは分離。 -->
 <!-- Ver5.17.04: Androidは7ページ系のページ構成を復元・固定。A4超過は新規ページを作らず該当ページだけ縮小。iPhone/iPadは同じ論理ページをSafari印刷に渡さずA4 PDFへ直接生成。 -->
@@ -416,6 +416,37 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
 .print-report[data-report-design="presentation"] .pr-head,.meeting-preview-canvas[data-report-design="presentation"] .pr-head{min-height:29mm!important;background:linear-gradient(135deg,#07533e,#0a3328)!important}
 .print-report[data-report-design="presentation"] .pr-title h1,.meeting-preview-canvas[data-report-design="presentation"] .pr-title h1{font-size:20pt!important}
 .print-report[data-report-design="presentation"] .pr-kpi strong,.meeting-preview-canvas[data-report-design="presentation"] .pr-kpi strong{font-size:15pt!important}
+
+/* ===== Ver5.18.20 pastel theme (色のみ。font-family は変更しない) ===== */
+.print-report[data-report-design="pastel"] .pr-page,.meeting-preview-canvas[data-report-design="pastel"] .pr-page{background:#FCFCFE!important;color:#333A45!important}
+.print-report[data-report-design="pastel"] .pr-head,.meeting-preview-canvas[data-report-design="pastel"] .pr-head{background:linear-gradient(120deg,#DDEBFA 0%,#E9E3F8 42%,#FBE6EC 72%,#FDF0DF 100%)!important;color:#2C3340!important;border-bottom:1mm solid #fff!important}
+.print-report[data-report-design="pastel"] .pr-head *,.meeting-preview-canvas[data-report-design="pastel"] .pr-head *{color:#2C3340!important}
+.print-report[data-report-design="pastel"] .pr-title h1,.meeting-preview-canvas[data-report-design="pastel"] .pr-title h1{color:#2C3340!important}
+.print-report[data-report-design="pastel"] .pr-month,.meeting-preview-canvas[data-report-design="pastel"] .pr-month{color:#3F72A8!important}
+.print-report[data-report-design="pastel"] .pr-section,.meeting-preview-canvas[data-report-design="pastel"] .pr-section{background:#FFFFFF!important;border:.3mm solid #E4E7F0!important;border-radius:2.4mm!important}
+.print-report[data-report-design="pastel"] .pr-section:nth-of-type(6n+1),.meeting-preview-canvas[data-report-design="pastel"] .pr-section:nth-of-type(6n+1){background:#F2F7FD!important;border-color:#CFE0F3!important}
+.print-report[data-report-design="pastel"] .pr-section:nth-of-type(6n+2),.meeting-preview-canvas[data-report-design="pastel"] .pr-section:nth-of-type(6n+2){background:#F1FAF6!important;border-color:#CBE9DB!important}
+.print-report[data-report-design="pastel"] .pr-section:nth-of-type(6n+3),.meeting-preview-canvas[data-report-design="pastel"] .pr-section:nth-of-type(6n+3){background:#F7F3FD!important;border-color:#DED2F1!important}
+.print-report[data-report-design="pastel"] .pr-section:nth-of-type(6n+4),.meeting-preview-canvas[data-report-design="pastel"] .pr-section:nth-of-type(6n+4){background:#FEF6EF!important;border-color:#F3DCC6!important}
+.print-report[data-report-design="pastel"] .pr-section:nth-of-type(6n+5),.meeting-preview-canvas[data-report-design="pastel"] .pr-section:nth-of-type(6n+5){background:#FDF2F5!important;border-color:#F4D3DC!important}
+.print-report[data-report-design="pastel"] .pr-section:nth-of-type(6n),.meeting-preview-canvas[data-report-design="pastel"] .pr-section:nth-of-type(6n){background:#FDFAEE!important;border-color:#EFE3BF!important}
+.print-report[data-report-design="pastel"] .pr-section h2,.print-report[data-report-design="pastel"] .pr-sec-head h2,.meeting-preview-canvas[data-report-design="pastel"] .pr-section h2{color:#2C3340!important;border-bottom:.45mm solid #C7D6E8!important}
+.print-report[data-report-design="pastel"] .pr-table th,.meeting-preview-canvas[data-report-design="pastel"] .pr-table th{background:#EEF3FA!important;color:#3F5578!important}
+.print-report[data-report-design="pastel"] .pr-table tbody tr:nth-child(even) td,.meeting-preview-canvas[data-report-design="pastel"] .pr-table tbody tr:nth-child(even) td{background:rgba(255,255,255,.6)!important}
+.print-report[data-report-design="pastel"] .pr-kpi,.meeting-preview-canvas[data-report-design="pastel"] .pr-kpi{background:#EDF4FC!important;border:.3mm solid #CBDFF5!important;color:#2C3340!important}
+.print-report[data-report-design="pastel"] .pr-kpis>div:nth-child(2),.meeting-preview-canvas[data-report-design="pastel"] .pr-kpis>div:nth-child(2){background:#EDF9F3!important;border-color:#C7E8D8!important}
+.print-report[data-report-design="pastel"] .pr-kpis>div:nth-child(3),.meeting-preview-canvas[data-report-design="pastel"] .pr-kpis>div:nth-child(3){background:#F5F0FC!important;border-color:#DBCEF0!important}
+.print-report[data-report-design="pastel"] .pr-kpis>div:nth-child(4),.meeting-preview-canvas[data-report-design="pastel"] .pr-kpis>div:nth-child(4){background:#FEF4EC!important;border-color:#F2DAC3!important}
+.print-report[data-report-design="pastel"] .pr-kpi strong,.meeting-preview-canvas[data-report-design="pastel"] .pr-kpi strong{color:#2C3340!important}
+.print-report[data-report-design="pastel"] .pr-mini,.meeting-preview-canvas[data-report-design="pastel"] .pr-mini{background:#F4F7FC!important;border:.3mm solid #D8E2F0!important;color:#333A45!important}
+.print-report[data-report-design="pastel"] .pr-mini-grid>div:nth-child(2),.meeting-preview-canvas[data-report-design="pastel"] .pr-mini-grid>div:nth-child(2){background:#EDF9F3!important;border-color:#C7E8D8!important}
+.print-report[data-report-design="pastel"] .pr-mini-grid>div:nth-child(3),.meeting-preview-canvas[data-report-design="pastel"] .pr-mini-grid>div:nth-child(3){background:#F5F0FC!important;border-color:#DBCEF0!important}
+.print-report[data-report-design="pastel"] .pr-mini-grid>div:nth-child(4),.meeting-preview-canvas[data-report-design="pastel"] .pr-mini-grid>div:nth-child(4){background:#FEF4EC!important;border-color:#F2DAC3!important}
+.print-report[data-report-design="pastel"] .pr-callout,.meeting-preview-canvas[data-report-design="pastel"] .pr-callout{background:#F2F6FA!important;border-left:1.2mm solid #8FB8E8!important;color:#333A45!important}
+.print-report[data-report-design="pastel"] .pr-callout.pr-good,.meeting-preview-canvas[data-report-design="pastel"] .pr-callout.pr-good{background:#EDF9F3!important;border-left-color:#9BD8C0!important}
+.print-report[data-report-design="pastel"] .pr-callout.pr-bad,.meeting-preview-canvas[data-report-design="pastel"] .pr-callout.pr-bad{background:#FDE9EE!important;border-left-color:#F3AFBC!important}
+.print-report[data-report-design="pastel"] .pr-foot,.meeting-preview-canvas[data-report-design="pastel"] .pr-foot{color:#7A828E!important;border-top:.3mm solid #DDE2EC!important}
+.print-report[data-report-design="pastel"] .pr-hbar-track,.meeting-preview-canvas[data-report-design="pastel"] .pr-hbar-track{background:#EFF1F7!important}
 
 /* ===== Ver5.10.2 report preview ===== */
 .meeting-preview-modal{position:fixed;inset:0;z-index:99999;background:rgba(14,34,27,.72);display:none;padding:12px;overflow:hidden}
@@ -2095,7 +2126,7 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
             <option value="custom">任意期間</option>
           </select></label>
           <label>詳しさ<select id="meetingReportMode"><option value="detail" selected>詳細版（情報量に応じて自動構成）</option><option value="simple">簡易版（要点中心）</option></select></label>
-          <label>資料デザイン<select id="meetingReportDesign"><option value="standard">上品な会議資料</option><option value="executive">銀行・会計資料風</option><option value="simple">高級ホテル経営レポート風</option><option value="presentation">グラフ中心ダッシュボード風</option><option value="dark">黒×金の役員会資料風</option></select></label>
+          <label>資料デザイン<select id="meetingReportDesign"><option value="standard">上品な会議資料</option><option value="executive">銀行・会計資料風</option><option value="simple">高級ホテル経営レポート風</option><option value="presentation">グラフ中心ダッシュボード風</option><option value="dark">黒×金の役員会資料風</option><option value="pastel">パステルカラー</option></select></label>
           <label>資料の開始月<input id="meetingStartMonth" type="month"></label>
           <label>資料の終了月<input id="meetingEndMonth" type="month"></label>
           <label>日次グラフ期間<select id="meetingGraphRangePreset">
@@ -4822,7 +4853,7 @@ function renderMeetingRangeSummary(){
  $('#meetingStartMonth').value=r.start;$('#meetingEndMonth').value=r.end;const daily=meetingDailyRows(r.keys),gr=resolveMeetingGraphRange(r);if($('#meetingGraphStartMonth'))$('#meetingGraphStartMonth').value=gr.start;if($('#meetingGraphEndMonth'))$('#meetingGraphEndMonth').value=gr.end;
  document.querySelectorAll('[data-graph-preset]').forEach(x=>x.classList.toggle('active',x.dataset.graphPreset===gr.preset));
  const rangeText=r.compare?`${r.start} vs ${r.end}`:`${r.start} ～ ${r.end}`,cmp=r.comparisonType==='yoy'?'前年同月比較':r.comparisonType==='previous'?'前月比較':'期間分析';
- const designNames={standard:'上品な会議資料',executive:'銀行・会計資料風',simple:'高級ホテル経営レポート風',presentation:'グラフ中心ダッシュボード風',dark:'黒×金の役員会資料風'},design=meetingReportDesign();box.innerHTML=`<b>${cfg.title}</b> / ${rangeText} / ${r.compare?cmp:`${r.keys.length}か月`} / ${mode==='detail'?'詳細版':'簡易版'} / ${designNames[design]||'スタンダード'}<br>売上データ ${a.salesKnownMonths}/${r.keys.length}か月、確定PL ${a.plConfirmedMonths}か月、LINE日報 ${a.lineCount}日、日次分析 ${daily.length}日を利用できます。日次グラフは ${gr.start}～${gr.end}${gr.preset==='report'?'（資料期間と連動）':'（別指定）'}。<br><small>数値の優先順位：CSV実績 ＞ Airメイト等の分析データ ＞ PDF/Excel ＞ LINE日報。LINEはCSVにない項目だけ補完し、同じ売上・客数は二重計上しません。前年・比較月の未登録値は推測しません。</small>`
+ const designNames={standard:'上品な会議資料',executive:'銀行・会計資料風',simple:'高級ホテル経営レポート風',presentation:'グラフ中心ダッシュボード風',dark:'黒×金の役員会資料風',pastel:'パステルカラー'},design=meetingReportDesign();box.innerHTML=`<b>${cfg.title}</b> / ${rangeText} / ${r.compare?cmp:`${r.keys.length}か月`} / ${mode==='detail'?'詳細版':'簡易版'} / ${designNames[design]||'スタンダード'}<br>売上データ ${a.salesKnownMonths}/${r.keys.length}か月、確定PL ${a.plConfirmedMonths}か月、LINE日報 ${a.lineCount}日、日次分析 ${daily.length}日を利用できます。日次グラフは ${gr.start}～${gr.end}${gr.preset==='report'?'（資料期間と連動）':'（別指定）'}。<br><small>数値の優先順位：CSV実績 ＞ Airメイト等の分析データ ＞ PDF/Excel ＞ LINE日報。LINEはCSVにない項目だけ補完し、同じ売上・客数は二重計上しません。前年・比較月の未登録値は推測しません。</small>`
 }
 
 
@@ -5813,6 +5844,17 @@ function mpDetailDaysInMonth(key){const [y,m]=String(key).split('-').map(Number)
 function mpDetailAnalysisSheets(key){
  const d=mpDetailForMonth(key);
  const P=mpDetailPct,out=[];
+ if(!d){
+  // 会計明細の集計が無い月は、黙って落とさず理由を出す（Ver5.18.11）
+  const prod=mpProductDataForMonth(key);
+  const hasDetailCsv=String(prod?.sourceType||'')==='airregi_detail_csv';
+  out.push(`<div class="pr-page pr-sheet pr-pastel-sheet">${meetingHeader('時間帯・商品付加・決済分析',`${key} / 会計明細CSV未集計`,'8/9')}
+   <section class="pr-section pr-pastel-f"><h2>この月は会計明細の集計がありません</h2>
+    <p class="pr-note">時間帯別・昼夜構成・滞在時間・トッピング付加率・ドリンク付帯率・決済構成・返金伝票の各分析は、<b>Airレジの会計明細CSV</b>から作成します。${hasDetailCsv?'この月の商品データは会計明細CSVから取り込まれていますが、時間帯以降の集計はアプリ更新前の取り込みのため保存されていません。':'この月の会計明細CSVがまだ取り込まれていません。'}</p>
+    <p class="pr-note"><b>対応：</b>${escHtml(key)}の会計明細CSVをもう一度読み込んでください。読み込んだ時点で本ページの分析と、ランチ/ディナー月次比較の当月行が自動で埋まります。既存の売上・商品ABC・PLのデータは上書きされません。</p>
+    <p class="pr-note">数字を推測で埋めることはしません。取得できていない項目は、取得できていないものとして扱います。</p></section>
+   <div class="pr-foot">Manager Pro Ver 5.18.20 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
+ }
  if(d){
   /* --- Sheet A: 時間帯・昼夜 --- */
   const mini=[];
@@ -5861,7 +5903,7 @@ function mpDetailAnalysisSheets(key){
   }
   out.push(`<div class="pr-page pr-sheet pr-pastel-sheet">${meetingHeader('時間帯・昼夜の構造',`${key} / 会計明細CSV`,'8/9')}
    <div class="pr-mini-grid">${mini.join('')}</div>${hoursBlock}${segBlock}
-   <div class="pr-foot">Manager Pro Ver 5.18.10 / ${stamp()} / 会計明細ディテール分析 / 取得済みデータのみで分析</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.20 / ${stamp()} / 会計明細ディテール分析 / 取得済みデータのみで分析</div></div>`);
 
   /* --- Sheet B: 商品付加・決済・整合性 --- */
   const b=[];
@@ -5907,7 +5949,7 @@ function mpDetailAnalysisSheets(key){
    <p class="pr-note">会計明細：${escHtml(d.sourceFile||'-')}／${num(d.days)}日分・${num(d.groups)}組を集計。${miss.length?`<b>取得できなかった項目：</b>${miss.map(escHtml).join('／')}。これらは推測せず本資料に載せていません。`:'必要項目はすべて取得できています。'}</p></section>`);
   out.push(`<div class="pr-page pr-sheet pr-pastel-sheet">${meetingHeader('商品付加・決済・データ整合性',`${key} / 会計明細CSV`,'9/9')}
    ${b.join('')}
-   <div class="pr-foot">Manager Pro Ver 5.18.10 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.20 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
  }
 
  /* --- Sheet C: 原価率のブレ・損益分岐点・感度（PLのみで作成） --- */
@@ -5945,7 +5987,7 @@ function mpDetailAnalysisSheets(key){
     </div>
     <p class="pr-note">人件費は月ごとの変動があるため固定費側に含めています。カード手数料・ロイヤリティが販管費に含まれている場合は変動費側へ寄るため、この分岐点はやや高めに出ます。<b>目安として扱ってください。</b></p></section>
    ${matrix}
-   <div class="pr-foot">Manager Pro Ver 5.18.10 / ${stamp()} / PL構造分析 / 試算は試算として明示</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.20 / ${stamp()} / PL構造分析 / 試算は試算として明示</div></div>`);
  }
  return out.filter(Boolean).join('');
 }
