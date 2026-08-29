@@ -12,7 +12,7 @@
 
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>土雷門 経営管理 Manager Pro Ver 5.18.30</title>
+<title>土雷門 経営管理 Manager Pro Ver 5.18.31</title>
 <!-- Ver5.18.00: 会計明細CSVから時間帯・昼夜・滞在・トッピング・ドリンク・決済・返金伝票を追加集計（既存の日別集計/商品ABCは変更なし）。月次会議資料に「時間帯・商品付加・決済分析」シートを追加し、ランチ/ディナー月次比較へ会計明細の実測値を供給。フロー型資料の印刷は mp-flow スコープで自動ページ調整（1sheet=1A4系には非干渉）。 -->
 <!-- Ver5.17.04: Androidの全面86%縮小を廃止。7ページを維持しつつ、過密ページの末尾セクションを既存の空きページへ再配置。残る超過だけ最大6%以内の局所縮小。iPhoneは同じ完成DOMをA4 PDFへ直接生成し、Android印刷経路とは分離。 -->
 <!-- Ver5.17.04: Androidは7ページ系のページ構成を復元・固定。A4超過は新規ページを作らず該当ページだけ縮小。iPhone/iPadは同じ論理ページをSafari印刷に渡さずA4 PDFへ直接生成。 -->
@@ -1852,42 +1852,42 @@ body.meeting-mode .meeting-exit{display:block}body.meeting-mode .sidebar,body.me
 /* ===== Ver5.18.10 会議資料のパステル配色 =====
    色だけを足す層。font-family は既存のまま一切変更しない。
    .pr-pastel-sheet を付けたシートにのみ適用する。 */
-#printReport .pr-pastel-sheet .pr-section{border:.3mm solid #E4E7F0;border-radius:2.4mm;background:#FCFCFE}
-#printReport .pr-pastel-sheet .pr-section h2{color:#2C3340;border-bottom:.45mm solid #DDE2EC;padding-bottom:1mm}
-#printReport .pr-pastel-sheet .pr-sub{color:#3F5578;border-left:1.1mm solid #9BD8C0;padding-left:1.6mm;margin:2mm 0 1mm}
-#printReport .pr-pastel-sheet .pr-section.pr-pastel-a{background:#F2F7FD;border-color:#CFE0F3}
-#printReport .pr-pastel-sheet .pr-section.pr-pastel-b{background:#F1FAF6;border-color:#CBE9DB}
-#printReport .pr-pastel-sheet .pr-section.pr-pastel-c{background:#F7F3FD;border-color:#DED2F1}
-#printReport .pr-pastel-sheet .pr-section.pr-pastel-d{background:#FEF6EF;border-color:#F3DCC6}
-#printReport .pr-pastel-sheet .pr-section.pr-pastel-e{background:#FDF2F5;border-color:#F4D3DC}
-#printReport .pr-pastel-sheet .pr-section.pr-pastel-f{background:#FDFAEE;border-color:#EFE3BF}
-#printReport .pr-pastel-sheet .pr-section.pr-pastel-a h2{border-bottom-color:#A9C9EC}
-#printReport .pr-pastel-sheet .pr-section.pr-pastel-b h2{border-bottom-color:#9BD8C0}
-#printReport .pr-pastel-sheet .pr-section.pr-pastel-c h2{border-bottom-color:#C1AEE3}
-#printReport .pr-pastel-sheet .pr-section.pr-pastel-d h2{border-bottom-color:#F0C29A}
-#printReport .pr-pastel-sheet .pr-section.pr-pastel-e h2{border-bottom-color:#EFAEBE}
-#printReport .pr-pastel-sheet .pr-section.pr-pastel-f h2{border-bottom-color:#E6D28F}
-#printReport .pr-pastel-sheet .pr-table th{background:#EEF3FA;color:#3F5578}
-#printReport .pr-pastel-sheet .pr-table tbody tr:nth-child(even) td{background:rgba(255,255,255,.55)}
-#printReport .pr-pastel-sheet .pr-table tr.pr-total td{background:#E7EFF9;font-weight:700;border-top:.4mm solid #A9C9EC}
-#printReport .pr-pastel-sheet .pr-mini{background:#F4F7FC;border:.3mm solid #D8E2F0;border-radius:2mm}
-#printReport .pr-pastel-sheet .pr-mini-grid>div:nth-child(1){background:#EDF4FC;border-color:#CBDFF5}
-#printReport .pr-pastel-sheet .pr-mini-grid>div:nth-child(2){background:#EDF9F3;border-color:#C7E8D8}
-#printReport .pr-pastel-sheet .pr-mini-grid>div:nth-child(3){background:#F5F0FC;border-color:#DBCEF0}
-#printReport .pr-pastel-sheet .pr-mini-grid>div:nth-child(4){background:#FEF4EC;border-color:#F2DAC3}
-#printReport .pr-pastel-sheet .pr-note{color:#4E5663}
-#printReport .pr-pastel-sheet .pr-note b{color:#2F5A8C}
-#printReport .pr-pastel-sheet .pr-chip{background:#FDE9EE;color:#C05471;border:.25mm solid #F3AFBC;border-radius:6mm;padding:.2mm 1.4mm;font-size:.82em}
-#printReport .pr-pastel-sheet .pr-matrix td{text-align:center;font-weight:700;border:.4mm solid #fff;border-radius:1.4mm}
-#printReport .pr-pastel-sheet .pr-matrix td small{font-weight:400;display:block}
-#printReport .pr-pastel-sheet .pr-m1{background:#F8CDD5;color:#A8455F}
-#printReport .pr-pastel-sheet .pr-m2{background:#FBDCC4;color:#A9622F}
-#printReport .pr-pastel-sheet .pr-m3{background:#F8ECC2;color:#8E7024}
-#printReport .pr-pastel-sheet .pr-m4{background:#D5EEDF;color:#357A5F}
-#printReport .pr-pastel-sheet .pr-m5{background:#BEE6D3;color:#2C6E55}
-#printReport .pr-pastel-sheet .pr-compact li{margin:.9mm 0}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section{border:.3mm solid #E4E7F0;border-radius:2.4mm;background:#FCFCFE}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section h2{color:#2C3340;border-bottom:.45mm solid #DDE2EC;padding-bottom:1mm}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-sub{color:#3F5578;border-left:1.1mm solid #9BD8C0;padding-left:1.6mm;margin:2mm 0 1mm}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section.pr-pastel-a{background:#F2F7FD;border-color:#CFE0F3}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section.pr-pastel-b{background:#F1FAF6;border-color:#CBE9DB}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section.pr-pastel-c{background:#F7F3FD;border-color:#DED2F1}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section.pr-pastel-d{background:#FEF6EF;border-color:#F3DCC6}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section.pr-pastel-e{background:#FDF2F5;border-color:#F4D3DC}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section.pr-pastel-f{background:#FDFAEE;border-color:#EFE3BF}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section.pr-pastel-a h2{border-bottom-color:#A9C9EC}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section.pr-pastel-b h2{border-bottom-color:#9BD8C0}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section.pr-pastel-c h2{border-bottom-color:#C1AEE3}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section.pr-pastel-d h2{border-bottom-color:#F0C29A}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section.pr-pastel-e h2{border-bottom-color:#EFAEBE}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-section.pr-pastel-f h2{border-bottom-color:#E6D28F}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-table th{background:#EEF3FA;color:#3F5578}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-table tbody tr:nth-child(even) td{background:rgba(255,255,255,.55)}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-table tr.pr-total td{background:#E7EFF9;font-weight:700;border-top:.4mm solid #A9C9EC}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-mini{background:#F4F7FC;border:.3mm solid #D8E2F0;border-radius:2mm}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-mini-grid>div:nth-child(1){background:#EDF4FC;border-color:#CBDFF5}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-mini-grid>div:nth-child(2){background:#EDF9F3;border-color:#C7E8D8}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-mini-grid>div:nth-child(3){background:#F5F0FC;border-color:#DBCEF0}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-mini-grid>div:nth-child(4){background:#FEF4EC;border-color:#F2DAC3}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-note{color:#4E5663}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-note b{color:#2F5A8C}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-chip{background:#FDE9EE;color:#C05471;border:.25mm solid #F3AFBC;border-radius:6mm;padding:.2mm 1.4mm;font-size:.82em}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-matrix td{text-align:center;font-weight:700;border:.4mm solid #fff;border-radius:1.4mm}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-matrix td small{font-weight:400;display:block}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-m1{background:#F8CDD5;color:#A8455F}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-m2{background:#FBDCC4;color:#A9622F}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-m3{background:#F8ECC2;color:#8E7024}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-m4{background:#D5EEDF;color:#357A5F}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-m5{background:#BEE6D3;color:#2C6E55}
+#printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet .pr-compact li{margin:.9mm 0}
 @media print{
-  #printReport .pr-pastel-sheet *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  #printReport .pr-pastel-sheet,.print-report .pr-pastel-sheet *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 }
 </style>
 
@@ -5074,6 +5074,18 @@ async function mpEnsureHtml2Canvas(){
 async function mpRasterizeSheetToJpeg(sheet,index,total){
  const stage=document.createElement('div');stage.setAttribute('aria-hidden','true');
  Object.assign(stage.style,{position:'fixed',left:'-12000px',top:'0',width:'210mm',height:'297mm',overflow:'hidden',background:'#fff',zIndex:'-1',pointerEvents:'none'});
+ // Ver5.18.31: 切り出したシートは #printReport の外に置かれるため、
+ // 祖先に依存する配色CSS（data-report-design / print-report）が効かなくなる。
+ // ステージ側へ同じクラスと属性を移して、画面と同じ色でラスタライズする。
+ try{
+  const src=document.getElementById('printReport');
+  if(src){
+   stage.className=src.className;
+   const dz=src.getAttribute('data-report-design');if(dz)stage.setAttribute('data-report-design',dz);
+   const fd=src.getAttribute('data-flow-density');if(fd)stage.setAttribute('data-flow-density',fd);
+  }
+  stage.classList.add('print-report','mp-ios-render-stage');
+ }catch(e){console.warn('ios stage style copy skipped',e)}
  const clone=sheet.cloneNode(true);clone.classList.remove('pr-join-next','pr-join-prev');
  Object.assign(clone.style,{width:'210mm',maxWidth:'210mm',height:'297mm',minHeight:'297mm',maxHeight:'297mm',margin:'0',padding:'2.5mm 3mm 3.5mm 3mm',boxSizing:'border-box',overflow:'hidden',transform:'none',zoom:'1',background:'#fff'});
  const fit=sheet.dataset.fit||'';if(fit==='compact')clone.style.fontSize='97%';else if(fit==='tight')clone.style.fontSize='94%';else if(fit==='very-tight')clone.style.fontSize='91%';else if(fit==='emergency')clone.style.fontSize='88%';
@@ -5914,7 +5926,7 @@ function mpDetailAnalysisSheets(key){
     <p class="pr-note">時間帯別・昼夜構成・滞在時間・トッピング付加率・ドリンク付帯率・決済構成・返金伝票の各分析は、<b>Airレジの会計明細CSV</b>から作成します。${hasDetailCsv?'この月の商品データは会計明細CSVから取り込まれていますが、時間帯以降の集計はアプリ更新前の取り込みのため保存されていません。':'この月の会計明細CSVがまだ取り込まれていません。'}</p>
     <p class="pr-note"><b>対応：</b>${escHtml(key)}の会計明細CSVをもう一度読み込んでください。読み込んだ時点で本ページの分析と、ランチ/ディナー月次比較の当月行が自動で埋まります。既存の売上・商品ABC・PLのデータは上書きされません。</p>
     <p class="pr-note">数字を推測で埋めることはしません。取得できていない項目は、取得できていないものとして扱います。</p></section>
-   <div class="pr-foot">Manager Pro Ver 5.18.30 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.31 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
  }
  if(d){
   /* --- Sheet A: 時間帯・昼夜 --- */
@@ -5964,7 +5976,7 @@ function mpDetailAnalysisSheets(key){
   }
   out.push(`<div class="pr-page pr-sheet pr-pastel-sheet">${meetingHeader('時間帯・昼夜の構造',`${key} / 会計明細CSV`,'8/9')}
    <div class="pr-mini-grid">${mini.join('')}</div>${hoursBlock}${segBlock}
-   <div class="pr-foot">Manager Pro Ver 5.18.30 / ${stamp()} / 会計明細ディテール分析 / 取得済みデータのみで分析</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.31 / ${stamp()} / 会計明細ディテール分析 / 取得済みデータのみで分析</div></div>`);
 
   /* --- Sheet B: 商品付加・決済・整合性 --- */
   const b=[];
@@ -6010,7 +6022,7 @@ function mpDetailAnalysisSheets(key){
    <p class="pr-note">会計明細：${escHtml(d.sourceFile||'-')}／${num(d.days)}日分・${num(d.groups)}組を集計。${miss.length?`<b>取得できなかった項目：</b>${miss.map(escHtml).join('／')}。これらは推測せず本資料に載せていません。`:'必要項目はすべて取得できています。'}</p></section>`);
   out.push(`<div class="pr-page pr-sheet pr-pastel-sheet">${meetingHeader('商品付加・決済・データ整合性',`${key} / 会計明細CSV`,'9/9')}
    ${b.join('')}
-   <div class="pr-foot">Manager Pro Ver 5.18.30 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.31 / ${stamp()} / 会計明細ディテール分析 / 未取得項目は推測しません</div></div>`);
  }
 
  /* --- Sheet C: 原価率のブレ・損益分岐点・感度（PLのみで作成） --- */
@@ -6068,7 +6080,7 @@ function mpDetailAnalysisSheets(key){
     </div>
     <p class="pr-note">人件費は月ごとの変動があるため固定費側に含めています。カード手数料・ロイヤリティが販管費に含まれている場合は変動費側へ寄るため、この分岐点はやや高めに出ます。<b>目安として扱ってください。</b></p></section>
    ${matrix}
-   <div class="pr-foot">Manager Pro Ver 5.18.30 / ${stamp()} / PL構造分析 / 試算は試算として明示</div></div>`);
+   <div class="pr-foot">Manager Pro Ver 5.18.31 / ${stamp()} / PL構造分析 / 試算は試算として明示</div></div>`);
  }
  return out.filter(Boolean).join('');
 }
